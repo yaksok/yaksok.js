@@ -57,10 +57,17 @@ let config = {
     module: {
         loaders: [
             { test: /\.json$/, loader: 'json-loader' },
-            { test: /\.js$/, loader: 'babel', include: [
-                srcPath,
-                path.resolve(__dirname, '../node_modules/lex-es6')
-            ] },
+            {
+                test: /\.js$/,
+                loader: 'babel',
+                include: [
+                    srcPath,
+                    path.resolve(__dirname, '../node_modules/lex-es6')
+                ],
+                exclude: [
+                    path.resolve(srcPath, 'runtime')
+                ],
+            },
             { test: /\.jison$/, loader: 'jison-loader', include: [srcPath] },
         ]
     },

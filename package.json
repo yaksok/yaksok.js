@@ -30,6 +30,7 @@
     "del": "^2.0.2",
     "jison-loader": "^1.0.0",
     "json-loader": "^0.5.3",
+    "raw-loader": "^0.5.1",
     "source-map-support": "^0.3.2",
     "webpack": "^1.12.2",
     "webpack-notifier": "^1.2.1",

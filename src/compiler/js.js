@@ -5,21 +5,31 @@ import {
 } from 'ast';
 import parser from 'parser';
 
+// runtime
+import prelude from 'raw!runtime/js/prelude';
+import rangeRuntime from 'raw!runtime/js/range';
+
 export default class JsCompiler extends NodeVisitor {
     constructor() {
         super();
         this.init();
     }
-    write(code) { this.result.push(`${ code }`); }
+    write(code) { this.result.push(code); }
     writeIndent() { this.result.push(Array(this.indent + 1).join('    ')); }
     init() {
         this.result = [];
         this.indent = 0;
+        this.useRangeRuntime = false;
     }
     async compile(code) {
         this.init();
         let root = parser.parse(code);
-        this.write('"use strict";\n');
+        this.write(prelude);
+        this.write({toString: () => {
+            let runtimes = [];
+            if (this.useRangeRuntime) runtimes.push(rangeRuntime);
+            return runtimes.join('');
+        }});
         await this.visit(root); 
         return this.result.join('');
     }
@@ -86,12 +96,12 @@ export default class JsCompiler extends NodeVisitor {
     async visitFloat(node) { this.write(node.value); }
     async visitBoolean(node) { this.write(node.value); }
     async visitRange(node) {
-        const i = '__yaksok_i';
-        this.write(`{[Symbol.iterator]:function*(){for(let ${ i }=`);
+        this.useRangeRuntime = true;
+        this.write('YaksokRuntime.range(');
         await this.visit(node.start);
-        this.write(`;${ i }<=`);
+        this.write(',');
         await this.visit(node.stop);
-        this.write(`;++${ i })yield ${ i }}}`);
+        this.write(')');
     }
     async visitList(node) {
         this.write('[');
