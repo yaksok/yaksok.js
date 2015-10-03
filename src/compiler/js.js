@@ -101,14 +101,23 @@ export default class JsCompiler extends NodeVisitor {
         }
         this.write(']');
     }
+    async visitAccess(node) {
+        this.write('(');
+        await this.visit(node.lhs);
+        this.write('[');
+        await this.visit(node.rhs);
+        this.write('])');
+    }
     async visitAssignStatement(node) {
+        this.writeIndent();
         if (node.lhs instanceof Name) {
+            // TODO: 같은 스코프에서 재사용됐을 경우는 let을 붙이지 않아야 한다.
             this.write(`let ${ node.lhs.value } = `);
             await this.visit(node.rhs);
-            this.write(';\n');
         } else {
-            throw new Error('not implemented');
+            await op.call(this, node, '=');
         }
+        this.write(';\n');
     }
     async visitOr(node) { await op.call(this, node, '||'); }
     async visitAnd(node) { await op.call(this, node, '&&'); }

@@ -35,6 +35,7 @@ export class List extends Array {}
 
 // binary opeartor
 export class BinaryOperator { constructor(lhs, rhs) { this.lhs = lhs; this.rhs = rhs; } }
+export class Access extends BinaryOperator {}
 // logical
 export class AssignStatement extends BinaryOperator {}
 export class Or extends BinaryOperator {}
@@ -92,6 +93,7 @@ export class NodeVisitor {
     async visitRange(node) {}
     async visitList(node) {}
     async visitBinaryOperator(node) {
+        if (node instanceof Access) return await this.visitAccess(node);
         if (node instanceof AssignStatement) return await this.visitAssignStatement(node);
         if (node instanceof Or) return await this.visitOr(node);
         if (node instanceof And) return await this.visitAnd(node);
@@ -108,6 +110,7 @@ export class NodeVisitor {
         if (node instanceof Modular) return await this.visitModular(node);
         throw new Error('unknown node type');
     }
+    async visitAccess(node) {}
     async visitAssignStatement(node) {}
     async visitOr(node) {}
     async visitAnd(node) {}

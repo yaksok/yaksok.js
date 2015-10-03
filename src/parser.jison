@@ -28,7 +28,7 @@ statement
     ;
 
 assign_statement
-    : name ASSIGN call                  { $$ = new yy.ast.AssignStatement($name, $call) }
+    : lvalue ASSIGN call                { $$ = new yy.ast.AssignStatement($lvalue, $call) }
     ;
 
 call
@@ -98,7 +98,18 @@ primary_expression
     | NUMBER                            { $$ = $1 }
     | RANGE                             { $$ = $1 }
     | LIST                              { $$ = $1 }
-    | name                              { $$ = $1 }
+    | lvalue                            { $$ = $1 }
+    | LPAR expression RPAR              { $$ = $expression }
+    | LPAR call RPAR                    { $$ = $call }
+    ;
+
+lvalue
+    : name                              { $$ = $1 }
+    | access_expression                 { $$ = $1 }
+    ;
+
+access_expression
+    : primary_expression LSQUARE expression RSQUARE     { $$ = new yy.ast.Access($1, $3) }
     ;
 
 name

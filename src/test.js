@@ -3,7 +3,7 @@ import yaksokParser from 'parser';
 import JsCompiler from 'compiler/js';
 
 
-// 당장 목표: code2 돌리기
+// 당장 목표: code2 돌리기 ...된다!
 const code1 = `변수: '문자열'
 만약 1 = 1 이면
     변수 보여주기`;
