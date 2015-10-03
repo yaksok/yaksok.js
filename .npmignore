@@ -1,0 +1,14 @@
+.git*
+.babelrc
+build
+src
+
+node_modules
+npm-debug.log
+
+Thumbs.db
+.DS_Store
+
+dist/test*
+dist/yaksok.js
+dist/yaksok.js.map
