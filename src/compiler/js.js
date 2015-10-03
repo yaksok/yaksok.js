@@ -61,6 +61,25 @@ export default class JsCompiler extends NodeVisitor {
             this.write('\n');
         }
     }
+    async visitLoop(node) {
+        this.writeIndent();
+        this.write('while (true) {\n')
+        ++this.indent;
+        await this.visit(node.block);
+        --this.indent;
+        this.writeIndent();
+        this.write('}\n');
+    }
+    async visitIterate(node) {
+        this.writeIndent();
+        this.write('for (let '); await this.visit(node.iteratee);
+        this.write(' of '); await this.visit(node.iterator); this.write(') {\n');
+        ++this.indent;
+        await this.visit(node.block);
+        --this.indent;
+        this.writeIndent();
+        this.write('}\n');
+    }
     async visitName(node) { this.write(node.value); }
     async visitString(node) { this.write(JSON.stringify(node.value)); }
     async visitInteger(node) { this.write(node.value); }

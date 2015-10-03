@@ -24,10 +24,11 @@ statement
     : assign_statement                  { $$ = $1 }
     | call                              { $$ = new yy.ast.Statement($1) }
     | if_statement                      { $$ = $1 }
+    | loop_statement                    { $$ = $1 }
     ;
 
 assign_statement
-    : IDENTIFIER ASSIGN call            { $$ = new yy.ast.AssignStatement(new yy.ast.Name($1), $3) }
+    : name ASSIGN call                  { $$ = new yy.ast.AssignStatement($name, $call) }
     ;
 
 call
@@ -41,6 +42,11 @@ block
 
 if_statement
     : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null) }
+    ;
+
+loop_statement
+    : LOOP block                            { $$ = new yy.ast.Loop($block) }
+    | LOOP expression EUI name MADA block   { $$ = new yy.ast.Iterate($expression, $name, $block) }
     ;
 
 expressions
@@ -86,13 +92,17 @@ multiplicative_expression
     ;
 
 primary_expression
-    : IDENTIFIER                        { $$ = new yy.ast.Name($1) }
-    | STRING                            { $$ = new yy.ast.String(yy.parseString($1)) }
+    : STRING                            { $$ = new yy.ast.String(yy.parseString($1)) }
     | TRUE                              { $$ = new yy.ast.Boolean(true) }
     | FALSE                             { $$ = new yy.ast.Boolean(false) }
     | NUMBER                            { $$ = $1 }
     | RANGE                             { $$ = $1 }
     | LIST                              { $$ = $1 }
+    | name                              { $$ = $1 }
+    ;
+
+name
+    : IDENTIFIER                        { $$ = new yy.ast.Name($1) }
     ;
 
 NUMBER

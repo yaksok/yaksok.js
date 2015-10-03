@@ -12,6 +12,14 @@ export class If {
         this.elseBlock = elseBlock;
     }
 }
+export class Loop { constructor(block) { this.block = block; } }
+export class Iterate {
+    constructor(iterator, iteratee, block) {
+        this.iterator = iterator;
+        this.iteratee = iteratee;
+        this.block = block;
+    }
+}
 
 // primitive
 export class Primitive { constructor(value) { this.value = value; } }
@@ -52,6 +60,8 @@ export class NodeVisitor {
         if (node instanceof Statement) return await this.visitStatement(node);
         if (node instanceof Call) return await this.visitCall(node);
         if (node instanceof If) return await this.visitIf(node);
+        if (node instanceof Loop) return await this.visitLoop(node);
+        if (node instanceof Iterate) return await this.visitIterate(node);
         if (node instanceof Primitive) return await this.visitPrimitive(node);
         if (node instanceof Range) return await this.visitRange(node);
         if (node instanceof List) return await this.visitList(node);
@@ -64,6 +74,8 @@ export class NodeVisitor {
     async visitStatement(node) {}
     async visitCall(node) {}
     async visitIf(node) {}
+    async visitLoop(node) {}
+    async visitIterate(node) {}
     async visitPrimitive(node) {
         if (node instanceof Name) return await this.visitName(node);
         if (node instanceof String) return await this.visitString(node);
