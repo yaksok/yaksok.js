@@ -24,15 +24,21 @@ const code3 = `
     1
 아니라면
     2
+만약 참 이면
+    3
 `;
 const code4 = `
 만약 참 이면
     1
+만약 참 이면
+    2
+`;
+const code5 = `
+만약 참 이면
+    1
 
-    
 아니라면
     2
-            
 
 만약 참 이면
     만약 참 이면
@@ -75,7 +81,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code3;
+let code = code5;
 console.log(code + '\n');
 test_lexer(code);
 // test_parser(code);

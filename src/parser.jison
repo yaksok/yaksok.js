@@ -44,11 +44,16 @@ if_statement
     : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null) }
     ;
 
+if_statement_with_newlines
+    : if_statement_with_newlines NEWLINES   { $$ = $1 }
+    | if_statement                          { $$ = $1 }
+    ;
+
 if_else_statement
-    : if_statement ELSE block                   { $1.elseBlock = $3; $$ = $1 }
-    | if_statement ELSE if_else_statement       { $1.elseBlock = $3; $$ = $1 }
-    | if_statement ELSEAND if_else_statement    { $1.elseBlock = $3; $$ = $1 }
-    | if_statement                              { $$ = $1 }
+    : if_statement_with_newlines ELSE block                 { $1.elseBlock = $3; $$ = $1 }
+    | if_statement_with_newlines ELSE if_else_statement     { $1.elseBlock = $3; $$ = $1 }
+    | if_statement_with_newlines ELSEAND if_else_statement  { $1.elseBlock = $3; $$ = $1 }
+    | if_statement_with_newlines                            { $$ = $1 }
     ;
 
 loop_statement

@@ -40,15 +40,41 @@ export default class YaksokLexer extends Lexer {
         this.insideLoopCondition = false;
         this.insideDefun = false;
         this.parenCount = 0;
+        this.tokenQueue = [];
+        this.lastToken = '';
+        this.currentIndentation = 0;
         this.indent = [0];
     }
     lex() {
+        let tokenQueue = this.tokenQueue;
+        if (tokenQueue.length) {
+            return tokenQueue.shift();
+        }
         let result = super.lex();
         let indent = this.indent;
         if (result === void 0) if (0 < indent[0]) {
             indent.shift();
-            return 'DEDENT';
+            result = 'DEDENT';
+            this.lastToken = result;
+            return result;
         }
+        if (this.lastToken === 'NEWLINE')
+        if (this.currentIndentation === 0)
+        if (result !== 'INDENT')
+        if (result !== 'DEDENT') {
+            let dedented = false;
+            while (0 < indent[0]) {
+                dedented = true;
+                indent.shift();
+                tokenQueue.push('DEDENT');
+            }
+            if (dedented) tokenQueue.push('NEWLINE');
+            tokenQueue.push(result);
+            result = tokenQueue.shift();
+            this.lastToken = result;
+            return result;
+        }
+        this.lastToken = result;
         return result;
     }
     get tabSize() { return this._tabSize; }
@@ -91,6 +117,7 @@ YaksokLexer.addRule(/^[\t ]*/m, function (lexeme) {
     }
     let indentation = lexeme.split('\t').join(this.tabSpaces).length;
     let indent = this.indent;
+    this.currentIndentation = indentation;
     if (indentation > indent[0]) {
         indent.unshift(indentation);
         return 'INDENT';
@@ -117,7 +144,7 @@ YaksokLexer.addRule(/0[xX][0-9a-fA-F]+/, function (lexeme) {
 });
 YaksokLexer.addRule(/\d*\.?\d+(?:[Ee](?:[+-]?\d+)?)?/, function (lexeme) {
     this.yytext = lexeme;
-    if (/^[0-9][1-9]*$/.test(lexeme)) {
+    if (/^[1-9][0-9]*$/.test(lexeme)) {
         return 'INTEGER';
     }
     if (/^0[0-9]*$/.test(lexeme)) {
@@ -169,6 +196,7 @@ YaksokLexer.addRule(/>=/, 'GTEQ');
 YaksokLexer.addRule(/<=/, 'LTEQ');
 
 YaksokLexer.addRule(/(\r?\n)+/, function (lexeme) {
+    this.currentIndentation = 0
     if (this.insideDefun) {
         this.insideDefun = false;
     }
