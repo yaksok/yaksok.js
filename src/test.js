@@ -19,6 +19,39 @@ const code2 = `
             목록[위치2]: 임시
 목록 보여주기
 `;
+const code3 = `
+만약 참 이면
+    1
+아니라면
+    2
+`;
+const code4 = `
+만약 참 이면
+    1
+
+    
+아니라면
+    2
+            
+
+만약 참 이면
+    만약 참 이면
+        3
+        만약 참 이면
+            4
+        아니라면
+            5
+    아니면서 만약 참 이면
+        6
+    아니라면 만약 참 이면
+        7
+아니면서 만약 참 이면
+    8
+아니면서 만약 참 이면
+    9
+아니라면
+    10
+`;
 
 function test_lexer(code) {
     let lexer = new YaksokLexer();
@@ -42,8 +75,8 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code2;
+let code = code3;
 console.log(code + '\n');
-// test_lexer(code);
+test_lexer(code);
 // test_parser(code);
 test_compiler(code).catch(e => console.error(e.stack));

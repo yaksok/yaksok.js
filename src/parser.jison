@@ -23,7 +23,7 @@ statements
 statement
     : assign_statement                  { $$ = $1 }
     | call                              { $$ = new yy.ast.Statement($1) }
-    | if_statement                      { $$ = $1 }
+    | if_else_statement                 { $$ = $1 }
     | loop_statement                    { $$ = $1 }
     ;
 
@@ -42,6 +42,13 @@ block
 
 if_statement
     : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null) }
+    ;
+
+if_else_statement
+    : if_statement ELSE block                   { $1.elseBlock = $3; $$ = $1 }
+    | if_statement ELSE if_else_statement       { $1.elseBlock = $3; $$ = $1 }
+    | if_statement ELSEAND if_else_statement    { $1.elseBlock = $3; $$ = $1 }
+    | if_statement                              { $$ = $1 }
     ;
 
 loop_statement

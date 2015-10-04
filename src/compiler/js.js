@@ -66,6 +66,7 @@ export default class JsCompiler extends NodeVisitor {
             ++this.indent;
             await this.visit(node.elseBlock);
             --this.indent;
+            this.writeIndent();
             this.write('}\n');
         } else {
             this.write('\n');
