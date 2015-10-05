@@ -8,16 +8,22 @@ NEWLINES
     | NEWLINE
     ;
 
+empty_or_newlines
+    :
+    | NEWLINES
+    ;
+
 ast
     : statements                        { return new yy.ast.YaksokRoot($statements) }
-    | statements NEWLINES               { return new yy.ast.YaksokRoot($statements) }
-    | NEWLINES statements               { return new yy.ast.YaksokRoot($statements) }
-    | NEWLINES statements NEWLINES      { return new yy.ast.YaksokRoot($statements) }
     ;
 
 statements
-    : statements NEWLINES statement     { $1.push($3); $$ = $1 }
-    | statement                         { $$ = new yy.ast.Statements(); $$.push($1) }
+    : empty_or_newlines statement_list empty_or_newlines    { $$ = $statement_list }
+    ;
+
+statement_list
+    : statement_list statement          { $1.push($statement); $$ = $1 }
+    | statement                         { $$ = new yy.ast.Statements(); $$.push($statement) }
     ;
 
 statement
@@ -28,32 +34,26 @@ statement
     ;
 
 assign_statement
-    : lvalue ASSIGN call                { $$ = new yy.ast.AssignStatement($lvalue, $call) }
+    : lvalue ASSIGN call empty_or_newlines  { $$ = new yy.ast.AssignStatement($lvalue, $call) }
     ;
 
 call
-    : expressions                       { $$ = yy.parseCall($1) }
+    : expressions empty_or_newlines     { $$ = yy.parseCall($expressions) }
     ;
 
 block
-    : NEWLINES INDENT statements DEDENT             { $$ = $statements }
-    | NEWLINES INDENT statements NEWLINES DEDENT    { $$ = $statements }
+    : empty_or_newlines INDENT statements DEDENT    { $$ = $statements }
     ;
 
 if_statement
     : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null) }
     ;
 
-if_statement_with_newlines
-    : if_statement_with_newlines NEWLINES   { $$ = $1 }
-    | if_statement                          { $$ = $1 }
-    ;
-
 if_else_statement
-    : if_statement_with_newlines ELSE block                 { $1.elseBlock = $3; $$ = $1 }
-    | if_statement_with_newlines ELSE if_else_statement     { $1.elseBlock = $3; $$ = $1 }
-    | if_statement_with_newlines ELSEAND if_else_statement  { $1.elseBlock = $3; $$ = $1 }
-    | if_statement_with_newlines                            { $$ = $1 }
+    : if_statement ELSE block                   { $1.elseBlock = $3; $$ = $1 }
+    | if_statement ELSE if_else_statement       { $1.elseBlock = $3; $$ = $1 }
+    | if_statement ELSEAND if_else_statement    { $1.elseBlock = $3; $$ = $1 }
+    | if_statement                              { $$ = $1 }
     ;
 
 loop_statement
