@@ -6,6 +6,7 @@
 NEWLINES
     : NEWLINES NEWLINE
     | NEWLINE
+    | INDENT empty_or_newlines DEDENT
     ;
 
 empty_or_newlines
