@@ -3,7 +3,6 @@ import yaksokParser from 'parser';
 import JsCompiler from 'compiler/js';
 
 
-// 당장 목표: code2 돌리기 ...된다!
 const code1 = `변수: '문자열'
 만약 1 = 1 이면
     변수 보여주기`;
@@ -97,5 +96,5 @@ async function test_compiler(code) {
 let code = code6;
 console.log(code + '\n');
 // test_lexer(code);
-test_parser(code);
-// test_compiler(code).catch(e => console.error(e.stack));
+// test_parser(code);
+test_compiler(code).catch(e => console.error(e.stack));

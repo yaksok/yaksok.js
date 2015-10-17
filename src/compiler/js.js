@@ -7,7 +7,6 @@ import parser from 'parser';
 
 // runtime
 import prelude from 'raw!runtime/js/prelude';
-import rangeRuntime from 'raw!runtime/js/range';
 
 export default class JsCompiler extends NodeVisitor {
     constructor() {
@@ -19,18 +18,35 @@ export default class JsCompiler extends NodeVisitor {
     init() {
         this.result = [];
         this.indent = 0;
-        this.useRangeRuntime = false;
+        this.runtime = {};
+        this.functionNameIndex = 0;
+        this.functionNameMap = new Map(); // key: ast yaksok node, value: function name string
+    }
+    getFunctionNameFromYaksok(yaksok) {
+        if (this.functionNameMap.has(yaksok)) {
+            return this.functionNameMap.get(yaksok);
+        }
+        let functionName = `y${ this.functionNameIndex++ }s${ yaksokDescriptionToJsIdentifier(yaksok.description) }`;
+        this.functionNameMap.set(yaksok, functionName);
+        return functionName;
     }
     async compile(code) {
         this.init();
         let root = parser.parse(code);
+        this.write('(function () {\n');
         this.write(prelude);
         this.write({toString: () => {
             let runtimes = [];
-            if (this.useRangeRuntime) runtimes.push(rangeRuntime);
+            for (let key in this.runtime) {
+                if (this.runtime[key]) {
+                    let runtime = require('raw!runtime/js/' + key);
+                    runtimes.push(runtime);
+                }
+            }
             return runtimes.join('');
         }});
         await this.visit(root); 
+        this.write('})();');
         return this.result.join('');
     }
     async visitStatement(node) {
@@ -43,12 +59,17 @@ export default class JsCompiler extends NodeVisitor {
         if (expressions.length === 2) {
             let name = expressions[1];
             if (name instanceof Name && name.value === '보여주기') {
-                this.write('console.log(');
+                this.runtime['log'] = true;
+                this.write('YaksokRuntime.log(');
                 await this.visit(expressions[0]);
                 this.write(')');
+            } else {
+                this.write('/* TODO: implement JsCompiler::visitCall */');
+                // throw new Error('not implemented');
             }
         } else {
-            throw new Error('not implemented');
+            this.write('/* TODO: implement JsCompiler::visitCall */');
+            // throw new Error('not implemented');
         }
     }
     async visitIf(node) {
@@ -97,7 +118,7 @@ export default class JsCompiler extends NodeVisitor {
     async visitFloat(node) { this.write(node.value); }
     async visitBoolean(node) { this.write(node.value); }
     async visitRange(node) {
-        this.useRangeRuntime = true;
+        this.runtime['range'] = true;
         this.write('YaksokRuntime.range(');
         await this.visit(node.start);
         this.write(',');
@@ -105,10 +126,10 @@ export default class JsCompiler extends NodeVisitor {
         this.write(')');
     }
     async visitList(node) {
-        this.write('[');
+        this.write('[void 0');
         for (let item of node) {
-            await this.visit(item);
             this.write(',');
+            await this.visit(item);
         }
         this.write(']');
     }
@@ -122,8 +143,8 @@ export default class JsCompiler extends NodeVisitor {
     async visitAssignStatement(node) {
         this.writeIndent();
         if (node.lhs instanceof Name) {
-            // TODO: 같은 스코프에서 재사용됐을 경우는 let을 붙이지 않아야 한다.
-            this.write(`let ${ node.lhs.value } = `);
+            // TODO: scope
+            this.write(`var ${ node.lhs.value } = `);
             await this.visit(node.rhs);
         } else {
             await op.call(this, node, '=');
@@ -143,6 +164,20 @@ export default class JsCompiler extends NodeVisitor {
     async visitMultiply(node) { await op.call(this, node, '*'); }
     async visitDivide(node) { await op.call(this, node, '/'); }
     async visitModular(node) { await op.call(this, node, '%'); }
+    async visitYaksok(node) {
+        // TODO: scope
+        let functionName = this.getFunctionNameFromYaksok(node);
+        let parameters = node.description.parameters.map(parameter => parameter.value);
+        this.writeIndent();
+        this.write(`function ${ functionName }(${ parameters.join(', ') }) `);
+        this.write('{\n');
+        ++this.indent;
+        await this.visit(node.block);
+        this.writeIndent(); this.write('return 결과;\n');
+        --this.indent;
+        this.writeIndent();
+        this.write('}\n');
+    }
 }
 
 async function op(node, op) {
@@ -151,4 +186,17 @@ async function op(node, op) {
     this.write(` ${ op } `);
     await this.visit(node.rhs);
     this.write(')');
+}
+
+function yaksokNameToJsIdentifier(name) {
+    let nameString = name[0];
+    if (name.needWhiteSpace) return '_' + nameString;
+    return nameString;
+}
+
+function yaksokDescriptionToJsIdentifier(description) {
+    return description.map(item => {
+        if (item instanceof ast.YaksokName) return yaksokNameToJsIdentifier(item);
+        if (item instanceof ast.YaksokParameter) return `_${ item.value }`;
+    }).join('');
 }

@@ -69,6 +69,9 @@ export class YaksokDescription extends Array {
         let args = [];
         // TODO
     }
+    get parameters() {
+        return this.filter(item => item instanceof YaksokParameter);
+    }
 }
 export class YaksokParameter { constructor(value) { this.value = value; } }
 export class YaksokName extends Array {
