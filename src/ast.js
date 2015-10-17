@@ -53,6 +53,33 @@ export class Multiply extends BinaryOperator {}
 export class Divide extends BinaryOperator {}
 export class Modular extends BinaryOperator {}
 
+//yaksok
+export class Yaksok {
+    constructor(description, block) {
+        this.description = description;
+        this.block = block;
+    }
+    match(call) { // return match arguments else null
+        return this.description.match(call.expressions);
+    }
+}
+export class YaksokDescription extends Array {
+    match(expressions) {
+        if (expressions.length > this.length) return null;
+        let args = [];
+        // TODO
+    }
+}
+export class YaksokParameter { constructor(value) { this.value = value; } }
+export class YaksokName extends Array {
+    needWhiteSpace = false;
+    match(name) {
+        if (!(name instanceof Name)) return false;
+        return name === this[0];
+        // TODO
+    }
+}
+
 export class NodeVisitor {
     async visit(node) {
         if (node instanceof YaksokRoot) return await this.visitYaksokRoot(node);
@@ -67,6 +94,10 @@ export class NodeVisitor {
         if (node instanceof Range) return await this.visitRange(node);
         if (node instanceof List) return await this.visitList(node);
         if (node instanceof BinaryOperator) return await this.visitBinaryOperator(node);
+        if (node instanceof Yaksok) return await this.visitYaksok(node);
+        if (node instanceof YaksokDescription) return await this.visitYaksokDescription(node);
+        if (node instanceof YaksokParameter) return await this.visitYaksokParameter(node);
+        if (node instanceof YaksokName) return await this.visitYaksokName(node);
         throw new Error('unknown node type');
     }
     async visitYaksokRoot(node) { await this.visit(node.statements); }
@@ -125,4 +156,8 @@ export class NodeVisitor {
     async visitMultiply(node) {}
     async visitDivide(node) {}
     async visitModular(node) {}
+    async visitYaksok(node) {}
+    async visitYaksokDescription(node) {}
+    async visitYaksokParameter(node) {}
+    async visitYaksokName(node) {}
 }

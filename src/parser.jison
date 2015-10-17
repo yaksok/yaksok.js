@@ -14,6 +14,11 @@ empty_or_newlines
     | NEWLINES
     ;
 
+empty_or_whitespace
+    :
+    | WS
+    ;
+
 ast
     : statements                        { return new yy.ast.YaksokRoot($statements) }
     ;
@@ -32,6 +37,7 @@ statement
     | call                              { $$ = new yy.ast.Statement($1) }
     | if_else_statement                 { $$ = $1 }
     | loop_statement                    { $$ = $1 }
+    | yaksok_statement                  { $$ = $1 }
     ;
 
 assign_statement
@@ -60,6 +66,39 @@ if_else_statement
 loop_statement
     : LOOP block                            { $$ = new yy.ast.Loop($block) }
     | LOOP expression EUI name MADA block   { $$ = new yy.ast.Iterate($expression, $name, $block) }
+    ;
+
+yaksok_statement
+    : DEFUN WS yaksok_description block {
+        var desc = yy.filterWhiteSpace($yaksok_description);
+        $$ = new yy.ast.Yaksok(desc, $block);
+    }
+    ;
+
+yaksok_description
+    : yaksok_description yaksok_description_item    { $1.push($2); $$ = $1 }
+    | yaksok_description_item                       { $$ = new yy.ast.YaksokDescription(); $$.push($1) }
+    ;
+
+yaksok_description_item
+    : yaksok_parameter                  { $$ = $1 }
+    | yaksok_name                       { $$ = $1 }
+    | WS                                { $$ = null }
+    ;
+
+yaksok_parameter
+    : LPAR empty_or_whitespace IDENTIFIER empty_or_whitespace RPAR {
+        $$ = new yy.ast.YaksokParameter($IDENTIFIER);
+    }
+    ;
+
+yaksok_name
+    : yaksok_name DIV IDENTIFIER {
+        $yaksok_name.push($IDENTIFIER); $$ = $yaksok_name;
+    }
+    | IDENTIFIER {
+        $$ = new yy.ast.YaksokName(); $$.push($IDENTIFIER);
+    }
     ;
 
 expressions

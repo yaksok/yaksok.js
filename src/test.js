@@ -59,6 +59,19 @@ const code5 = `
     10
 `;
 
+const code6 = `
+아이: 10
+어른: 20
+종찬: 22
+
+약속 (입력)이/가/이가 어린가
+    결과: 입력 > 15
+
+(아이 가 어린가) 보여주기 # '아이'와 '가'를 붙이면 에러
+(어른이 어린가) 보여주기
+(종찬이가 어린가) 보여주기
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -81,8 +94,8 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code5;
+let code = code6;
 console.log(code + '\n');
-test_lexer(code);
-// test_parser(code);
-test_compiler(code).catch(e => console.error(e.stack));
+// test_lexer(code);
+test_parser(code);
+// test_compiler(code).catch(e => console.error(e.stack));

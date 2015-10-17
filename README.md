@@ -52,6 +52,7 @@ compiler.compile(`
 
 
 ## 이 라이브러리의 목표가 아닌 것
+* 약속 레퍼런스 구현과의 호환성
 * 컴파일된 결과 코드가 옛 브라우저(internet explorer)에서 작동
     * 그건 [babel](http://babeljs.io/)에게 맡기겠습니다.
 * 런타임 api 제공
