@@ -60,7 +60,7 @@ export default class JsCompiler extends NodeVisitor {
             let name = expressions[1];
             if (name instanceof Name && name.value === '보여주기') {
                 this.runtime['log'] = true;
-                this.write('YaksokRuntime.log(');
+                this.write('yaksokLog(');
                 await this.visit(expressions[0]);
                 this.write(')');
             } else {
@@ -119,19 +119,20 @@ export default class JsCompiler extends NodeVisitor {
     async visitBoolean(node) { this.write(node.value); }
     async visitRange(node) {
         this.runtime['range'] = true;
-        this.write('YaksokRuntime.range(');
+        this.write('yaksokRange(');
         await this.visit(node.start);
         this.write(',');
         await this.visit(node.stop);
         this.write(')');
     }
     async visitList(node) {
-        this.write('[void 0');
+        this.runtime['list'] = true;
+        this.write('yaksokList([void 0');
         for (let item of node) {
             this.write(',');
             await this.visit(item);
         }
-        this.write(']');
+        this.write('])');
     }
     async visitAccess(node) {
         this.write('(');

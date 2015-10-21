@@ -1,4 +1,4 @@
-YaksokRuntime.log = function (value) {
+function yaksokLog(value) {
     switch (typeof value) {
     case 'boolean': console.log(value ? '참' : '거짓'); return;
     case 'object': {
@@ -12,4 +12,4 @@ YaksokRuntime.log = function (value) {
     } return;
     default: console.log(value); return;
     }
-};
+}

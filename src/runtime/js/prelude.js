@@ -1,2 +1,1 @@
 "use strict";
-var YaksokRuntime = {};
