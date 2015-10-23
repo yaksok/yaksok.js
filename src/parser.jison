@@ -70,7 +70,7 @@ loop_statement
 
 yaksok_statement
     : DEFUN WS yaksok_description block {
-        var desc = yy.filterWhiteSpace($yaksok_description);
+        var desc = yy.postprocessDescription($yaksok_description);
         $$ = new yy.ast.Yaksok(desc, $block);
     }
     ;

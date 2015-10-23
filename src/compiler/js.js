@@ -19,6 +19,8 @@ export default class JsCompiler extends NodeVisitor {
         this.result = [];
         this.indent = 0;
         this.runtime = {};
+        this.globalScope = new Scope(); this.globalScope.global = this.globalScope;
+        this.currentScope = this.globalScope;
         this.functionNameIndex = 0;
         this.functionNameMap = new Map(); // key: ast yaksok node, value: function name string
     }
@@ -63,14 +65,20 @@ export default class JsCompiler extends NodeVisitor {
                 this.write('yaksokLog(');
                 await this.visit(expressions[0]);
                 this.write(')');
-            } else {
-                this.write('/* TODO: implement JsCompiler::visitCall */');
-                // throw new Error('not implemented');
+                return;
             }
-        } else {
-            this.write('/* TODO: implement JsCompiler::visitCall */');
-            // throw new Error('not implemented');
         }
+        let { def, args } = this.currentScope.getCallInfo(node);
+        let functionName = this.getFunctionNameFromYaksok(def);
+        this.write(functionName);
+        this.write('(');
+        let first = true;
+        for (let arg of args) {
+            if (!first) this.write(',');
+            first = false;
+            await this.visit(arg);
+        }
+        this.write(')');
     }
     async visitIf(node) {
         this.writeIndent();
@@ -144,8 +152,14 @@ export default class JsCompiler extends NodeVisitor {
     async visitAssignStatement(node) {
         this.writeIndent();
         if (node.lhs instanceof Name) {
-            // TODO: scope
-            this.write(`var ${ node.lhs.value } = `);
+            let name = node.lhs;
+            let scope = this.currentScope;
+            if (scope.hasVariable(name, true)) {
+                this.write(`${ name.value } = `);
+            } else {
+                scope.addVariable(name);
+                this.write(`var ${ name.value } = `);
+            }
             await this.visit(node.rhs);
         } else {
             await op.call(this, node, '=');
@@ -166,14 +180,19 @@ export default class JsCompiler extends NodeVisitor {
     async visitDivide(node) { await op.call(this, node, '/'); }
     async visitModular(node) { await op.call(this, node, '%'); }
     async visitYaksok(node) {
-        // TODO: scope
         let functionName = this.getFunctionNameFromYaksok(node);
         let parameters = node.description.parameters.map(parameter => parameter.value);
         this.writeIndent();
         this.write(`function ${ functionName }(${ parameters.join(', ') }) `);
         this.write('{\n');
         ++this.indent;
-        await this.visit(node.block);
+        {
+            let scope = this.currentScope;
+            scope.addDef(node);
+            this.currentScope = scope.newChildScope();
+            await this.visit(node.block);
+            this.currentScope = scope;
+        }
         this.writeIndent(); this.write('return 결과;\n');
         --this.indent;
         this.writeIndent();
@@ -200,4 +219,53 @@ function yaksokDescriptionToJsIdentifier(description) {
         if (item instanceof ast.YaksokName) return yaksokNameToJsIdentifier(item);
         if (item instanceof ast.YaksokParameter) return `_${ item.value }`;
     }).join('');
+}
+
+class Scope {
+    variables = [];
+    defs = [];
+    parent = null;
+    global = null;
+    addVariable(name) {
+        this.variables.push(name);
+    }
+    hasVariable(name, local=false) {
+        let hasLocal = this.variables.some(item => item.value === name.value);
+        if (local) {
+            return hasLocal;
+        } else {
+            if (hasLocal) return true;
+            if (this.parent) return this.parent.hasVariable(name);
+        }
+        return false;
+    }
+    addDef(def) { this.defs.push(def); }
+    getCallInfo(call) {
+        let matchDef = null;
+        let args = null;
+        for (let def of this.defs) {
+            args = def.match(call);
+            if (args) {
+                if (matchDef) throw new Error('호출 가능한 정의가 여러개입니다');
+                matchDef = def;
+            }
+        }
+        if (matchDef) {
+            return new CallInfo(matchDef, args);
+        }
+        throw new Error('호출 가능한 정의를 찾지 못했습니다');
+    }
+    newChildScope() {
+        let child = new Scope();
+        child.global = this.global;
+        child.parent = this;
+        return child;
+    }
+}
+
+class CallInfo {
+    constructor(def, args) {
+        this.def = def;
+        this.args = args;
+    }
 }

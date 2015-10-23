@@ -67,7 +67,35 @@ export class YaksokDescription extends Array {
     match(expressions) {
         if (expressions.length > this.length) return null;
         let args = [];
-        // TODO
+        for (let [i, j] = [0, 0]; i < this.length; ++i, ++j) {
+            let curr = this[i];
+            let expression = expressions[j];
+            if (curr instanceof YaksokName) {
+                if (curr.match(expression)) continue;
+                return null;
+            }
+            if (curr instanceof YaksokParameter) {
+                if (!(expression instanceof Name)) {
+                    args.push(expression);
+                    continue;
+                }
+                let next = this[++i];
+                let nextExpression = expressions[j + 1];
+                if (next.match(nextExpression) || next.needWhiteSpace) {
+                    ++j;
+                    args.push(expression);
+                    continue;
+                }
+                let matchLength = next.postMatch(expression);
+                if (matchLength) {
+                    let name = expression.value;
+                    args.push(new Name(name.substr(0, name.length - matchLength)));
+                    continue;
+                }
+                return null;
+            }
+        }
+        return args;
     }
     get parameters() {
         return this.filter(item => item instanceof YaksokParameter);
@@ -78,8 +106,11 @@ export class YaksokName extends Array {
     needWhiteSpace = false;
     match(name) {
         if (!(name instanceof Name)) return false;
-        return name === this[0];
-        // TODO
+        return this.some(potential => name.value === potential);
+    }
+    postMatch(param) {
+        if (!(param instanceof Name)) return 0;
+        return this.find(potential => param.value.endsWith(potential)).length;
     }
 }
 

@@ -71,6 +71,12 @@ const code6 = `
 (종찬이가 어린가) 보여주기
 `;
 
+const code7 = `
+가: 1
+나: 2
+가: 3
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);

@@ -11,7 +11,7 @@ import { parser } from 'parser.jison'; {
         if (expressions.length > 1) return new yy.ast.Call(expressions);
         return expressions[0];
     };
-    yy.filterWhiteSpace = description => {
+    yy.postprocessDescription = description => {
         let filteredDescription = new ast.YaksokDescription();
         let whitespace = false;
         for (let item of description) {
@@ -20,6 +20,7 @@ import { parser } from 'parser.jison'; {
             } else {
                 if (item instanceof ast.YaksokName) {
                     item.needWhiteSpace = whitespace;
+                    item.sort((a, b) => b.length - a.length);
                 }
                 filteredDescription.push(item);
                 whitespace = false;
