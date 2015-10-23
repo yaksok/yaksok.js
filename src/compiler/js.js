@@ -253,6 +253,9 @@ class Scope {
         if (matchDef) {
             return new CallInfo(matchDef, args);
         }
+        if (this.parent) {
+            return this.parent.getCallInfo(call);
+        }
         throw new Error('호출 가능한 정의를 찾지 못했습니다');
     }
     newChildScope() {

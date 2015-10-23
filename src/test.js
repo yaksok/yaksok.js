@@ -77,6 +77,18 @@ const code7 = `
 가: 3
 `;
 
+const code8 = `
+약속 (숫자)의 피보나치
+    만약 숫자 = 0 이면
+        결과: 0
+    아니면서 만약 숫자 = 1 이면
+        결과: 1
+    아니라면
+        결과: ((숫자-1)의 피보나치) + ((숫자-2)의 피보나치)
+
+(10의 피보나치) 보여주기
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -99,7 +111,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code6;
+let code = code8;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);
