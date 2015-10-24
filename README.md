@@ -1,6 +1,5 @@
 # yaksok.js
 한글 프로그래밍 언어 [약속](http://yaksok.org/)을 다루기 위한 자바스크립트 라이브러리입니다.
-아직 딱히 제대로 돌아가는건 없습니다...
 
 
 ```js
@@ -13,12 +12,28 @@ compiler.compile(`
     console.log(js);
     (new Function(js))();
 });
+// (function () {
 // "use strict";
-// let 변수 = "안녕";
-// if ((변수 === "안녕")) {
-//     console.log(변수);
+// function yaksokLog(value) {
+//     switch (typeof value) {
+//     case 'boolean': console.log(value ? '참' : '거짓'); return;
+//     case 'object': {
+//         if (Array.isArray(value)) {
+//             let copy = value.slice();
+//             copy.shift();
+//             console.log(copy);
+//         } else {
+//             console.log(value);
+//         }
+//     } return;
+//     default: console.log(value); return;
+//     }
 // }
-// 안녕
+// var 변수 = "안녕";
+// if ((변수 === "안녕")) {
+//     yaksokLog(변수);
+// }
+// })();
 ```
 
 ## 직접 돌려보기
