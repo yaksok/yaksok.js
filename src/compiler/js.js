@@ -129,6 +129,7 @@ export default class JsCompiler extends NodeVisitor {
     async visitInteger(node) { this.write(node.value); }
     async visitFloat(node) { this.write(node.value); }
     async visitBoolean(node) { this.write(node.value); }
+    async visitVoid(node) { this.write('void 0'); }
     async visitRange(node) {
         this.runtime['range'] = true;
         this.write('yaksokRange(');

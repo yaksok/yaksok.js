@@ -161,6 +161,7 @@ primary_expression
     | RANGE                             { $$ = $1 }
     | LIST                              { $$ = $1 }
     | lvalue                            { $$ = $1 }
+    | LPAR RPAR                         { $$ = new yy.ast.Void() }
     | LPAR expression RPAR              { $$ = $expression }
     | LPAR call RPAR                    { $$ = $call }
     ;

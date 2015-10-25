@@ -107,6 +107,12 @@ const code9 = `
 (10의 피보나치) 보여주기
 `;
 
+const code10 = `
+약속 공백
+    ()
+()
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -129,7 +135,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code9;
+let code = code10;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);

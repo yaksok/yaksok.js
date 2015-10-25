@@ -29,6 +29,7 @@ export class String extends Primitive {}
 export class Integer extends Primitive {}
 export class Float extends Primitive {}
 export class Boolean extends Primitive {}
+export class Void extends Primitive {}
 
 // etc
 export class Range { constructor(start, stop) { this.start = start; this.stop = stop; } }
@@ -155,6 +156,7 @@ export class NodeVisitor {
         if (node instanceof Integer) return await this.visitInteger(node);
         if (node instanceof Float) return await this.visitFloat(node);
         if (node instanceof Boolean) return await this.visitBoolean(node);
+        if (node instanceof Void) return await this.visitVoid(node);
         throw new Error('unknown node type');
     }
     async visitName(node) {}
@@ -162,6 +164,7 @@ export class NodeVisitor {
     async visitInteger(node) {}
     async visitFloat(node) {}
     async visitBoolean(node) {}
+    async visitVoid(node) {}
     async visitRange(node) {}
     async visitList(node) {}
     async visitBinaryOperator(node) {
