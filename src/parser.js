@@ -12,7 +12,7 @@ import { parser } from 'parser.jison'; {
         return expressions[0];
     };
     yy.postprocessDescription = description => {
-        let filteredDescription = new ast.YaksokDescription();
+        let filteredDescription = new ast.Description();
         let whitespace = false;
         for (let item of description) {
             if (item === null) {

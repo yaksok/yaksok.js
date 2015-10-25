@@ -120,6 +120,10 @@ export default class JsCompiler extends NodeVisitor {
         this.writeIndent();
         this.write('}\n');
     }
+    async visitLoopEnd(node) {
+        this.writeIndent();
+        this.write('break;\n');
+    }
     async visitName(node) { this.write(node.value); }
     async visitString(node) { this.write(JSON.stringify(node.value)); }
     async visitInteger(node) { this.write(node.value); }
@@ -197,6 +201,10 @@ export default class JsCompiler extends NodeVisitor {
         --this.indent;
         this.writeIndent();
         this.write('}\n');
+    }
+    async visitYaksokEnd(node) {
+        this.writeIndent();
+        this.write('return 결과;\n');
     }
 }
 

@@ -20,6 +20,7 @@ export class Iterate {
         this.block = block;
     }
 }
+export class LoopEnd {}
 
 // primitive
 export class Primitive { constructor(value) { this.value = value; } }
@@ -53,17 +54,8 @@ export class Multiply extends BinaryOperator {}
 export class Divide extends BinaryOperator {}
 export class Modular extends BinaryOperator {}
 
-//yaksok
-export class Yaksok {
-    constructor(description, block) {
-        this.description = description;
-        this.block = block;
-    }
-    match(call) { // return match arguments else null
-        return this.description.match(call.expressions);
-    }
-}
-export class YaksokDescription extends Array {
+// description
+export class Description extends Array {
     match(expressions) {
         if (expressions.length > this.length) return null;
         let args = [];
@@ -101,6 +93,17 @@ export class YaksokDescription extends Array {
         return this.filter(item => item instanceof YaksokParameter);
     }
 }
+
+//yaksok
+export class Yaksok {
+    constructor(description, block) {
+        this.description = description;
+        this.block = block;
+    }
+    match(call) { // return match arguments else null
+        return this.description.match(call.expressions);
+    }
+}
 export class YaksokParameter { constructor(value) { this.value = value; } }
 export class YaksokName extends Array {
     needWhiteSpace = false;
@@ -113,6 +116,7 @@ export class YaksokName extends Array {
         return this.find(potential => param.value.endsWith(potential)).length;
     }
 }
+export class YaksokEnd {}
 
 export class NodeVisitor {
     async visit(node) {
@@ -124,14 +128,16 @@ export class NodeVisitor {
         if (node instanceof If) return await this.visitIf(node);
         if (node instanceof Loop) return await this.visitLoop(node);
         if (node instanceof Iterate) return await this.visitIterate(node);
+        if (node instanceof LoopEnd) return await this.visitLoopEnd(node);
         if (node instanceof Primitive) return await this.visitPrimitive(node);
         if (node instanceof Range) return await this.visitRange(node);
         if (node instanceof List) return await this.visitList(node);
         if (node instanceof BinaryOperator) return await this.visitBinaryOperator(node);
+        if (node instanceof Description) return await this.visitDescription(node);
         if (node instanceof Yaksok) return await this.visitYaksok(node);
-        if (node instanceof YaksokDescription) return await this.visitYaksokDescription(node);
         if (node instanceof YaksokParameter) return await this.visitYaksokParameter(node);
         if (node instanceof YaksokName) return await this.visitYaksokName(node);
+        if (node instanceof YaksokEnd) return await this.visitYaksokEnd(node);
         throw new Error('unknown node type');
     }
     async visitYaksokRoot(node) { await this.visit(node.statements); }
@@ -142,6 +148,7 @@ export class NodeVisitor {
     async visitIf(node) {}
     async visitLoop(node) {}
     async visitIterate(node) {}
+    async visitLoopEnd(node) {}
     async visitPrimitive(node) {
         if (node instanceof Name) return await this.visitName(node);
         if (node instanceof String) return await this.visitString(node);
@@ -190,8 +197,9 @@ export class NodeVisitor {
     async visitMultiply(node) {}
     async visitDivide(node) {}
     async visitModular(node) {}
+    async visitDescription(node) {}
     async visitYaksok(node) {}
-    async visitYaksokDescription(node) {}
     async visitYaksokParameter(node) {}
     async visitYaksokName(node) {}
+    async visitYaksokEnd(node) {}
 }

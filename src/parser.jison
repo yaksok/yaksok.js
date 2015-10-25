@@ -37,7 +37,9 @@ statement
     | call                              { $$ = new yy.ast.Statement($1) }
     | if_else_statement                 { $$ = $1 }
     | loop_statement                    { $$ = $1 }
+    | loop_end_statement                { $$ = $1 }
     | yaksok_statement                  { $$ = $1 }
+    | yaksok_end_statement              { $$ = $1 }
     ;
 
 assign_statement
@@ -68,6 +70,10 @@ loop_statement
     | LOOP expression EUI name MADA block   { $$ = new yy.ast.Iterate($expression, $name, $block) }
     ;
 
+loop_end_statement
+    : LOOP END_BLOCK                    { $$ = new yy.ast.LoopEnd() }
+    ;
+
 yaksok_statement
     : DEFUN WS yaksok_description block {
         var desc = yy.postprocessDescription($yaksok_description);
@@ -77,7 +83,7 @@ yaksok_statement
 
 yaksok_description
     : yaksok_description yaksok_description_item    { $1.push($2); $$ = $1 }
-    | yaksok_description_item                       { $$ = new yy.ast.YaksokDescription(); $$.push($1) }
+    | yaksok_description_item                       { $$ = new yy.ast.Description(); $$.push($1) }
     ;
 
 yaksok_description_item
@@ -99,6 +105,10 @@ yaksok_name
     | IDENTIFIER {
         $$ = new yy.ast.YaksokName(); $$.push($IDENTIFIER);
     }
+    ;
+
+yaksok_end_statement
+    : DEFUN empty_or_whitespace END_BLOCK   { $$ = new yy.ast.YaksokEnd() }
     ;
 
 expressions
