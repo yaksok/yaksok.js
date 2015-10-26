@@ -113,6 +113,18 @@ const code10 = `
 ()
 `;
 
+const code11 = `
+번역(py) 안녕 출력
+***
+    print('안녕')
+***
+번역(js) 안녕 출력
+***
+    console.log('안녕');
+***
+안녕 출력
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -135,7 +147,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code10;
+let code = code11;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);

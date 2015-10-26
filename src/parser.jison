@@ -40,6 +40,7 @@ statement
     | loop_end_statement                { $$ = $1 }
     | yaksok_statement                  { $$ = $1 }
     | yaksok_end_statement              { $$ = $1 }
+    | translate_statement               { $$ = $1 }
     ;
 
 assign_statement
@@ -75,40 +76,51 @@ loop_end_statement
     ;
 
 yaksok_statement
-    : DEFUN WS yaksok_description block {
-        var desc = yy.postprocessDescription($yaksok_description);
+    : YAKSOK WS description block {
+        var desc = yy.postprocessDescription($description);
         $$ = new yy.ast.Yaksok(desc, $block);
     }
     ;
 
-yaksok_description
-    : yaksok_description yaksok_description_item    { $1.push($2); $$ = $1 }
-    | yaksok_description_item                       { $$ = new yy.ast.Description(); $$.push($1) }
+yaksok_end_statement
+    : YAKSOK empty_or_whitespace END_BLOCK  { $$ = new yy.ast.YaksokEnd() }
     ;
 
-yaksok_description_item
-    : yaksok_parameter                  { $$ = $1 }
-    | yaksok_name                       { $$ = $1 }
+translate_statement
+    : TRANSLATE translate_target WS description empty_or_newlines SPECIALBLOCK empty_or_newlines {
+        var desc = yy.postprocessDescription($description);
+        $$ = new yy.ast.Translate(desc, $translate_target, $SPECIALBLOCK);
+    }
+    ;
+
+translate_target
+    : LPAR empty_or_whitespace IDENTIFIER empty_or_whitespace RPAR  { $$ = $IDENTIFIER }
+    ;
+
+description
+    : description description_item      { $1.push($2); $$ = $1 }
+    | description_item                  { $$ = new yy.ast.Description(); $$.push($1) }
+    ;
+
+description_item
+    : description_parameter             { $$ = $1 }
+    | description_name                  { $$ = $1 }
     | WS                                { $$ = null }
     ;
 
-yaksok_parameter
+description_parameter
     : LPAR empty_or_whitespace IDENTIFIER empty_or_whitespace RPAR {
-        $$ = new yy.ast.YaksokParameter($IDENTIFIER);
+        $$ = new yy.ast.DescriptionParameter($IDENTIFIER);
     }
     ;
 
-yaksok_name
-    : yaksok_name DIV IDENTIFIER {
-        $yaksok_name.push($IDENTIFIER); $$ = $yaksok_name;
+description_name
+    : description_name DIV IDENTIFIER {
+        $description_name.push($IDENTIFIER); $$ = $description_name;
     }
     | IDENTIFIER {
-        $$ = new yy.ast.YaksokName(); $$.push($IDENTIFIER);
+        $$ = new yy.ast.DescriptionName(); $$.push($IDENTIFIER);
     }
-    ;
-
-yaksok_end_statement
-    : DEFUN empty_or_whitespace END_BLOCK   { $$ = new yy.ast.YaksokEnd() }
     ;
 
 expressions

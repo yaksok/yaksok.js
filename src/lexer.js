@@ -5,7 +5,7 @@ const SPECIAL_STATE = 1;
 const ALL_STATES = [INITIAL_STATE, SPECIAL_STATE];
 const LEXING_RULES = [];
 const RESERVED = {
-    약속: 'DEFUN',
+    약속: 'YAKSOK',
     만약: 'IF',
     이면: 'THEN',
     이라면: 'THEN',
@@ -37,8 +37,8 @@ export default class YaksokLexer extends Lexer {
     setInput(input) {
         super.setInput(input);
         this.state = INITIAL_STATE;
-        this.insideLoopCondition = false;
-        this.insideDefun = false;
+        this.lexingLoopCondition = false;
+        this.lexingDescription = false;
         this.parenCount = 0;
         this.indent = [0];
     }
@@ -77,9 +77,8 @@ YaksokLexer.addRule(/(.|\n)*?\n\*{3}/, function (lexeme) {
     return 'SPECIALBLOCK';
 }, [SPECIAL_STATE]);
 
-YaksokLexer.addRule(/번역\([^)]*\)/, function (lexeme) {
-    this.yytext = lexeme.substring(3, lexeme.length - 1);
-    this.insideDefun = true;
+YaksokLexer.addRule(/번역/, function (lexeme) {
+    this.lexingDescription = true;
     return 'TRANSLATE';
 });
 
@@ -107,7 +106,7 @@ YaksokLexer.addRule(/^[\t ]*/gm, function (lexeme) {
 });
 
 YaksokLexer.addRule(/[\t ]+/, function (lexeme) {
-    if (this.insideDefun) {
+    if (this.lexingDescription) {
         return 'WS';
     }
 });
@@ -131,17 +130,17 @@ YaksokLexer.addRule(/"([^\\"]|\\.)*"|'([^\\']|\\.)*'/, 'STRING');
 
 YaksokLexer.addRule(/[$_a-zA-Z가-힣][$_a-zA-Z가-힣0-9]*/, function (lexeme) {
     this.yytext = lexeme;
-    let reserved = this.insideLoopCondition ? RESERVED_IN_LOOP[lexeme] : RESERVED[lexeme];
+    let reserved = this.lexingLoopCondition ? RESERVED_IN_LOOP[lexeme] : RESERVED[lexeme];
     if (reserved) {
         switch (reserved) {
             case 'LOOP': {
-                this.insideLoopCondition = true;
+                this.lexingLoopCondition = true;
             } break;
-            case 'DEFUN': {
-                this.insideDefun = true;
+            case 'YAKSOK': {
+                this.lexingDescription = true;
             } break;
             case 'END_BLOCK': {
-                this.insideDefun = false;
+                this.lexingDescription = false;
             } break;
             case 'PREV': {
                 // TODO?
@@ -170,11 +169,11 @@ YaksokLexer.addRule(/>=/, 'GTEQ');
 YaksokLexer.addRule(/<=/, 'LTEQ');
 
 YaksokLexer.addRule(/(\r?\n)+/, function (lexeme) {
-    if (this.insideDefun) {
-        this.insideDefun = false;
+    if (this.lexingDescription) {
+        this.lexingDescription = false;
     }
     if (this.parenCount === 0) {
-        this.insideLoopCondition = false;
+        this.lexingLoopCondition = false;
         return 'NEWLINE';
     }
 });

@@ -63,11 +63,11 @@ export class Description extends Array {
         for (let [i, j] = [0, 0]; i < this.length; ++i, ++j) {
             let curr = this[i];
             let expression = expressions[j];
-            if (curr instanceof YaksokName) {
+            if (curr instanceof DescriptionName) {
                 if (curr.match(expression)) continue;
                 return null;
             }
-            if (curr instanceof YaksokParameter) {
+            if (curr instanceof DescriptionParameter) {
                 if (!(expression instanceof Name)) {
                     args.push(expression);
                     continue;
@@ -91,22 +91,11 @@ export class Description extends Array {
         return args;
     }
     get parameters() {
-        return this.filter(item => item instanceof YaksokParameter);
+        return this.filter(item => item instanceof DescriptionParameter);
     }
 }
-
-//yaksok
-export class Yaksok {
-    constructor(description, block) {
-        this.description = description;
-        this.block = block;
-    }
-    match(call) { // return match arguments else null
-        return this.description.match(call.expressions);
-    }
-}
-export class YaksokParameter { constructor(value) { this.value = value; } }
-export class YaksokName extends Array {
+export class DescriptionParameter { constructor(value) { this.value = value; } }
+export class DescriptionName extends Array {
     needWhiteSpace = false;
     match(name) {
         if (!(name instanceof Name)) return false;
@@ -117,7 +106,31 @@ export class YaksokName extends Array {
         return this.find(potential => param.value.endsWith(potential)).length;
     }
 }
+
+//defs
+export class Def {
+    match(call) { // return match arguments else null
+        return this.description.match(call.expressions);
+    }
+}
+
+export class Yaksok extends Def {
+    constructor(description, block) {
+        super();
+        this.description = description;
+        this.block = block;
+    }
+}
 export class YaksokEnd {}
+
+export class Translate extends Def {
+    constructor(description, target, code) {
+        super();
+        this.description = description;
+        this.target = target;
+        this.code = code;
+    }
+}
 
 export class NodeVisitor {
     async visit(node) {
@@ -135,9 +148,9 @@ export class NodeVisitor {
         if (node instanceof List) return await this.visitList(node);
         if (node instanceof BinaryOperator) return await this.visitBinaryOperator(node);
         if (node instanceof Description) return await this.visitDescription(node);
-        if (node instanceof Yaksok) return await this.visitYaksok(node);
-        if (node instanceof YaksokParameter) return await this.visitYaksokParameter(node);
-        if (node instanceof YaksokName) return await this.visitYaksokName(node);
+        if (node instanceof DescriptionParameter) return await this.visitDescriptionParameter(node);
+        if (node instanceof DescriptionName) return await this.visitDescriptionName(node);
+        if (node instanceof Def) return await this.visitDef(node);
         if (node instanceof YaksokEnd) return await this.visitYaksokEnd(node);
         throw new Error('unknown node type');
     }
@@ -201,8 +214,14 @@ export class NodeVisitor {
     async visitDivide(node) {}
     async visitModular(node) {}
     async visitDescription(node) {}
+    async visitDescriptionParameter(node) {}
+    async visitDescriptionName(node) {}
+    async visitDef(node) {
+        if (node instanceof Yaksok) return await this.visitYaksok(node);
+        if (node instanceof Translate) return await this.visitTranslate(node);
+        throw new Error('unknown node type');
+    }
     async visitYaksok(node) {}
-    async visitYaksokParameter(node) {}
-    async visitYaksokName(node) {}
     async visitYaksokEnd(node) {}
+    async visitTranslate(node) {}
 }

@@ -18,7 +18,7 @@ import { parser } from 'parser.jison'; {
             if (item === null) {
                 whitespace = true;
             } else {
-                if (item instanceof ast.YaksokName) {
+                if (item instanceof ast.DescriptionName) {
                     item.needWhiteSpace = whitespace;
                     item.sort((a, b) => b.length - a.length);
                 }

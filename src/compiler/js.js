@@ -24,12 +24,12 @@ export default class JsCompiler extends NodeVisitor {
         this.functionNameIndex = 0;
         this.functionNameMap = new Map(); // key: ast yaksok node, value: function name string
     }
-    getFunctionNameFromYaksok(yaksok) {
-        if (this.functionNameMap.has(yaksok)) {
-            return this.functionNameMap.get(yaksok);
+    getFunctionNameFromDef(def) {
+        if (this.functionNameMap.has(def)) {
+            return this.functionNameMap.get(def);
         }
-        let functionName = `y${ this.functionNameIndex++ }s${ yaksokDescriptionToJsIdentifier(yaksok.description) }`;
-        this.functionNameMap.set(yaksok, functionName);
+        let functionName = `y${ this.functionNameIndex++ }s${ yaksokDescriptionToJsIdentifier(def.description) }`;
+        this.functionNameMap.set(def, functionName);
         return functionName;
     }
     async compile(code) {
@@ -69,7 +69,7 @@ export default class JsCompiler extends NodeVisitor {
             }
         }
         let { def, args } = this.currentScope.getCallInfo(node);
-        let functionName = this.getFunctionNameFromYaksok(def);
+        let functionName = this.getFunctionNameFromDef(def);
         this.write(functionName);
         this.write('(');
         let first = true;
@@ -185,7 +185,7 @@ export default class JsCompiler extends NodeVisitor {
     async visitDivide(node) { await op.call(this, node, '/'); }
     async visitModular(node) { await op.call(this, node, '%'); }
     async visitYaksok(node) {
-        let functionName = this.getFunctionNameFromYaksok(node);
+        let functionName = this.getFunctionNameFromDef(node);
         let parameters = node.description.parameters.map(parameter => parameter.value);
         this.writeIndent();
         this.write(`function ${ functionName }(${ parameters.join(', ') }) `);
@@ -207,6 +207,28 @@ export default class JsCompiler extends NodeVisitor {
         this.writeIndent();
         this.write('return 결과;\n');
     }
+    async visitTranslate(node) {
+        switch (node.target) {
+        case 'js': case 'javascript': case '자바스크립트': break;
+        default: return;
+        }
+        let functionName = this.getFunctionNameFromDef(node);
+        let parameters = node.description.parameters.map(parameter => parameter.value);
+        this.writeIndent();
+        this.write(`function ${ functionName }(${ parameters.join(', ') }) `);
+        this.write('{');
+        ++this.indent;
+        {
+            let scope = this.currentScope;
+            scope.addDef(node);
+            this.currentScope = scope.newChildScope();
+            this.write(node.code);
+            this.currentScope = scope;
+        }
+        --this.indent;
+        this.writeIndent();
+        this.write('}\n');
+    }
 }
 
 async function op(node, op) {
@@ -225,8 +247,8 @@ function yaksokNameToJsIdentifier(name) {
 
 function yaksokDescriptionToJsIdentifier(description) {
     return description.map(item => {
-        if (item instanceof ast.YaksokName) return yaksokNameToJsIdentifier(item);
-        if (item instanceof ast.YaksokParameter) return `_${ item.value }`;
+        if (item instanceof ast.DescriptionName) return yaksokNameToJsIdentifier(item);
+        if (item instanceof ast.DescriptionParameter) return `_${ item.value }`;
     }).join('');
 }
 
