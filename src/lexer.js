@@ -71,7 +71,7 @@ YaksokLexer.addRule(/\*{3}/, function (lexeme) {
     this.state = SPECIAL_STATE;
 });
 
-YaksokLexer.addRule(/(.|\n)*?\n\*{3}/, function (lexeme) {
+YaksokLexer.addRule(/(.|\n)*?\n\s*\*{3}/, function (lexeme) {
     this.yytext = lexeme.substring(0, lexeme.length - 3);
     this.state = INITIAL_STATE;
     return 'SPECIALBLOCK';

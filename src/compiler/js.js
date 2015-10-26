@@ -195,6 +195,8 @@ export default class JsCompiler extends NodeVisitor {
             let scope = this.currentScope;
             scope.addDef(node);
             this.currentScope = scope.newChildScope();
+            this.currentScope.addVariable('결과');
+            this.writeIndent(); this.write('var 결과;\n');
             await this.visit(node.block);
             this.currentScope = scope;
         }
@@ -226,7 +228,6 @@ export default class JsCompiler extends NodeVisitor {
             this.currentScope = scope;
         }
         --this.indent;
-        this.writeIndent();
         this.write('}\n');
     }
 }
@@ -277,7 +278,7 @@ class Scope {
         for (let def of this.defs) {
             args = def.match(call);
             if (args) {
-                if (matchDef) throw new Error('호출 가능한 정의가 여러개입니다');
+                if (matchDef) throw new Error('같은 스코프 안에서 호출 가능한 정의가 여러개입니다');
                 matchDef = def;
             }
         }

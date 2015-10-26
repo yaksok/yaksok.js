@@ -125,6 +125,16 @@ const code11 = `
 안녕 출력
 `;
 
+const code12 = `
+약속 헬로 월드
+    번역(js) 헬로 월드
+    ***
+        console.log('Hello, World!');
+    ***
+    헬로 월드
+헬로 월드
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -147,7 +157,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code11;
+let code = code12;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);
