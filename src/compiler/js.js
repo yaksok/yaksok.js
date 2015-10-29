@@ -1,26 +1,23 @@
-import * as ast from 'ast';
 import {
-    NodeVisitor,
     Name,
+    DescriptionName,
+    DescriptionParameter,
 } from 'ast';
-import parser from 'parser';
+import Compiler from 'compiler';
 
 // runtime
 import prelude from 'raw!runtime/js/prelude';
 
-export default class JsCompiler extends NodeVisitor {
+export default class JsCompiler extends Compiler {
     constructor() {
         super();
-        this.init();
+        this.translateTargets = ['js', 'javascript', '자바스크립트'];
     }
-    write(code) { this.result.push(code); }
     writeIndent() { this.result.push(Array(this.indent + 1).join('    ')); }
     init() {
-        this.result = [];
+        super.init();
         this.indent = 0;
         this.runtime = {};
-        this.globalScope = new Scope(); this.globalScope.global = this.globalScope;
-        this.currentScope = this.globalScope;
         this.functionNameIndex = 0;
         this.functionNameMap = new Map(); // key: ast yaksok node, value: function name string
     }
@@ -34,7 +31,7 @@ export default class JsCompiler extends NodeVisitor {
     }
     async compile(code) {
         this.init();
-        let root = parser.parse(code);
+        const astRoot = await this.prepareAstRoot(code);
         this.write('(function () {\n');
         this.write(prelude);
         this.write({toString: () => {
@@ -47,7 +44,7 @@ export default class JsCompiler extends NodeVisitor {
             }
             return runtimes.join('');
         }});
-        await this.visit(root); 
+        await this.visit(astRoot);
         this.write('})();');
         return this.result.join('');
     }
@@ -58,7 +55,7 @@ export default class JsCompiler extends NodeVisitor {
     }
     async visitCall(node) {
         let expressions = node.expressions;
-        if (expressions.length === 2) {
+        if (expressions.length === 2) { // TODO: 빌트인 약속 처리
             let name = expressions[1];
             if (name instanceof Name && name.value === '보여주기') {
                 this.runtime['log'] = true;
@@ -68,7 +65,7 @@ export default class JsCompiler extends NodeVisitor {
                 return;
             }
         }
-        let { def, args } = this.currentScope.getCallInfo(node);
+        let { def, args } = node.callInfo;
         let functionName = this.getFunctionNameFromDef(def);
         this.write(functionName);
         this.write('(');
@@ -158,12 +155,10 @@ export default class JsCompiler extends NodeVisitor {
         this.writeIndent();
         if (node.lhs instanceof Name) {
             let name = node.lhs;
-            let scope = this.currentScope;
-            if (scope.hasVariable(name, true)) {
-                this.write(`${ name.value } = `);
-            } else {
-                scope.addVariable(name);
+            if (node.isDeclaration) {
                 this.write(`var ${ name.value } = `);
+            } else {
+                this.write(`${ name.value } = `);
             }
             await this.visit(node.rhs);
         } else {
@@ -191,15 +186,8 @@ export default class JsCompiler extends NodeVisitor {
         this.write(`function ${ functionName }(${ parameters.join(', ') }) `);
         this.write('{\n');
         ++this.indent;
-        {
-            let scope = this.currentScope;
-            scope.addDef(node);
-            this.currentScope = scope.newChildScope();
-            this.currentScope.addVariable('결과');
-            this.writeIndent(); this.write('var 결과;\n');
-            await this.visit(node.block);
-            this.currentScope = scope;
-        }
+        this.writeIndent(); this.write('var 결과;\n');
+        await this.visit(node.block);
         this.writeIndent(); this.write('return 결과;\n');
         --this.indent;
         this.writeIndent();
@@ -210,25 +198,12 @@ export default class JsCompiler extends NodeVisitor {
         this.write('return 결과;\n');
     }
     async visitTranslate(node) {
-        switch (node.target) {
-        case 'js': case 'javascript': case '자바스크립트': break;
-        default: return;
-        }
+        if (this.translateTargets.indexOf(node.target) === -1) return;
         let functionName = this.getFunctionNameFromDef(node);
         let parameters = node.description.parameters.map(parameter => parameter.value);
         this.writeIndent();
         this.write(`function ${ functionName }(${ parameters.join(', ') }) `);
-        this.write('{');
-        ++this.indent;
-        {
-            let scope = this.currentScope;
-            scope.addDef(node);
-            this.currentScope = scope.newChildScope();
-            this.write(node.code);
-            this.currentScope = scope;
-        }
-        --this.indent;
-        this.write('}\n');
+        this.write('{'); this.write(node.code); this.write('}\n');
     }
 }
 
@@ -248,59 +223,7 @@ function yaksokNameToJsIdentifier(name) {
 
 function yaksokDescriptionToJsIdentifier(description) {
     return description.map(item => {
-        if (item instanceof ast.DescriptionName) return yaksokNameToJsIdentifier(item);
-        if (item instanceof ast.DescriptionParameter) return `_${ item.value }`;
+        if (item instanceof DescriptionName) return yaksokNameToJsIdentifier(item);
+        if (item instanceof DescriptionParameter) return `_${ item.value }`;
     }).join('');
-}
-
-class Scope {
-    variables = [];
-    defs = [];
-    parent = null;
-    global = null;
-    addVariable(name) {
-        this.variables.push(name);
-    }
-    hasVariable(name, local=false) {
-        let hasLocal = this.variables.some(item => item.value === name.value);
-        if (local) {
-            return hasLocal;
-        } else {
-            if (hasLocal) return true;
-            if (this.parent) return this.parent.hasVariable(name);
-        }
-        return false;
-    }
-    addDef(def) { this.defs.push(def); }
-    getCallInfo(call) {
-        let matchDef = null;
-        let args = null;
-        for (let def of this.defs) {
-            args = def.match(call);
-            if (args) {
-                if (matchDef) throw new Error('같은 스코프 안에서 호출 가능한 정의가 여러개입니다');
-                matchDef = def;
-            }
-        }
-        if (matchDef) {
-            return new CallInfo(matchDef, args);
-        }
-        if (this.parent) {
-            return this.parent.getCallInfo(call);
-        }
-        throw new Error('호출 가능한 정의를 찾지 못했습니다');
-    }
-    newChildScope() {
-        let child = new Scope();
-        child.global = this.global;
-        child.parent = this;
-        return child;
-    }
-}
-
-class CallInfo {
-    constructor(def, args) {
-        this.def = def;
-        this.args = args;
-    }
 }
