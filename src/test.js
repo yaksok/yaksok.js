@@ -1,6 +1,7 @@
 import YaksokLexer from 'lexer';
 import yaksokParser from 'parser';
 import JsCompiler from 'compiler/js';
+import ConstantFolder from 'plugin/ConstantFolder';
 
 
 const code1 = `변수: '문자열'
@@ -135,6 +136,10 @@ const code12 = `
 헬로 월드
 `;
 
+const code13 = `
+1 + 2 보여주기
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -153,11 +158,14 @@ function test_parser(code) {
 
 async function test_compiler(code) {
     let compiler = new JsCompiler();
+    compiler.plugins.add([
+        new ConstantFolder()
+    ]);
     console.log(await compiler.compile(code));
     console.log();
 }
 
-let code = code12;
+let code = code13;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);

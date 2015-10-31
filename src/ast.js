@@ -1,45 +1,97 @@
-export class YaksokRoot {
+export class AstNode {}
+
+export class AstNodeList extends AstNode {
+    constructor() {
+        super();
+        this.childNodes = [];
+    }
+    get length() { return this.childNodes.length; }
+    push(childNode) {
+        this.childNodes.push(childNode);
+    }
+    [Symbol.iterator]() {
+        return this.childNodes[Symbol.iterator]();
+    }
+}
+
+export class YaksokRoot extends AstNode {
     constructor(statements) {
+        super();
         this.statements = statements;
     }
 }
 // block is statements
-export class Statements extends Array {
+export class Statements extends AstNodeList {
     constructor() {
         super();
         this.scope = null;
     }
 }
-export class Expressions extends Array {}
 
 // statement
-export class Statement { constructor(expression) { this.expression = expression; } }
-export class Call {
-    constructor(expressions) {
-        this.expressions = expressions;
-        this.callInfo = null;
+export class Statement {}
+export class PlainStatement extends Statement {
+    constructor(expression) { super(); this.expression = expression; }
+}
+export class Assign extends Statement {
+    constructor(lvalue, rvalue) {
+        super();
+        this.lvalue = lvalue;
+        this.rvalue = rvalue;
+        this.isDeclaration = false;
     }
 }
-export class If {
+export class If extends Statement {
     constructor(condition, ifBlock, elseBlock) {
+        super();
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
     }
 }
-export class Loop { constructor(block) { this.block = block; } }
-export class Iterate {
+export class Loop extends Statement { constructor(block) { super(); this.block = block; } }
+export class Iterate extends Statement {
     constructor(iterator, iteratee, block) {
+        super();
         this.iterator = iterator;
         this.iteratee = iteratee;
         this.block = block;
     }
 }
-export class LoopEnd {}
+export class LoopEnd extends Statement {}
+export class YaksokEnd extends Statement {}
+
+// expression
+export class Expressions extends AstNodeList {}
+export class Expression extends AstNode {
+    get isConstant() { return false; }
+    fold() { return this; }
+}
+
+export class Call extends Expression {
+    constructor(expressions) {
+        super();
+        this.expressions = expressions;
+        this.callInfo = null;
+    }
+    fold() {
+        this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
+        // TODO: fold call
+        return super.fold();
+    }
+}
 
 // primitive
-export class Primitive { constructor(value) { this.value = value; } }
-export class Name extends Primitive {}
+export class Primitive extends Expression {
+    constructor(value) { super(); this.value = value; }
+    get isConstant() { return true; }
+}
+export class Name extends Primitive {
+    get isConstant() {
+        // TODO: 상수 접기 구현
+        return false;
+    }
+}
 export class String extends Primitive {}
 export class Integer extends Primitive {}
 export class Float extends Primitive {}
@@ -47,42 +99,146 @@ export class Boolean extends Primitive {}
 export class Void extends Primitive {}
 
 // etc
-export class Range { constructor(start, stop) { this.start = start; this.stop = stop; } }
-export class List extends Array {}
-
-// binary opeartor
-export class BinaryOperator { constructor(lhs, rhs) { this.lhs = lhs; this.rhs = rhs; } }
-export class Access extends BinaryOperator {}
-// logical
-export class AssignStatement extends BinaryOperator {
-    constructor(lhs, rhs) {
-        super(lhs, rhs);
-        this.isDeclaration = false;
+export class Range extends Expression {
+    constructor(start, stop) { super(); this.start = start; this.stop = stop; }
+}
+export class List extends Expression {
+    constructor() {
+        super();
+        this.items = [];
+    }
+    push(value) {
+        value.parent = this;
+        this.items.push(value);
+    }
+    [Symbol.iterator]() {
+        return this.items[Symbol.iterator]();
     }
 }
+
+// binary opeartor
+export class BinaryOperator extends Expression {
+    constructor(lhs, rhs) { super(); this.lhs = lhs; this.rhs = rhs; }
+}
+export class Access extends BinaryOperator {}
+// logical
 export class Or extends BinaryOperator {}
 export class And extends BinaryOperator {}
-export class Equal extends BinaryOperator {}
-export class NotEqual extends BinaryOperator {}
+export class Equal extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant)
+            return new Boolean(this.lhs.fold().value === this.rhs.fold().value);
+        return super.fold();
+    }
+}
+export class NotEqual extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant)
+            return new Boolean(this.lhs.fold().value !== this.rhs.fold().value);
+        return super.fold();
+    }
+}
 export class GreaterThan extends BinaryOperator {}
 export class LessThan extends BinaryOperator {}
 export class GreaterThanEqual extends BinaryOperator {}
 export class LessThanEqual extends BinaryOperator {}
 // arithmetical
-export class Plus extends BinaryOperator {}
-export class Minus extends BinaryOperator {}
-export class Multiply extends BinaryOperator {}
-export class Divide extends BinaryOperator {}
-export class Modular extends BinaryOperator {}
+export class Plus extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof String && rhs instanceof String)
+                return new String(lhs.value + rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Integer(lhs.value + rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Float(lhs.value + rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Float(lhs.value + rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Float(lhs.value + rhs.value);
+        }
+        return super.fold();
+    }
+}
+export class Minus extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Integer(lhs.value - rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Float(lhs.value - rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Float(lhs.value - rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Float(lhs.value - rhs.value);
+        }
+        return super.fold();
+    }
+}
+export class Multiply extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Integer(lhs.value * rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Float(lhs.value * rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Float(lhs.value * rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Float(lhs.value * rhs.value);
+        }
+        return super.fold();
+    }
+}
+export class Divide extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Float(lhs.value / rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Float(lhs.value / rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Float(lhs.value / rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Float(lhs.value / rhs.value);
+        }
+        return super.fold();
+    }
+}
+export class Modular extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Integer(lhs.value % rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Float(lhs.value % rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Float(lhs.value % rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Float(lhs.value % rhs.value);
+        }
+        return super.fold();
+    }
+}
 
 // description
-export class Description extends Array {
+export class Description extends AstNodeList {
     match(expressions) {
         if (expressions.length > this.length) return null;
         let args = [];
         for (let [i, j] = [0, 0]; i < this.length; ++i, ++j) {
-            let curr = this[i];
-            let expression = expressions[j];
+            let curr = this.childNodes[i];
+            let expression = expressions.childNodes[j];
             if (curr instanceof DescriptionName) {
                 if (curr.match(expression)) continue;
                 return null;
@@ -92,8 +248,8 @@ export class Description extends Array {
                     args.push(expression);
                     continue;
                 }
-                let next = this[++i];
-                let nextExpression = expressions[j + 1];
+                let next = this.childNodes[++i];
+                let nextExpression = expressions.childNodes[j + 1];
                 if (next.match(nextExpression) || next.needWhiteSpace) {
                     ++j;
                     args.push(expression);
@@ -111,30 +267,44 @@ export class Description extends Array {
         return args;
     }
     get parameters() {
-        return this.filter(item => item instanceof DescriptionParameter);
+        return this.childNodes.filter(item => item instanceof DescriptionParameter);
     }
 }
-export class DescriptionParameter { constructor(value) { this.value = value; } }
-export class DescriptionName extends Array {
+export class DescriptionParameter extends AstNode {
+    constructor(value) { super(); this.value = value; }
+}
+export class DescriptionName extends AstNode {
+    constructor() {
+        super();
+        this.names = [];
+    }
     needWhiteSpace = false;
     match(name) {
         if (!(name instanceof Name)) return false;
-        return this.some(potential => name.value === potential);
+        return this.names.some(potential => name.value === potential);
     }
     postMatch(param) {
         if (!(param instanceof Name)) return 0;
-        return this.find(potential => param.value.endsWith(potential)).length;
+        return this.names.find(potential => param.value.endsWith(potential)).length;
+    }
+    get length() { return this.names.length; }
+    push(name) { this.names.push(name); }
+    sort() { this.names.sort((a, b) => b.length - a.length); }
+    [Symbol.iterator]() {
+        return this.names[Symbol.iterator]();
     }
 }
 
 //defs
-export class Def {
+export class Def extends Statement {
     constructor() {
+        super();
         this.scope = null;
     }
     match(call) { // return match arguments else null
         return this.description.match(call.expressions);
     }
+    get hasSideEffect() { return true; }
 }
 
 export class Yaksok extends Def {
@@ -143,8 +313,11 @@ export class Yaksok extends Def {
         this.description = description;
         this.block = block;
     }
+    get hasSideEffect() {
+        // TODO: 현재 약속의 부수효과 여부 반환
+        return super.hasSideEffect();
+    }
 }
-export class YaksokEnd {}
 
 export class Translate extends Def {
     constructor(description, target, code) {
@@ -163,34 +336,38 @@ export class NodeVisitor {
     async visit(node) {
         if (node instanceof YaksokRoot) return await this.visitYaksokRoot(node);
         if (node instanceof Statements) return await this.visitStatements(node);
-        if (node instanceof Expressions) return await this.visitExpressions(node);
         if (node instanceof Statement) return await this.visitStatement(node);
-        if (node instanceof Call) return await this.visitCall(node);
+        if (node instanceof Expressions) return await this.visitExpressions(node);
+        if (node instanceof Expression) return await this.visitExpression(node);
+        if (node instanceof Description) return await this.visitDescription(node);
+        if (node instanceof DescriptionParameter) return await this.visitDescriptionParameter(node);
+        if (node instanceof DescriptionName) return await this.visitDescriptionName(node);
+        throw new Error('unknown node type');
+    }
+    async visitYaksokRoot(node) { await this.visitStatements(node.statements); }
+    async visitStatements(node) { for (let statement of node) await this.visitStatement(statement); }
+    async visitStatement(node) {
+        if (node instanceof PlainStatement) return await this.visitPlainStatement(node);
+        if (node instanceof Assign) return await this.visitAssign(node);
         if (node instanceof If) return await this.visitIf(node);
         if (node instanceof Loop) return await this.visitLoop(node);
         if (node instanceof Iterate) return await this.visitIterate(node);
         if (node instanceof LoopEnd) return await this.visitLoopEnd(node);
-        if (node instanceof Primitive) return await this.visitPrimitive(node);
-        if (node instanceof Range) return await this.visitRange(node);
-        if (node instanceof List) return await this.visitList(node);
-        if (node instanceof BinaryOperator) return await this.visitBinaryOperator(node);
-        if (node instanceof Description) return await this.visitDescription(node);
-        if (node instanceof DescriptionParameter) return await this.visitDescriptionParameter(node);
-        if (node instanceof DescriptionName) return await this.visitDescriptionName(node);
-        if (node instanceof Def) return await this.visitDef(node);
         if (node instanceof YaksokEnd) return await this.visitYaksokEnd(node);
+        if (node instanceof Def) return await this.visitDef(node);
         throw new Error('unknown node type');
     }
-    async visitYaksokRoot(node) { await this.visit(node.statements); }
-    async visitStatements(node) { for (let statement of node) await this.visit(statement); }
-    async visitExpressions(node) { for (let expression of node) await this.visit(expression); }
-    async visitStatement(node) { await this.visit(node.expression); }
+    async visitPlainStatement(node) { await this.visitExpression(node.expression); }
+    async visitAssign(node) {
+        await this.visit(node.lvalue);
+        await this.visit(node.rvalue);
+    }
     async visitCall(node) {}
     async visitIf(node) {
         await this.visit(node.condition);
-        await this.visit(node.ifBlock);
+        await this.visitStatements(node.ifBlock);
         if (node.elseBlock) {
-            await this.visit(node.elseBlock);
+            await this.visitStatements(node.elseBlock);
         }
     }
     async visitLoop(node) { await this.visit(node.block); }
@@ -200,6 +377,16 @@ export class NodeVisitor {
         await this.visit(node.block);
     }
     async visitLoopEnd(node) {}
+    async visitYaksokEnd(node) {}
+    async visitExpressions(node) { for (let expression of node) await this.visitExpression(expression); }
+    async visitExpression(node) {
+        if (node instanceof Call) return await this.visitCall(node);
+        if (node instanceof Primitive) return await this.visitPrimitive(node);
+        if (node instanceof Range) return await this.visitRange(node);
+        if (node instanceof List) return await this.visitList(node);
+        if (node instanceof BinaryOperator) return await this.visitBinaryOperator(node);
+        throw new Error('unknown node type');
+    }
     async visitPrimitive(node) {
         if (node instanceof Name) return await this.visitName(node);
         if (node instanceof String) return await this.visitString(node);
@@ -219,10 +406,9 @@ export class NodeVisitor {
         await this.visit(node.start);
         await this.visit(node.stop);
     }
-    async visitList(node) { for (let item of node) await this.visit(item); }
+    async visitList(node) { for (let item of node) await this.visitExpression(item); }
     async visitBinaryOperator(node) {
         if (node instanceof Access) return await this.visitAccess(node);
-        if (node instanceof AssignStatement) return await this.visitAssignStatement(node);
         if (node instanceof Or) return await this.visitOr(node);
         if (node instanceof And) return await this.visitAnd(node);
         if (node instanceof Equal) return await this.visitEqual(node);
@@ -239,7 +425,6 @@ export class NodeVisitor {
         throw new Error('unknown node type');
     }
     async visitAccess(node) { await visitOperator.call(this, node); }
-    async visitAssignStatement(node) { await visitOperator.call(this, node); }
     async visitOr(node) { await visitOperator.call(this, node); }
     async visitAnd(node) { await visitOperator.call(this, node); }
     async visitEqual(node) { await visitOperator.call(this, node); }
@@ -262,7 +447,6 @@ export class NodeVisitor {
         throw new Error('unknown node type');
     }
     async visitYaksok(node) {}
-    async visitYaksokEnd(node) {}
     async visitTranslate(node) {}
 }
 

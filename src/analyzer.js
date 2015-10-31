@@ -20,19 +20,18 @@ export default class Analyzer extends NodeVisitor {
         node.callInfo = callInfo;
         for (let arg of callInfo.args) await this.visit(arg);
     }
-    async visitAssignStatement(node) {
-        if (node.lhs instanceof Name) {
-            let name = node.lhs;
+    async visitAssign(node) {
+        if (node.lvalue instanceof Name) {
+            let name = node.lvalue;
             let scope = this.currentScope;
             if (!scope.hasVariable(name, true)) {
-                console.log(name, scope.variables);
                 scope.addVariable(name);
                 node.isDeclaration = true;
             }
         } else {
-            await this.visit(node.lhs);
+            await this.visit(node.lvalue);
         }
-        await this.visit(node.rhs);
+        await this.visit(node.rvalue);
     }
     async visitYaksok(node) {
         let scope = this.currentScope;
@@ -86,7 +85,7 @@ export class Scope {
             return this.parent.getCallInfo(call);
         }
         { // 임시 빌트인
-            let expressions = call.expressions;
+            let expressions = call.expressions.childNodes;
             if (expressions.length === 2) {
                 let name = expressions[1];
                 if (name instanceof Name && name.value === '보여주기') {

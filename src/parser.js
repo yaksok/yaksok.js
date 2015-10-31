@@ -9,7 +9,7 @@ import { parser } from 'parser.jison'; {
     yy.ast = ast;
     yy.parseCall = expressions => {
         if (expressions.length > 1) return new yy.ast.Call(expressions);
-        return expressions[0];
+        return expressions.childNodes[0];
     };
     yy.postprocessDescription = description => {
         let filteredDescription = new ast.Description();
@@ -20,7 +20,7 @@ import { parser } from 'parser.jison'; {
             } else {
                 if (item instanceof ast.DescriptionName) {
                     item.needWhiteSpace = whitespace;
-                    item.sort((a, b) => b.length - a.length);
+                    item.sort();
                 }
                 filteredDescription.push(item);
                 whitespace = false;

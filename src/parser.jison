@@ -34,7 +34,7 @@ statement_list
 
 statement
     : assign_statement                  { $$ = $1 }
-    | call                              { $$ = new yy.ast.Statement($1) }
+    | call                              { $$ = new yy.ast.PlainStatement($1) }
     | if_else_statement                 { $$ = $1 }
     | loop_statement                    { $$ = $1 }
     | loop_end_statement                { $$ = $1 }
@@ -44,7 +44,7 @@ statement
     ;
 
 assign_statement
-    : lvalue ASSIGN call empty_or_newlines  { $$ = new yy.ast.AssignStatement($lvalue, $call) }
+    : lvalue ASSIGN call empty_or_newlines  { $$ = new yy.ast.Assign($lvalue, $call) }
     ;
 
 call

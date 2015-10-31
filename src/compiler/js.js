@@ -48,30 +48,47 @@ export default class JsCompiler extends Compiler {
         this.write('})();');
         return this.result.join('');
     }
-    async visitStatement(node) {
+    async visitPlainStatement(node) {
         this.writeIndent();
         await this.visit(node.expression);
         this.write(';\n');
     }
+    async visitAssign(node) {
+        this.writeIndent();
+        if (node.lvalue instanceof Name) {
+            let name = node.lvalue;
+            if (node.isDeclaration) {
+                this.write(`var ${ name.value } = `);
+            } else {
+                this.write(`${ name.value } = `);
+            }
+            await this.visit(node.rvalue);
+        } else {
+            await this.visit(node.lvalue);
+            this.write(' = ');
+            await this.visit(node.rvalue);
+        }
+        this.write(';\n');
+    }
     async visitCall(node) {
-        let expressions = node.expressions;
+        let { def, args } = node.callInfo;
+        let expressions = node.expressions.childNodes;
         if (expressions.length === 2) { // TODO: 빌트인 약속 처리
             let name = expressions[1];
             if (name instanceof Name && name.value === '보여주기') {
                 this.runtime['log'] = true;
                 this.write('yaksokLog(');
-                await this.visit(expressions[0]);
+                await this.visit(args[0]);
                 this.write(')');
                 return;
             }
         }
-        let { def, args } = node.callInfo;
         let functionName = this.getFunctionNameFromDef(def);
         this.write(functionName);
         this.write('(');
         let first = true;
         for (let arg of args) {
-            if (!first) this.write(',');
+            if (!first) this.write(', ');
             first = false;
             await this.visit(arg);
         }
@@ -131,7 +148,7 @@ export default class JsCompiler extends Compiler {
         this.runtime['range'] = true;
         this.write('yaksokRange(');
         await this.visit(node.start);
-        this.write(',');
+        this.write(', ');
         await this.visit(node.stop);
         this.write(')');
     }
@@ -139,32 +156,16 @@ export default class JsCompiler extends Compiler {
         this.runtime['list'] = true;
         this.write('yaksokList([void 0');
         for (let item of node) {
-            this.write(',');
+            this.write(', ');
             await this.visit(item);
         }
         this.write('])');
     }
     async visitAccess(node) {
-        this.write('(');
         await this.visit(node.lhs);
         this.write('[');
         await this.visit(node.rhs);
-        this.write('])');
-    }
-    async visitAssignStatement(node) {
-        this.writeIndent();
-        if (node.lhs instanceof Name) {
-            let name = node.lhs;
-            if (node.isDeclaration) {
-                this.write(`var ${ name.value } = `);
-            } else {
-                this.write(`${ name.value } = `);
-            }
-            await this.visit(node.rhs);
-        } else {
-            await op.call(this, node, '=');
-        }
-        this.write(';\n');
+        this.write(']');
     }
     async visitOr(node) { await op.call(this, node, '||'); }
     async visitAnd(node) { await op.call(this, node, '&&'); }
@@ -216,13 +217,13 @@ async function op(node, op) {
 }
 
 function yaksokNameToJsIdentifier(name) {
-    let nameString = name[0];
+    let nameString = name.names[0];
     if (name.needWhiteSpace) return '_' + nameString;
     return nameString;
 }
 
 function yaksokDescriptionToJsIdentifier(description) {
-    return description.map(item => {
+    return description.childNodes.map(item => {
         if (item instanceof DescriptionName) return yaksokNameToJsIdentifier(item);
         if (item instanceof DescriptionParameter) return `_${ item.value }`;
     }).join('');

@@ -2,22 +2,29 @@ import { NodeVisitor } from 'ast';
 import parser from 'parser';
 import Analyzer from 'analyzer';
 
+export const BEFORE_ANALYZE = {};
+export const AFTER_ANALYZE = {};
+
 export default class Compiler extends NodeVisitor {
-    constructor() {
+    constructor(config={}) {
         super();
         this.analyzer = new Analyzer();
+        this.plugins = new CompilerPlugins();
+        this.config = config;
     }
-    write(code) { this.result.push(code); }
     init() {
         super.init();
         this.result = [];
         this.analyzer.translateTargets = this.translateTargets;
     }
+    write(code) { this.result.push(code); }
     async prepareAstRoot(code) {
         let astRoot = parser.parse(code);
+        for (let plugin of this.plugins.get(BEFORE_ANALYZE))
+            await plugin.run(astRoot, this.config);
         await this.analyzer.analyze(astRoot);
-        // TODO: optimizer
-        // await this.optimizer.optimize(astRoot);
+        for (let plugin of this.plugins.get(AFTER_ANALYZE))
+            await plugin.run(astRoot, this.config);
         return astRoot;
     }
     async compile(code) {
@@ -26,4 +33,11 @@ export default class Compiler extends NodeVisitor {
         await this.visit(astRoot);
         return this.result.join('');
     }
+}
+
+class CompilerPlugins {
+    constructor() { this.clear(); }
+    clear() { this.map = new Map(); }
+    get(phase=AFTER_ANALYZE) { return this.map.has(phase)? this.map.get(phase).slice() : []; }
+    add(plugins=[], phase=AFTER_ANALYZE) { this.map.set(phase, this.get(phase).concat(plugins)); }
 }
