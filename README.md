@@ -1,40 +1,47 @@
 # yaksok.js
 한글 프로그래밍 언어 [약속](http://yaksok.org/)을 다루기 위한 자바스크립트 라이브러리입니다.
 
-
+## 예시
 ```js
 var compiler = new yaksok.impl.JsTargetCompiler();
+compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
 compiler.compile(`
-변수: '안녕'
-만약 변수 = '안녕' 이면
-    변수 보여주기
+
+
+약속 예제 뭘로하지
+    결과: '몰라'
+만약 (예제 뭘로하지) = '몰라' 이면
+    '어쩌라고' 보여주기
+
+# 아, 이런거 되는거 자랑해야지
+만약 1 < 2 이면
+    '이 코드는 살아남는 코드입니다' 보여주기
+아니라면
+    '이 코드는 사라지는 코드입니다' 보여주기
+
+
 `).then(js => {
     console.log(js);
-    (new Function(js))();
 });
-// (function () {
-// "use strict";
-// function yaksokLog(value) {
-//     switch (typeof value) {
-//     case 'boolean': console.log(value ? '참' : '거짓'); return;
-//     case 'object': {
-//         if (Array.isArray(value)) {
-//             let copy = value.slice();
-//             copy.shift();
-//             console.log(copy);
-//         } else {
-//             console.log(value);
-//         }
-//     } return;
-//     default: console.log(value); return;
-//     }
-// }
-// var 변수 = "안녕";
-// if ((변수 === "안녕")) {
-//     yaksokLog(변수);
-// }
-// })();
 ```
+위 코드는 아래의 코드를 출력합니다.
+```js
+(function () {
+"use strict";
+function y0s예제_뭘로하지() {
+    var 결과;
+    결과 = "몰라";
+    return 결과;
+}
+if ((y0s예제_뭘로하지() === "몰라")) {
+    console.log("어쩌라고");
+}
+console.log("이 코드는 살아남는 코드입니다");
+})();
+```
+
+복사해서 웹브라우저 개발자도구에 붙이고 실행해보세요!
+
 
 ## 직접 돌려보기
 
