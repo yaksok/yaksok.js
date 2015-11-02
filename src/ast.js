@@ -29,7 +29,11 @@ export class Statements extends AstNodeList {
 }
 
 // statement
-export class Statement {}
+export class Statement {
+    eliminateDeadCode() { // return boolean or replacement node
+        return false; // prevent elimination
+    }
+}
 export class PlainStatement extends Statement {
     constructor(expression) { super(); this.expression = expression; }
 }
@@ -47,6 +51,13 @@ export class If extends Statement {
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
+    }
+    eliminateDeadCode() {
+        let bool = this.condition.fold();
+        if (bool instanceof Boolean) {
+            return bool.value? this.ifBlock : this.elseBlock;
+        }
+        return false;
     }
 }
 export class Loop extends Statement { constructor(block) { super(); this.block = block; } }
@@ -67,6 +78,7 @@ export class Expression extends AstNode {
     get isConstant() { return false; }
     fold() { return this; }
 }
+Expression.prototype.type = null;
 
 export class Call extends Expression {
     constructor(expressions) {
@@ -92,16 +104,17 @@ export class Name extends Primitive {
         return false;
     }
 }
-export class String extends Primitive {}
-export class Integer extends Primitive {}
-export class Float extends Primitive {}
-export class Boolean extends Primitive {}
-export class Void extends Primitive {}
+export class String extends Primitive {} String.prototype.type = String;
+export class Integer extends Primitive {} Integer.prototype.type = Integer;
+export class Float extends Primitive {} Float.prototype.type = Float;
+export class Boolean extends Primitive {} Boolean.prototype.type = Boolean;
+export class Void extends Primitive {} Void.prototype.type = Void;
 
 // etc
 export class Range extends Expression {
     constructor(start, stop) { super(); this.start = start; this.stop = stop; }
 }
+Range.prototype.type = Range;
 export class List extends Expression {
     constructor() {
         super();
@@ -115,6 +128,7 @@ export class List extends Expression {
         return this.items[Symbol.iterator]();
     }
 }
+List.prototype.type = List;
 
 // binary opeartor
 export class BinaryOperator extends Expression {
@@ -123,7 +137,9 @@ export class BinaryOperator extends Expression {
 export class Access extends BinaryOperator {}
 // logical
 export class Or extends BinaryOperator {}
+Or.prototype.type = Boolean;
 export class And extends BinaryOperator {}
+And.prototype.type = Boolean;
 export class Equal extends BinaryOperator {
     fold() {
         if (this.lhs.isConstant && this.rhs.isConstant)
@@ -131,17 +147,87 @@ export class Equal extends BinaryOperator {
         return super.fold();
     }
 }
+Equal.prototype.type = Boolean;
 export class NotEqual extends BinaryOperator {
     fold() {
-        if (this.lhs.isConstant && this.rhs.isConstant)
+        if (this.lhs.isConstant && this.rhs.isConstant) {}
             return new Boolean(this.lhs.fold().value !== this.rhs.fold().value);
         return super.fold();
     }
 }
-export class GreaterThan extends BinaryOperator {}
-export class LessThan extends BinaryOperator {}
-export class GreaterThanEqual extends BinaryOperator {}
-export class LessThanEqual extends BinaryOperator {}
+NotEqual.prototype.type = Boolean;
+export class GreaterThan extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Boolean(lhs.value > rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Boolean(lhs.value > rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Boolean(lhs.value > rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Boolean(lhs.value > rhs.value);
+        }
+        return super.fold();
+    }
+}
+GreaterThan.prototype.type = Boolean;
+export class LessThan extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Boolean(lhs.value < rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Boolean(lhs.value < rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Boolean(lhs.value < rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Boolean(lhs.value < rhs.value);
+        }
+        return super.fold();
+    }
+}
+LessThan.prototype.type = Boolean;
+export class GreaterThanEqual extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Boolean(lhs.value >= rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Boolean(lhs.value >= rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Boolean(lhs.value >= rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Boolean(lhs.value >= rhs.value);
+        }
+        return super.fold();
+    }
+}
+GreaterThanEqual.prototype.type = Boolean;
+export class LessThanEqual extends BinaryOperator {
+    fold() {
+        if (this.lhs.isConstant && this.rhs.isConstant) {
+            let lhs = this.lhs.fold();
+            let rhs = this.rhs.fold();
+            if (lhs instanceof Integer && rhs instanceof Integer)
+                return new Boolean(lhs.value <= rhs.value);
+            if (lhs instanceof Float && rhs instanceof Integer)
+                return new Boolean(lhs.value <= rhs.value);
+            if (lhs instanceof Integer && rhs instanceof Float)
+                return new Boolean(lhs.value <= rhs.value);
+            if (lhs instanceof Float && rhs instanceof Float)
+                return new Boolean(lhs.value <= rhs.value);
+        }
+        return super.fold();
+    }
+}
+LessThanEqual.prototype.type = Boolean;
 // arithmetical
 export class Plus extends BinaryOperator {
     fold() {
@@ -213,6 +299,7 @@ export class Divide extends BinaryOperator {
         return super.fold();
     }
 }
+Divide.prototype.type = Float;
 export class Modular extends BinaryOperator {
     fold() {
         if (this.lhs.isConstant && this.rhs.isConstant) {
@@ -300,6 +387,7 @@ export class Def extends Statement {
     constructor() {
         super();
         this.scope = null;
+        this.returnType = null;
     }
     match(call) { // return match arguments else null
         return this.description.match(call.expressions);
@@ -359,8 +447,8 @@ export class NodeVisitor {
     }
     async visitPlainStatement(node) { await this.visitExpression(node.expression); }
     async visitAssign(node) {
+        await this.visit(node.rvalue); // attention: evaluation order
         await this.visit(node.lvalue);
-        await this.visit(node.rvalue);
     }
     async visitCall(node) {}
     async visitIf(node) {

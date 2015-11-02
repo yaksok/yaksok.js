@@ -43,7 +43,7 @@ let config = {
         publicPath: '/dist/',
         filename: '[name].js',
         libraryTarget: 'umd',
-        library: 'Yaksok',
+        library: 'yaksok',
     },
     resolve: {
         extensions: ['', '.js'],

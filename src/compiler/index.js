@@ -1,13 +1,14 @@
 import { NodeVisitor } from 'ast';
-import parser from 'parser';
+import YaksokParser from 'parser';
 import Analyzer from 'analyzer';
 
 export const BEFORE_ANALYZE = {};
 export const AFTER_ANALYZE = {};
 
-export default class Compiler extends NodeVisitor {
+export default class YaksokCompiler extends NodeVisitor {
     constructor(config={}) {
         super();
+        this.parser = new YaksokParser();
         this.analyzer = new Analyzer();
         this.plugins = new CompilerPlugins();
         this.config = config;
@@ -19,7 +20,7 @@ export default class Compiler extends NodeVisitor {
     }
     write(code) { this.result.push(code); }
     async prepareAstRoot(code) {
-        let astRoot = parser.parse(code);
+        let astRoot = this.parser.parse(code);
         for (let plugin of this.plugins.get(BEFORE_ANALYZE))
             await plugin.run(astRoot, this.config);
         await this.analyzer.analyze(astRoot);

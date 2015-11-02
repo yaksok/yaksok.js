@@ -1,14 +1,14 @@
+import * as ast from 'ast';
 import {
-    Name,
-    DescriptionName,
-    DescriptionParameter,
-} from 'ast';
-import Compiler from 'compiler';
+    Builtin,
+    yaksok as builtinYaksok
+} from 'builtin';
+import YaksokCompiler from 'compiler';
 
 // runtime
 import prelude from 'raw!runtime/js/prelude';
 
-export default class JsCompiler extends Compiler {
+export default class JsTargetCompiler extends YaksokCompiler {
     constructor() {
         super();
         this.translateTargets = ['js', 'javascript', '자바스크립트'];
@@ -55,7 +55,7 @@ export default class JsCompiler extends Compiler {
     }
     async visitAssign(node) {
         this.writeIndent();
-        if (node.lvalue instanceof Name) {
+        if (node.lvalue instanceof ast.Name) {
             let name = node.lvalue;
             if (node.isDeclaration) {
                 this.write(`var ${ name.value } = `);
@@ -73,14 +73,31 @@ export default class JsCompiler extends Compiler {
     async visitCall(node) {
         let { def, args } = node.callInfo;
         let expressions = node.expressions.childNodes;
-        if (expressions.length === 2) { // TODO: 빌트인 약속 처리
-            let name = expressions[1];
-            if (name instanceof Name && name.value === '보여주기') {
-                this.runtime['log'] = true;
-                this.write('yaksokLog(');
-                await this.visit(args[0]);
-                this.write(')');
-                return;
+        if (def instanceof Builtin) {
+            switch (def) {
+            case builtinYaksok.보여주기: {
+                let arg = args[0];
+                switch (arg.type) {
+                case ast.Integer: case ast.Float: case ast.String: {
+                    this.write('console.log(');
+                    await this.visit(args[0]);
+                    this.write(')');
+                } return;
+                case ast.Void: {
+                    this.write('console.log("()"');
+                } return;
+                case ast.Boolean: {
+                    this.write('console.log("' + (arg.value ? '참' : '거짓') + '")');
+                } return;
+                default: {
+                    this.runtime['log'] = true;
+                    this.write('yaksokLog(');
+                    await this.visit(arg);
+                    this.write(')');
+                } return;
+                }
+            } return;
+            default: throw new Error('unimplemented builtin yaksok');
             }
         }
         let functionName = this.getFunctionNameFromDef(def);
@@ -224,7 +241,7 @@ function yaksokNameToJsIdentifier(name) {
 
 function yaksokDescriptionToJsIdentifier(description) {
     return description.childNodes.map(item => {
-        if (item instanceof DescriptionName) return yaksokNameToJsIdentifier(item);
-        if (item instanceof DescriptionParameter) return `_${ item.value }`;
+        if (item instanceof ast.DescriptionName) return yaksokNameToJsIdentifier(item);
+        if (item instanceof ast.DescriptionParameter) return `_${ item.value }`;
     }).join('');
 }

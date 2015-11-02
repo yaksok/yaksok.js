@@ -3,7 +3,7 @@
 
 
 ```js
-var compiler = new Yaksok.JsCompiler();
+var compiler = new yaksok.impl.JsTargetCompiler();
 compiler.compile(`
 변수: '안녕'
 만약 변수 = '안녕' 이면
@@ -58,12 +58,10 @@ compiler.compile(`
 
 
 ## 이 라이브러리의 목표인 것
-* node.js(0.10+)와 브라우저(ie11+)에서 작동
+* node.js(0.10+)와 브라우저(ie9+)에서 작동
 * 가능하면 사람도 읽을 수 있는 코드가 뽑히도록 컴파일
 * 기본적인 컴파일타임 최적화
-* 가벼운 런타임
-    * 어떤 약속을 호출했는지 찾는 로직이 런타임에 포함되지 않도록
-* 디버깅을 위한 [소스맵](https://github.com/mozilla/source-map/) 제공
+    * 런타임 최소화
 
 
 ## 이 라이브러리의 목표가 아닌 것

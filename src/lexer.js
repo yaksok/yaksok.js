@@ -30,12 +30,14 @@ const RESERVED_IN_LOOP = Object.assign({
 }, RESERVED);
 
 export default class YaksokLexer extends Lexer {
-    constructor() {
+    constructor(startQueue=[]) {
         super();
         this.tabSize = 8;
+        this.startQueue = startQueue;
     }
     setInput(input) {
         super.setInput(input);
+        this.queue = this.startQueue.slice();
         this.state = INITIAL_STATE;
         this.lexingLoopCondition = false;
         this.lexingDescription = false;
@@ -43,6 +45,7 @@ export default class YaksokLexer extends Lexer {
         this.indent = [0];
     }
     lex() {
+        if (this.queue.length) return this.queue.shift();
         let result = super.lex();
         let indent = this.indent;
         if (result === void 0) if (0 < indent[0]) {

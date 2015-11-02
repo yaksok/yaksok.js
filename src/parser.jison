@@ -20,7 +20,8 @@ empty_or_whitespace
     ;
 
 ast
-    : statements                        { return new yy.ast.YaksokRoot($statements) }
+    : START_AST statements              { return new yy.ast.YaksokRoot($statements) }
+    | START_DESCRIPTION description     { return $description }
     ;
 
 statements
@@ -76,10 +77,7 @@ loop_end_statement
     ;
 
 yaksok_statement
-    : YAKSOK WS description block {
-        var desc = yy.postprocessDescription($description);
-        $$ = new yy.ast.Yaksok(desc, $block);
-    }
+    : YAKSOK WS description block       { $$ = new yy.ast.Yaksok($description, $block) }
     ;
 
 yaksok_end_statement
@@ -88,8 +86,7 @@ yaksok_end_statement
 
 translate_statement
     : TRANSLATE translate_target WS description empty_or_newlines SPECIALBLOCK empty_or_newlines {
-        var desc = yy.postprocessDescription($description);
-        $$ = new yy.ast.Translate(desc, $translate_target, $SPECIALBLOCK);
+        $$ = new yy.ast.Translate($description, $translate_target, $SPECIALBLOCK);
     }
     ;
 
@@ -98,7 +95,11 @@ translate_target
     ;
 
 description
-    : description description_item      { $1.push($2); $$ = $1 }
+    : raw_description                   { $$ = yy.postprocessDescription($raw_description) }
+    ;
+
+raw_description
+    : raw_description description_item  { $1.push($2); $$ = $1 }
     | description_item                  { $$ = new yy.ast.Description(); $$.push($1) }
     ;
 

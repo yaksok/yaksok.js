@@ -1,6 +1,6 @@
 import YaksokLexer from 'lexer';
-import yaksokParser from 'parser';
-import JsCompiler from 'compiler/js';
+import YaksokParser from 'parser';
+import JsTargetCompiler from 'compiler/js';
 import ConstantFolder from 'plugin/ConstantFolder';
 
 
@@ -140,6 +140,26 @@ const code13 = `
 1 + 2 보여주기
 `;
 
+const code14 = `
+변수: '안녕'
+만약 변수 = '안녕' 이면
+    변수 보여주기
+`;
+
+const code15 = `
+변수: '문자열'
+변수 보여주기
+변수: 참
+변수 보여주기
+`;
+
+const code16 = `
+만약 1 < 2 이면
+    '안녕' 보여주기
+아니라면
+    '메롱' 보여주기
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -152,20 +172,21 @@ function test_lexer(code) {
 }
 
 function test_parser(code) {
-    console.dir(yaksokParser.parse(code), { depth: null, colors: true });
+    let parser = new YaksokParser();
+    console.dir(parser.parse(code), { depth: null, colors: true });
     console.log();
 }
 
 async function test_compiler(code) {
-    let compiler = new JsCompiler();
+    let compiler = new JsTargetCompiler();
     compiler.plugins.add([
-        new ConstantFolder()
+        new ConstantFolder({ dce: true })
     ]);
     console.log(await compiler.compile(code));
     console.log();
 }
 
-let code = code13;
+let code = code16;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);
