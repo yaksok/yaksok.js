@@ -157,6 +157,7 @@ YaksokLexer.addRule(/[$_a-zA-Z가-힣][$_a-zA-Z가-힣0-9]*/, function (lexeme) 
 
 YaksokLexer.addRule(/:/, 'ASSIGN');
 YaksokLexer.addRule(/,/, 'COMMA');
+YaksokLexer.addRule(/\./, 'DOT');
 YaksokLexer.addRule(/~/, 'TILDE');
 YaksokLexer.addRule(/@/, 'ATMARK');
 YaksokLexer.addRule(/\+/, 'PLUS');

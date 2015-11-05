@@ -184,6 +184,11 @@ export default class JsTargetCompiler extends YaksokCompiler {
         await this.visit(node.rhs);
         this.write(']');
     }
+    async visitDotAccess(node) {
+        await this.visit(node.lhs);
+        this.write('.');
+        await this.visit(node.rhs);
+    }
     async visitOr(node) { await op.call(this, node, '||'); }
     async visitAnd(node) { await op.call(this, node, '&&'); }
     async visitEqual(node) { await op.call(this, node, '==='); }

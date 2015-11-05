@@ -160,6 +160,11 @@ const code16 = `
     '메롱' 보여주기
 `;
 
+const code17 = `
+목록: [1, 2, 3]
+목록.길이 보여주기
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -186,7 +191,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code16;
+let code = code17;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);

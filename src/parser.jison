@@ -186,6 +186,7 @@ lvalue
 
 access_expression
     : primary_expression LSQUARE expression RSQUARE     { $$ = new yy.ast.Access($1, $3) }
+    | primary_expression DOT name                       { $$ = new yy.ast.DotAccess($1, $3) }
     ;
 
 name

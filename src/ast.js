@@ -135,6 +135,7 @@ export class BinaryOperator extends Expression {
     constructor(lhs, rhs) { super(); this.lhs = lhs; this.rhs = rhs; }
 }
 export class Access extends BinaryOperator {}
+export class DotAccess extends BinaryOperator {}
 // logical
 export class Or extends BinaryOperator {}
 Or.prototype.type = Boolean;
@@ -497,6 +498,7 @@ export class NodeVisitor {
     async visitList(node) { for (let item of node) await this.visitExpression(item); }
     async visitBinaryOperator(node) {
         if (node instanceof Access) return await this.visitAccess(node);
+        if (node instanceof DotAccess) return await this.visitDotAccess(node);
         if (node instanceof Or) return await this.visitOr(node);
         if (node instanceof And) return await this.visitAnd(node);
         if (node instanceof Equal) return await this.visitEqual(node);
@@ -513,6 +515,7 @@ export class NodeVisitor {
         throw new Error('unknown node type');
     }
     async visitAccess(node) { await visitOperator.call(this, node); }
+    async visitDotAccess(node) { await visitOperator.call(this, node); }
     async visitOr(node) { await visitOperator.call(this, node); }
     async visitAnd(node) { await visitOperator.call(this, node); }
     async visitEqual(node) { await visitOperator.call(this, node); }
