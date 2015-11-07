@@ -45,6 +45,12 @@ export class Assign extends Statement {
         this.isDeclaration = false;
     }
 }
+export class Outside extends Statement {
+    constructor(name) {
+        super();
+        this.name = name;
+    }
+}
 export class If extends Statement {
     constructor(condition, ifBlock, elseBlock) {
         super();
@@ -438,6 +444,7 @@ export class NodeVisitor {
     async visitStatement(node) {
         if (node instanceof PlainStatement) return await this.visitPlainStatement(node);
         if (node instanceof Assign) return await this.visitAssign(node);
+        if (node instanceof Outside) return await this.visitOutside(node);
         if (node instanceof If) return await this.visitIf(node);
         if (node instanceof Loop) return await this.visitLoop(node);
         if (node instanceof Iterate) return await this.visitIterate(node);
@@ -451,7 +458,10 @@ export class NodeVisitor {
         await this.visit(node.rvalue); // attention: evaluation order
         await this.visit(node.lvalue);
     }
-    async visitCall(node) {}
+    async visitOutside(node) {
+        await this.visit(node.name);
+    }
+    async visitCall(node) {}아
     async visitIf(node) {
         await this.visit(node.condition);
         await this.visitStatements(node.ifBlock);

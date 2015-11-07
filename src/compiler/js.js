@@ -70,6 +70,12 @@ export default class JsTargetCompiler extends YaksokCompiler {
         }
         this.write(';\n');
     }
+    async visitOutside(node) {
+        this.writeIndent();
+        this.write('// global ');
+        await this.visit(node.name);
+        this.write('\n');
+    }
     async visitCall(node) {
         let { def, args } = node.callInfo;
         let expressions = node.expressions.childNodes;

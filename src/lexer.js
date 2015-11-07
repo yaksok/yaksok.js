@@ -23,6 +23,7 @@ const RESERVED = {
     또는: 'OR',
     이거나: 'OR',
     이전: 'PREV',
+    바깥: 'OUTSIDE',
 };
 const RESERVED_IN_LOOP = Object.assign({
     의: 'EUI',

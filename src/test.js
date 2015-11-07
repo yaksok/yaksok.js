@@ -165,6 +165,14 @@ const code17 = `
 목록.길이 보여주기
 `;
 
+const code18 = `
+바깥변수: '밖'
+약속 이름짓기 귀찮아
+    바깥 바깥변수
+    바깥변수 보여주기
+이름짓기 귀찮아
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -191,7 +199,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code17;
+let code = code18;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);

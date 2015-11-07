@@ -27,6 +27,15 @@ export default class Analyzer extends NodeVisitor {
             }
         }
     }
+    async visitOutside(node) {
+        let scope = this.currentScope;
+        let { name } = node;
+        if (scope.hasVariable(name, false)) {
+            scope.addVariable(name);
+        } else {
+            throw new Error('해당하는 바깥 변수를 찾지 못했습니다');
+        }
+    }
     async visitAssign(node) {
         await this.visit(node.rvalue);
         if (node.lvalue instanceof Name) {
