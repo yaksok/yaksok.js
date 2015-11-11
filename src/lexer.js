@@ -183,6 +183,16 @@ YaksokLexer.addRule(/(\r?\n)+/, function (lexeme) {
     }
 });
 
+YaksokLexer.addRule(/\{/, function (lexeme) {
+    ++this.parenCount;
+    return 'LCURLY';
+});
+
+YaksokLexer.addRule(/\}/, function (lexeme) {
+    --this.parenCount;
+    return 'RCURLY';
+});
+
 YaksokLexer.addRule(/\[/, function (lexeme) {
     ++this.parenCount;
     return 'LSQUARE';
