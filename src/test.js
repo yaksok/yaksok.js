@@ -173,6 +173,13 @@ const code18 = `
 이름짓기 귀찮아
 `;
 
+const code19 = `
+값1: 123
+값2: 456
+사전: { 키1: 값1, 키2: 값2 }
+사전.키1 + 사전.키2 보여주기
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -199,7 +206,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code18;
+let code = code19;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);

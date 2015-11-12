@@ -127,7 +127,6 @@ export class List extends Expression {
         this.items = [];
     }
     push(value) {
-        value.parent = this;
         this.items.push(value);
     }
     [Symbol.iterator]() {
@@ -135,6 +134,26 @@ export class List extends Expression {
     }
 }
 List.prototype.type = List;
+export class Dict extends Expression {
+    constructor() {
+        super();
+        this.items = [];
+    }
+    push(value) {
+        this.items.push(value);
+    }
+    [Symbol.iterator]() {
+        return this.items[Symbol.iterator]();
+    }
+}
+Dict.prototype.type = Dict;
+export class DictKeyValue extends AstNode {
+    constructor(key, value) {
+        super();
+        this.key = key;
+        this.value = value;
+    }
+}
 
 // binary opeartor
 export class BinaryOperator extends Expression {
@@ -461,7 +480,7 @@ export class NodeVisitor {
     async visitOutside(node) {
         await this.visit(node.name);
     }
-    async visitCall(node) {}아
+    async visitCall(node) {}
     async visitIf(node) {
         await this.visit(node.condition);
         await this.visitStatements(node.ifBlock);
@@ -483,6 +502,7 @@ export class NodeVisitor {
         if (node instanceof Primitive) return await this.visitPrimitive(node);
         if (node instanceof Range) return await this.visitRange(node);
         if (node instanceof List) return await this.visitList(node);
+        if (node instanceof Dict) return await this.visitDict(node);
         if (node instanceof BinaryOperator) return await this.visitBinaryOperator(node);
         throw new Error('unknown node type');
     }
@@ -506,6 +526,11 @@ export class NodeVisitor {
         await this.visit(node.stop);
     }
     async visitList(node) { for (let item of node) await this.visitExpression(item); }
+    async visitDict(node) { for (let item of node) await this.visitDictKeyValue(item); }
+    async visitDictKeyValue(node) {
+        await this.visitName(node.key);
+        await this.visitExpression(node.value);
+    }
     async visitBinaryOperator(node) {
         if (node instanceof Access) return await this.visitAccess(node);
         if (node instanceof DotAccess) return await this.visitDotAccess(node);

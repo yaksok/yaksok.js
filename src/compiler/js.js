@@ -184,6 +184,21 @@ export default class JsTargetCompiler extends YaksokCompiler {
         }
         this.write('])');
     }
+    async visitDict(node) {
+        this.write('{');
+        let first = true;
+        for (let item of node) {
+            if (!first) this.write(', ');
+            first = false;
+            await this.visitDictKeyValue(item);
+        }
+        this.write('}');
+    }
+    async visitDictKeyValue(node) {
+        await this.visitName(node.key);
+        this.write(': ');
+        await this.visitExpression(node.value);
+    }
     async visitAccess(node) {
         await this.visit(node.lhs);
         this.write('[');

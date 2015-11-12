@@ -178,6 +178,7 @@ primary_expression
     | NUMBER                            { $$ = $1 }
     | RANGE                             { $$ = $1 }
     | LIST                              { $$ = $1 }
+    | DICT                              { $$ = $1 }
     | lvalue                            { $$ = $1 }
     | LPAR RPAR                         { $$ = new yy.ast.Void() }
     | LPAR expression RPAR              { $$ = $expression }
@@ -216,4 +217,19 @@ LIST
 list_items
     : list_items COMMA expression       { $1.push($3); $$ = $1 }
     | expression                        { $$ = new yy.ast.List(); $$.push($1) }
+    ;
+
+DICT
+    : LCURLY RCURLY                         { $$ = new yy.ast.Dict() }
+    | LCURLY dict_key_values RCURLY         { $$ = $dict_key_values }
+    | LCURLY dict_key_values COMMA RCURLY   { $$ = $dict_key_values }
+    ;
+
+dict_key_values
+    : dict_key_values COMMA dict_key_value  { $1.push($3); $$ = $1 }
+    | dict_key_value                        { $$ = new yy.ast.Dict(); $$.push($1) }
+    ;
+
+dict_key_value
+    : name ASSIGN expression            { $$ = new yy.ast.DictKeyValue($name, $expression) }
     ;
