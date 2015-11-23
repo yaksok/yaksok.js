@@ -9,6 +9,10 @@
     "watch": "babel-node ./build --watch --dev",
     "min": "babel-node ./build --min"
   },
+  "preferGlobal": true,
+  "bin": {
+    "ysjs": "./bin/ysjs"
+  },
   "author": {
     "name": "JongChan Choi",
     "email": "jong@chan.moe",
@@ -20,7 +24,8 @@
     "url": "http://github.com/disjukr/yaksok.js.git"
   },
   "dependencies": {
-    "lex-es6": "^1.1.0"
+    "lex-es6": "^1.1.0",
+    "yargs": "^3.30.0"
   },
   "devDependencies": {
     "babel": "^5.8.29",
@@ -33,7 +38,6 @@
     "raw-loader": "^0.5.1",
     "source-map-support": "^0.3.2",
     "webpack": "^1.12.2",
-    "webpack-notifier": "^1.2.1",
-    "yargs": "^3.26.0"
+    "webpack-notifier": "^1.2.1"
   }
 }
