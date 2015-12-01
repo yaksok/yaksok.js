@@ -3,7 +3,6 @@ import {
     NodeVisitor,
     Name,
 } from 'ast';
-import { yaksok as builtinYaksok } from 'builtin';
 
 export default class Analyzer extends NodeVisitor {
     init() {
@@ -17,7 +16,7 @@ export default class Analyzer extends NodeVisitor {
         await this.visit(astRoot);
     }
     async visitCall(node) {
-        let callInfo = this.currentScope.getCallInfo(node);
+        let callInfo = this.currentScope.getCallInfo(node, this.builtinDefs);
         node.callInfo = callInfo;
         for (let arg of callInfo.args) {
             await this.visit(arg);
@@ -105,7 +104,7 @@ export class Scope {
         return null;
     }
     addDef(def) { this.defs.push(def); }
-    getCallInfo(call) {
+    getCallInfo(call, builtinDefs={}) {
         let matchDef = null;
         let args = null;
         for (let def of this.defs) {
@@ -119,10 +118,10 @@ export class Scope {
             return new CallInfo(matchDef, args);
         }
         if (this.parent) {
-            return this.parent.getCallInfo(call);
+            return this.parent.getCallInfo(call, builtinDefs);
         }
-        for (const key of Object.keys(builtinYaksok)) {
-            let def = builtinYaksok[key];
+        for (const key of Object.keys(builtinDefs)) {
+            let def = builtinDefs[key];
             args = def.match(call);
             if (args) return new CallInfo(def, args);
         }

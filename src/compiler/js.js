@@ -1,8 +1,5 @@
 import * as ast from 'ast';
-import {
-    Builtin,
-    yaksok as builtinYaksok
-} from 'builtin';
+import { Builtin } from 'builtin';
 import YaksokCompiler from 'compiler';
 
 // runtime
@@ -81,7 +78,7 @@ export default class JsTargetCompiler extends YaksokCompiler {
         let expressions = node.expressions.childNodes;
         if (def instanceof Builtin) {
             switch (def) {
-            case builtinYaksok.보여주기: {
+            case this.builtinDefs.보여주기: {
                 let arg = args[0];
                 switch (arg.type) {
                 case ast.Integer: case ast.Float: case ast.String: {
@@ -103,7 +100,7 @@ export default class JsTargetCompiler extends YaksokCompiler {
                 } return;
                 }
             } return;
-            default: throw new Error('unimplemented builtin yaksok');
+            default: throw new Error('unimplemented builtin');
             }
         }
         let functionName = this.getFunctionNameFromDef(def);

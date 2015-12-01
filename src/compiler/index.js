@@ -1,6 +1,7 @@
 import { NodeVisitor } from 'ast';
 import YaksokParser from 'parser';
 import Analyzer from 'analyzer';
+import { yaksok as builtinYaksok } from 'builtin';
 
 export const BEFORE_ANALYZE = {};
 export const AFTER_ANALYZE = {};
@@ -12,11 +13,14 @@ export default class YaksokCompiler extends NodeVisitor {
         this.analyzer = new Analyzer();
         this.plugins = new CompilerPlugins();
         this.config = config;
+        this.translateTargets = [];
+        this.builtinDefs = {...builtinYaksok};
     }
     init() {
         super.init();
         this.result = [];
         this.analyzer.translateTargets = this.translateTargets;
+        this.analyzer.builtinDefs = this.builtinDefs;
     }
     write(code) { this.result.push(code); }
     async prepareAstRoot(code) {
