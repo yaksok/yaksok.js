@@ -57,6 +57,10 @@ call
     : expressions empty_or_newlines     { $$ = yy.parseCall($expressions) }
     ;
 
+module_call
+    : ATMARK name expressions empty_or_newlines     { $$ = new yy.ast.ModuleCall($expressions) }
+    ;
+
 block
     : empty_or_newlines INDENT statements DEDENT    { $$ = $statements }
     ;

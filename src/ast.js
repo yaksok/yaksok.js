@@ -99,6 +99,20 @@ export class Call extends Expression {
     }
 }
 
+export class ModuleCall extends Expression {
+    constructor(moduleName, expressions) {
+        super();
+        this.moduleName = moduleName;
+        this.expressions = expressions;
+        this.callInfo = null;
+    }
+    fold() {
+        this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
+        // TODO: fold call
+        return super.fold();
+    }
+}
+
 // primitive
 export class Primitive extends Expression {
     constructor(value) { super(); this.value = value; }
@@ -481,6 +495,7 @@ export class NodeVisitor {
         await this.visit(node.name);
     }
     async visitCall(node) {}
+    async visitModuleCall(node) {}
     async visitIf(node) {
         await this.visit(node.condition);
         await this.visitStatements(node.ifBlock);
@@ -499,6 +514,7 @@ export class NodeVisitor {
     async visitExpressions(node) { for (let expression of node) await this.visitExpression(expression); }
     async visitExpression(node) {
         if (node instanceof Call) return await this.visitCall(node);
+        if (node instanceof ModuleCall) return await this.visitModuleCall(node);
         if (node instanceof Primitive) return await this.visitPrimitive(node);
         if (node instanceof Range) return await this.visitRange(node);
         if (node instanceof List) return await this.visitList(node);
