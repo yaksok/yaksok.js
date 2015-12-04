@@ -180,6 +180,10 @@ const code19 = `
 사전.키1 + 사전.키2 보여주기
 `;
 
+const code20 = `
+문자열: "\\u <잘못된 문자입니다> 에러를 출력하거나, 일반 u 문자로 취급되도록 수정 필요"
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -206,7 +210,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code19;
+let code = code20;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);
