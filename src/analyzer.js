@@ -3,20 +3,20 @@ import {
     NodeVisitor,
     Name,
 } from 'ast';
+import { yaksok as builtinYaksok } from 'builtin';
 
 export default class Analyzer extends NodeVisitor {
-    init() {
-        super.init();
-        this.globalScope = new Scope(); this.globalScope.global = this.globalScope;
-        this.currentScope = this.globalScope;
+    async init() {
+        await super.init();
+        this.compiler.astRoot.statements.scope = new GlobalScope();
+        this.currentScope = this.compiler.globalScope;
     }
     async analyze(astRoot) {
-        this.init();
-        astRoot.statements.scope = this.globalScope;
-        await this.visit(astRoot);
+        await this.init();
+        await this.visit(this.compiler.astRoot);
     }
     async visitCall(node) {
-        let callInfo = this.currentScope.getCallInfo(node, this.builtinDefs);
+        let callInfo = this.currentScope.getCallInfo(node, this.compiler.builtinDefs);
         node.callInfo = callInfo;
         for (let arg of callInfo.args) {
             await this.visit(arg);
@@ -25,6 +25,9 @@ export default class Analyzer extends NodeVisitor {
                 name.type = this.currentScope.getVariableType(name);
             }
         }
+    }
+    async visitModuleCall(node) {
+        throw 'TODO';
     }
     async visitOutside(node) {
         let scope = this.currentScope;
@@ -62,7 +65,7 @@ export default class Analyzer extends NodeVisitor {
         this.currentScope = scope;
     }
     async visitTranslate(node) {
-        if (this.translateTargets.indexOf(node.target) === -1) return;
+        if (this.compiler.translateTargets.indexOf(node.target) === -1) return;
         this.currentScope.addDef(node);
     }
 }
@@ -132,6 +135,13 @@ export class Scope {
         child.global = this.global;
         child.parent = this;
         return child;
+    }
+}
+
+export class GlobalScope extends Scope {
+    constructor() {
+        super();
+        this.global = this;
     }
 }
 

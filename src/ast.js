@@ -17,6 +17,7 @@ export class AstNodeList extends AstNode {
 export class YaksokRoot extends AstNode {
     constructor(statements) {
         super();
+        this.modules = {}; // module resolver 패스를 거친 뒤부터 접근 가능
         this.statements = statements;
     }
 }
@@ -24,7 +25,7 @@ export class YaksokRoot extends AstNode {
 export class Statements extends AstNodeList {
     constructor() {
         super();
-        this.scope = null;
+        this.scope = null; // analyzer 패스를 거친 뒤부터 접근 가능
     }
 }
 
@@ -100,9 +101,9 @@ export class Call extends Expression {
 }
 
 export class ModuleCall extends Expression {
-    constructor(moduleName, expressions) {
+    constructor(target, expressions) {
         super();
-        this.moduleName = moduleName;
+        this.target = target;
         this.expressions = expressions;
         this.callInfo = null;
     }
@@ -460,7 +461,7 @@ export class NodeVisitor {
     constructor() {
         this.translateTargets = [];
     }
-    init() {}
+    async init() {}
     async visit(node) {
         if (node instanceof YaksokRoot) return await this.visitYaksokRoot(node);
         if (node instanceof Statements) return await this.visitStatements(node);

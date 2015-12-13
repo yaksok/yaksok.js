@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "lex-es6": "^1.1.0",
+    "uuid": "^2.0.1",
     "yargs": "^3.30.0"
   },
   "devDependencies": {
