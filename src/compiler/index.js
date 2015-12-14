@@ -22,10 +22,14 @@ export default class Compiler extends NodeVisitor {
         this.translateTargets = [];
         this.builtinDefs = {...builtinYaksok};
     }
-    get astRoot() {
-        return this.astMap[this.entryContext.hash()];
+    get entryModuleHash() { return this.entryContext.hash(); }
+    getAstRoot(moduleHash=null) {
+        if (moduleHash === null) {
+            return this.astMap[this.entryModuleHash];
+        } else {
+            return this.astMap[moduleHash];
+        }
     }
-    get globalScope() { return this.astRoot.statements.scope; }
     async init() {
         await super.init();
         { // module

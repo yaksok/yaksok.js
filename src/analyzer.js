@@ -6,14 +6,20 @@ import {
 import { yaksok as builtinYaksok } from 'builtin';
 
 export default class Analyzer extends NodeVisitor {
-    async init() {
-        await super.init();
-        this.compiler.astRoot.statements.scope = new GlobalScope();
-        this.currentScope = this.compiler.globalScope;
+    prepare(moduleHash) {
+        this.currentScope = new Scope();
+        this.currentAstRoot = this.compiler.getAstRoot(moduleHash);
+        this.currentAstRoot.statements.scope = this.currentScope;
+        return this.currentAstRoot;
     }
     async analyze(astRoot) {
         await this.init();
-        await this.visit(this.compiler.astRoot);
+        // analyze modules
+        for (let moduleHash of this.compiler.moduleOrder) {
+            await this.visit(this.prepare(moduleHash));
+        }
+        // analyze entry point
+        await this.visit(this.prepare());
     }
     async visitCall(node) {
         let callInfo = this.currentScope.getCallInfo(node, this.compiler.builtinDefs);
@@ -27,7 +33,18 @@ export default class Analyzer extends NodeVisitor {
         }
     }
     async visitModuleCall(node) {
-        throw 'TODO';
+        let moduleHash = this.currentAstRoot.modules[node.target];
+        let moduleAstRoot = this.compiler.getAstRoot(moduleHash);
+        let { moduleScope } = moduleAstRoot;
+        let callInfo = moduleScope.getCallInfo(node);
+        node.callInfo = callInfo;
+        for (let arg of callInfo.args) {
+            await this.visit(arg);
+            if (arg instanceof Name) {
+                let name = arg;
+                name.type = this.currentScope.getVariableType(name);
+            }
+        }
     }
     async visitOutside(node) {
         let scope = this.currentScope;
@@ -74,7 +91,6 @@ export class Scope {
     variables = [];
     defs = [];
     parent = null;
-    global = null;
     updateVariable(name) { // for static type analysis
         let localIndex = this.variables.findIndex(item => item.value === name.value);
         if (localIndex === -1) {
@@ -132,18 +148,12 @@ export class Scope {
     }
     newChildScope() {
         let child = new Scope();
-        child.global = this.global;
         child.parent = this;
         return child;
     }
 }
 
-export class GlobalScope extends Scope {
-    constructor() {
-        super();
-        this.global = this;
-    }
-}
+export class ModuleScope extends Scope {}
 
 export class CallInfo {
     constructor(def, args) {

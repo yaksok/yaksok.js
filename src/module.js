@@ -2,8 +2,9 @@ import path from 'path';
 import uuid from 'uuid';
 
 import * as ast from 'ast';
-import YaksokParser from 'parser';
 import { NodeVisitor } from 'ast';
+import YaksokParser from 'parser';
+import ModuleScope from 'analyzer';
 
 export class Resolver extends NodeVisitor {
     constructor() {
@@ -14,9 +15,8 @@ export class Resolver extends NodeVisitor {
         await super.init();
         this.targets = [];
     }
-    pushModuleOrder(context) {
+    pushModuleOrder(moduleHash) {
         let entryHash = this.compiler.entryContext.hash();
-        let moduleHash = context.hash();
         if (entryHash === moduleHash) return;
         let index = this.compiler.moduleOrder.indexOf(moduleHash);
         if (index === -1) this.compiler.moduleOrder.push(moduleHash);
@@ -31,16 +31,29 @@ export class Resolver extends NodeVisitor {
         let code = await this.loader.load(context);
         let astRoot = this.parser.parse(code);
         this.compiler.astMap[moduleHash] = astRoot;
-        await this.visit(astRoot);
-        for (let target of this.targets) {
-            let targetResolver = new Resolver();
-            targetResolver.compiler = this.compiler;
-            let targetContext = new CommonContext();
-            targetContext.from = context;
-            targetContext.name = target;
-            let targetAst = targetResolver.resolve(targetContext);
-            astRoot.modules[target] = targetAst;
-            this.pushModuleOrder(targetContext);
+        { // module scope
+            let moduleScope = new ModuleScope();
+            for (let statement of astRoot.statements) {
+                if (statement instanceof ast.Def) {
+                    moduleScope.addDef(statement);
+                }
+            }
+            astRoot.moduleScope = moduleScope;
+        }
+        { // dependency
+            await this.visit(astRoot);
+            for (let target of this.targets) {
+                let targetResolver = new Resolver();
+                targetResolver.compiler = this.compiler;
+                let targetContext = new CommonContext();
+                targetContext.from = context;
+                targetContext.name = target;
+                let targetHash = targetContext.hash();
+                let targetAstRoot = targetResolver.resolve(targetContext);
+                this.compiler.astMap[targetHash] = targetAstRoot;
+                astRoot.modules[target] = targetHash;
+                this.pushModuleOrder(targetHash);
+            }
         }
         return astRoot;
     }
