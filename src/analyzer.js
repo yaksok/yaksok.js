@@ -124,24 +124,29 @@ export class Scope {
     }
     addDef(def) { this.defs.push(def); }
     getCallInfo(call, builtinDefs={}) {
-        let matchDef = null;
-        let args = null;
+        let matchArgs = null;
+        let matchDefs = [];
         for (let def of this.defs) {
-            args = def.match(call);
+            let args = def.match(call);
             if (args) {
-                if (matchDef) throw new Error('같은 스코프 안에서 호출 가능한 정의가 여러개입니다');
-                matchDef = def;
+                matchArgs = args;
+                matchDefs.push(def);
             }
         }
-        if (matchDef) {
-            return new CallInfo(matchDef, args);
+        if (matchDefs.length === 1) {
+            return new CallInfo(matchDefs[0], matchArgs);
+        } else if (matchDefs.length > 1) {
+            throw new Error(
+                '같은 스코프 안에서 호출 가능한 정의가 여러개입니다:\n' +
+                matchDefs.map(def => '    ' + def.repr).join('\n')
+            );
         }
         if (this.parent) {
             return this.parent.getCallInfo(call, builtinDefs);
         }
         for (const key of Object.keys(builtinDefs)) {
             let def = builtinDefs[key];
-            args = def.match(call);
+            let args = def.match(call);
             if (args) return new CallInfo(def, args);
         }
         throw new Error('호출 가능한 정의를 찾지 못했습니다');

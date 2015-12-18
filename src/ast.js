@@ -400,9 +400,11 @@ export class Description extends AstNodeList {
     get parameters() {
         return this.childNodes.filter(item => item instanceof DescriptionParameter);
     }
+    get repr() { return this.childNodes.map(expression => expression.repr).join(''); }
 }
 export class DescriptionParameter extends AstNode {
     constructor(value) { super(); this.value = value; }
+    get repr() { return `(${ this.value })`; }
 }
 export class DescriptionName extends AstNode {
     constructor() {
@@ -424,6 +426,7 @@ export class DescriptionName extends AstNode {
     [Symbol.iterator]() {
         return this.names[Symbol.iterator]();
     }
+    get repr() { return (this.needWhiteSpace ? ' ' : '') + this.names.join('/'); }
 }
 
 //defs
@@ -437,6 +440,9 @@ export class Def extends Statement {
         return this.description.match(call.expressions);
     }
     get hasSideEffect() { return true; }
+    get repr() {
+        return `정의 ${ this.description.repr }`;
+    }
 }
 
 export class Yaksok extends Def {
@@ -449,6 +455,9 @@ export class Yaksok extends Def {
         // TODO: 현재 약속의 부수효과 여부 반환
         return super.hasSideEffect();
     }
+    get repr() {
+        return `약속 ${ this.description.repr }`;
+    }
 }
 
 export class Translate extends Def {
@@ -457,6 +466,9 @@ export class Translate extends Def {
         this.description = description;
         this.target = target;
         this.code = code;
+    }
+    get repr() {
+        return `번역(${ this.target }) ${ this.description.repr }`;
     }
 }
 
