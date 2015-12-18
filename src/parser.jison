@@ -60,7 +60,7 @@ call
     ;
 
 module_call
-    : ATMARK name expressions empty_or_newlines     { $$ = new yy.ast.ModuleCall($expressions) }
+    : ATMARK name expressions empty_or_newlines     { $$ = new yy.ast.ModuleCall($name, $expressions) }
     ;
 
 block

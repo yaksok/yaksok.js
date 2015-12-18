@@ -13,6 +13,7 @@ export class TextTranslator extends Translator {
         this.result = [];
         this.indent = 0;
     }
+    lazyWrite(func) { this.result.push({toString: func}); }
     write(code) { this.result.push(code); }
     writeIndent() { this.result.push(Array(this.indent + 1).join('    ')); }
     async translate(astRoot) {

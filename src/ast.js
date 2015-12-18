@@ -17,6 +17,7 @@ export class AstNodeList extends AstNode {
 export class YaksokRoot extends AstNode {
     constructor(statements) {
         super();
+        this.hash = null; // module resolver 패스를 거친 뒤부터 사용 가능
         this.modules = {}; // key: module name, value: module hash
                            // module resolver 패스를 거친 뒤부터 사용 가능
         this.moduleScope = null; // module resolver 패스를 거친 뒤부터 사용 가능

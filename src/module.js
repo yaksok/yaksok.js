@@ -4,7 +4,7 @@ import uuid from 'uuid';
 import * as ast from 'ast';
 import { NodeVisitor } from 'ast';
 import YaksokParser from 'parser';
-import ModuleScope from 'analyzer';
+import { ModuleScope } from 'analyzer';
 
 export class Resolver extends NodeVisitor {
     constructor() {
@@ -13,7 +13,7 @@ export class Resolver extends NodeVisitor {
     }
     async init() {
         await super.init();
-        this.targets = [];
+        this.submoduleNames = [];
     }
     pushModuleOrder(moduleHash) {
         let entryHash = this.compiler.entryContext.hash();
@@ -31,6 +31,7 @@ export class Resolver extends NodeVisitor {
         let code = await this.loader.load(context);
         let astRoot = this.parser.parse(code);
         this.compiler.astMap[moduleHash] = astRoot;
+        astRoot.hash = moduleHash;
         { // module scope
             let moduleScope = new ModuleScope();
             for (let statement of astRoot.statements) {
@@ -42,17 +43,18 @@ export class Resolver extends NodeVisitor {
         }
         { // dependency
             await this.visit(astRoot);
-            for (let target of this.targets) {
-                let targetResolver = new Resolver();
-                targetResolver.compiler = this.compiler;
-                let targetContext = new CommonContext();
-                targetContext.from = context;
-                targetContext.name = target;
-                let targetHash = targetContext.hash();
-                let targetAstRoot = targetResolver.resolve(targetContext);
-                this.compiler.astMap[targetHash] = targetAstRoot;
-                astRoot.modules[target] = targetHash;
-                this.pushModuleOrder(targetHash);
+            for (let submoduleName of this.submoduleNames) {
+                let submoduleResolver = new Resolver();
+                submoduleResolver.compiler = this.compiler;
+                submoduleResolver.loader = this.loader;
+                let submoduleContext = new CommonContext();
+                submoduleContext.from = context;
+                submoduleContext.name = submoduleName;
+                let submoduleHash = submoduleContext.hash();
+                let submoduleAstRoot = submoduleResolver.resolve(submoduleContext);
+                this.compiler.astMap[submoduleHash] = submoduleAstRoot;
+                astRoot.modules[submoduleName] = submoduleHash;
+                this.pushModuleOrder(submoduleHash);
             }
         }
         return astRoot;
@@ -70,7 +72,7 @@ export class Resolver extends NodeVisitor {
         }
     }
     async visitModuleCall(node) {
-        this.targets.push(node.target);
+        this.submoduleNames.push(node.target.value);
         for (let expression of node.expressions) {
             await this.visit(expression);
         }

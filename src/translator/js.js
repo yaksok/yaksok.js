@@ -9,6 +9,7 @@ export default class JsTranslator extends TextTranslator {
     async init() {
         await super.init();
         this.runtime = {};
+        this.useModule = false;
         this.functionNameIndex = 0;
         this.functionNameMap = new Map(); // key: ast yaksok node, value: function name string
     }
@@ -16,7 +17,7 @@ export default class JsTranslator extends TextTranslator {
         if (this.functionNameMap.has(def)) {
             return this.functionNameMap.get(def);
         }
-        let functionName = `y${ this.functionNameIndex++ }s${ yaksokDescriptionToJsIdentifier(def.description) }`;
+        let functionName = `ys_${ this.functionNameIndex++ }_${ yaksokDescriptionToJsIdentifier(def.description) }`;
         this.functionNameMap.set(def, functionName);
         return functionName;
     }
@@ -24,7 +25,7 @@ export default class JsTranslator extends TextTranslator {
         await this.init();
         this.write('(function () {\n');
         this.write(prelude);
-        this.write({toString: () => {
+        this.lazyWrite(_=> {
             let runtimes = [];
             for (let key in this.runtime) {
                 if (this.runtime[key]) {
@@ -33,10 +34,64 @@ export default class JsTranslator extends TextTranslator {
                 }
             }
             return runtimes.join('');
-        }});
-        await this.visit(astRoot);
+        });
+        if (this.compiler.moduleOrder.length > 0) {
+            this.useModule = true;
+            this.writeIndent();
+            this.write('let yaksokModules = {\n');
+            ++this.indent;
+            for (let moduleHash of this.compiler.moduleOrder) {
+                this.writeIndent();
+                this.write(`${ JSON.stringify(moduleHash) }: {},\n`);
+            }
+            this.writeIndent();
+            this.write(`${ JSON.stringify(astRoot.hash) }: {} // entry point\n`);
+            --this.indent;
+            this.write('};\n');
+            for (let moduleHash of this.compiler.moduleOrder) {
+                this.write('\n');
+                this.writeIndent();
+                this.write(`// module: ${ moduleHash }\n`);
+                await this.visitYaksokRoot(this.compiler.getAstRoot(moduleHash));
+            }
+            this.write('\n');
+            this.writeIndent();
+            this.write(`// entry point: ${ astRoot.hash }\n`);
+            await this.visitYaksokRoot(astRoot);
+            this.write('\n');
+        } else {
+            await this.visitYaksokRoot(astRoot);
+        }
         this.write('})();');
         return this.result.join('');
+    }
+    async visitYaksokRoot(node) {
+        if (this.useModule) {
+            this.write('(function () {\n');
+            for (let submoduleName in node.modules) {
+                this.writeIndent();
+                this.write(`var ys_m_${ submoduleName } = `);
+                this.write(`yaksokModules[${ JSON.stringify(node.modules[submoduleName]) }];\n`);
+            }
+        }
+        await super.visitYaksokRoot(node);
+        if (this.useModule) {
+            this.writeIndent();
+            this.write('{ // exports\n');
+            ++this.indent;
+            this.writeIndent();
+            this.write(`var ys_m = yaksokModules[${ JSON.stringify(node.hash) }];\n`);
+            for (let def of node.moduleScope.defs) {
+                let functionName = this.getFunctionNameFromDef(def);
+                this.writeIndent();
+                this.write(`ys_m.${ functionName } = ${ functionName };\n`);
+            }
+            --this.indent;
+            this.writeIndent();
+            this.write('}\n');
+            this.writeIndent();
+            this.write('})();\n');
+        }
     }
     async visitPlainStatement(node) {
         this.writeIndent();
@@ -62,7 +117,7 @@ export default class JsTranslator extends TextTranslator {
     }
     async visitOutside(node) {
         this.writeIndent();
-        this.write('// global ');
+        this.write('// nonlocal ');
         await this.visit(node.name);
         this.write('\n');
     }
@@ -98,6 +153,20 @@ export default class JsTranslator extends TextTranslator {
         }
         let functionName = this.getFunctionNameFromDef(def);
         this.write(functionName);
+        this.write('(');
+        let first = true;
+        for (let arg of args) {
+            if (!first) this.write(', ');
+            first = false;
+            await this.visit(arg);
+        }
+        this.write(')');
+    }
+    async visitModuleCall(node) {
+        let { def, args } = node.callInfo;
+        let expressions = node.expressions.childNodes;
+        let functionName = this.getFunctionNameFromDef(def);
+        this.write(`ys_m_${ node.target.value }.${ functionName }`);
         this.write('(');
         let first = true;
         for (let arg of args) {

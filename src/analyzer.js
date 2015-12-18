@@ -6,9 +6,9 @@ import {
 import { yaksok as builtinYaksok } from 'builtin';
 
 export default class Analyzer extends NodeVisitor {
-    prepare(moduleHash) {
+    async prepare(moduleHash) {
         this.currentScope = new Scope();
-        this.currentAstRoot = this.compiler.getAstRoot(moduleHash);
+        this.currentAstRoot = await this.compiler.getAstRoot(moduleHash);
         this.currentAstRoot.statements.scope = this.currentScope;
         return this.currentAstRoot;
     }
@@ -16,10 +16,10 @@ export default class Analyzer extends NodeVisitor {
         await this.init();
         // analyze modules
         for (let moduleHash of this.compiler.moduleOrder) {
-            await this.visit(this.prepare(moduleHash));
+            await this.visit(await this.prepare(moduleHash));
         }
         // analyze entry point
-        await this.visit(this.prepare());
+        await this.visit(await this.prepare());
     }
     async visitCall(node) {
         let callInfo = this.currentScope.getCallInfo(node, this.compiler.builtinDefs);
@@ -33,8 +33,8 @@ export default class Analyzer extends NodeVisitor {
         }
     }
     async visitModuleCall(node) {
-        let moduleHash = this.currentAstRoot.modules[node.target];
-        let moduleAstRoot = this.compiler.getAstRoot(moduleHash);
+        let moduleHash = this.currentAstRoot.modules[node.target.value];
+        let moduleAstRoot = await this.compiler.getAstRoot(moduleHash);
         let { moduleScope } = moduleAstRoot;
         let callInfo = moduleScope.getCallInfo(node);
         node.callInfo = callInfo;
