@@ -11,3 +11,8 @@ import ConstantFolder from 'plugin/ConstantFolder';
 export var plugin = {
     ConstantFolder
 };
+
+import { CommonContext } from 'module';
+export var context = {
+    CommonContext
+};

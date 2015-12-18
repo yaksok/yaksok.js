@@ -37,6 +37,7 @@ statement
     : assign_statement                  { $$ = $1 }
     | outside_statement                 { $$ = $1 }
     | call                              { $$ = new yy.ast.PlainStatement($1) }
+    | module_call                       { $$ = new yy.ast.PlainStatement($1) }
     | if_else_statement                 { $$ = $1 }
     | loop_statement                    { $$ = $1 }
     | loop_end_statement                { $$ = $1 }
@@ -46,7 +47,8 @@ statement
     ;
 
 assign_statement
-    : lvalue ASSIGN call empty_or_newlines  { $$ = new yy.ast.Assign($lvalue, $call) }
+    : lvalue ASSIGN call empty_or_newlines          { $$ = new yy.ast.Assign($lvalue, $call) }
+    | lvalue ASSIGN module_call empty_or_newlines   { $$ = new yy.ast.Assign($lvalue, $module_call) }
     ;
 
 outside_statement
@@ -55,6 +57,10 @@ outside_statement
 
 call
     : expressions empty_or_newlines     { $$ = yy.parseCall($expressions) }
+    ;
+
+module_call
+    : ATMARK name expressions empty_or_newlines     { $$ = new yy.ast.ModuleCall($name, $expressions) }
     ;
 
 block
@@ -183,6 +189,7 @@ primary_expression
     | LPAR RPAR                         { $$ = new yy.ast.Void() }
     | LPAR expression RPAR              { $$ = $expression }
     | LPAR call RPAR                    { $$ = $call }
+    | LPAR module_call RPAR             { $$ = $module_call }
     ;
 
 lvalue

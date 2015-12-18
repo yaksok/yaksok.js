@@ -3,20 +3,40 @@ import {
     NodeVisitor,
     Name,
 } from 'ast';
+import { yaksok as builtinYaksok } from 'builtin';
 
 export default class Analyzer extends NodeVisitor {
-    init() {
-        super.init();
-        this.globalScope = new Scope(); this.globalScope.global = this.globalScope;
-        this.currentScope = this.globalScope;
+    async prepare(moduleHash) {
+        this.currentScope = new Scope();
+        this.currentAstRoot = await this.compiler.getAstRoot(moduleHash);
+        this.currentAstRoot.statements.scope = this.currentScope;
+        return this.currentAstRoot;
     }
     async analyze(astRoot) {
-        this.init();
-        astRoot.statements.scope = this.globalScope;
-        await this.visit(astRoot);
+        await this.init();
+        // analyze modules
+        for (let moduleHash of this.compiler.moduleOrder) {
+            await this.visit(await this.prepare(moduleHash));
+        }
+        // analyze entry point
+        await this.visit(await this.prepare());
     }
     async visitCall(node) {
-        let callInfo = this.currentScope.getCallInfo(node, this.builtinDefs);
+        let callInfo = this.currentScope.getCallInfo(node, this.compiler.builtinDefs);
+        node.callInfo = callInfo;
+        for (let arg of callInfo.args) {
+            await this.visit(arg);
+            if (arg instanceof Name) {
+                let name = arg;
+                name.type = this.currentScope.getVariableType(name);
+            }
+        }
+    }
+    async visitModuleCall(node) {
+        let moduleHash = this.currentAstRoot.modules[node.target.value];
+        let moduleAstRoot = await this.compiler.getAstRoot(moduleHash);
+        let { moduleScope } = moduleAstRoot;
+        let callInfo = moduleScope.getCallInfo(node);
         node.callInfo = callInfo;
         for (let arg of callInfo.args) {
             await this.visit(arg);
@@ -62,7 +82,7 @@ export default class Analyzer extends NodeVisitor {
         this.currentScope = scope;
     }
     async visitTranslate(node) {
-        if (this.translateTargets.indexOf(node.target) === -1) return;
+        if (this.compiler.translateTargets.indexOf(node.target) === -1) return;
         this.currentScope.addDef(node);
     }
 }
@@ -71,7 +91,6 @@ export class Scope {
     variables = [];
     defs = [];
     parent = null;
-    global = null;
     updateVariable(name) { // for static type analysis
         let localIndex = this.variables.findIndex(item => item.value === name.value);
         if (localIndex === -1) {
@@ -129,11 +148,12 @@ export class Scope {
     }
     newChildScope() {
         let child = new Scope();
-        child.global = this.global;
         child.parent = this;
         return child;
     }
 }
+
+export class ModuleScope extends Scope {}
 
 export class CallInfo {
     constructor(def, args) {

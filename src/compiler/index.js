@@ -1,42 +1,73 @@
 import { NodeVisitor } from 'ast';
-import YaksokParser from 'parser';
+import {
+    Loader as ModuleLoader,
+    Resolver as ModuleResolver,
+    RawContext as ModuleRawContext
+} from 'module';
 import Analyzer from 'analyzer';
 import { yaksok as builtinYaksok } from 'builtin';
 
 export const BEFORE_ANALYZE = {};
 export const AFTER_ANALYZE = {};
 
-export default class YaksokCompiler extends NodeVisitor {
+export default class Compiler extends NodeVisitor {
     constructor(config={}) {
         super();
-        this.parser = new YaksokParser();
-        this.analyzer = new Analyzer();
         this.plugins = new CompilerPlugins();
+        this.moduleLoader = new ModuleLoader();
+        this.moduleResolver = new ModuleResolver();
+        this.analyzer = new Analyzer();
+        this.translator = null;
         this.config = config;
         this.translateTargets = [];
         this.builtinDefs = {...builtinYaksok};
     }
-    init() {
-        super.init();
-        this.result = [];
-        this.analyzer.translateTargets = this.translateTargets;
-        this.analyzer.builtinDefs = this.builtinDefs;
+    get entryModuleHash() { return this.entryContext.hash(); }
+    getAstRoot(moduleHash=null) {
+        if (moduleHash === null) {
+            return this.astMap[this.entryModuleHash];
+        } else {
+            return this.astMap[moduleHash];
+        }
     }
-    write(code) { this.result.push(code); }
-    async prepareAstRoot(code) {
-        let astRoot = this.parser.parse(code);
-        for (let plugin of this.plugins.get(BEFORE_ANALYZE))
-            await plugin.run(astRoot, this.config);
-        await this.analyzer.analyze(astRoot);
-        for (let plugin of this.plugins.get(AFTER_ANALYZE))
-            await plugin.run(astRoot, this.config);
-        return astRoot;
+    async init() {
+        await super.init();
+        { // module
+            this.moduleResolver.loader = this.moduleLoader;
+            this.moduleOrder = []; // module context(except entry context) hash list
+            this.astMap = {}; // key: module context hash, value: module ast root
+        }
+        { // compiler instance is global state of all pass
+            this.moduleLoader.compiler =
+            this.moduleResolver.compiler =
+            this.analyzer.compiler =
+            this.translator.compiler =
+            this;
+        }
     }
-    async compile(code) {
-        this.init();
-        let astRoot = await this.prepareAstRoot(code);
-        await this.visit(astRoot);
-        return this.result.join('');
+    async compile(context) {
+        await this.init();
+        { // context
+            if (typeof context === 'string' || context instanceof String) {
+                this.entryContext = new ModuleRawContext(context);
+            } else {
+                this.entryContext = context;
+            }
+        }
+        let entryAstRoot = await this.moduleResolver.resolve(this.entryContext);
+        // before analyze
+        for (let plugin of this.plugins.get(BEFORE_ANALYZE)) {
+            plugin.compiler = this;
+            await plugin.run(entryAstRoot, this.config);
+        }
+        // analyze
+        await this.analyzer.analyze(entryAstRoot);
+        // after analyze
+        for (let plugin of this.plugins.get(AFTER_ANALYZE)) {
+            plugin.compiler = this;
+            await plugin.run(entryAstRoot, this.config);
+        }
+        return await this.translator.translate(entryAstRoot);
     }
 }
 

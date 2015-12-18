@@ -6,7 +6,7 @@ export default class Plugin extends NodeVisitor {
         this.config = config;
     }
     async run(astRoot) {
-        this.init();
+        await this.init();
         await this.visit(astRoot);
     }
 }

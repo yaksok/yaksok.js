@@ -17,6 +17,10 @@ export class AstNodeList extends AstNode {
 export class YaksokRoot extends AstNode {
     constructor(statements) {
         super();
+        this.hash = null; // module resolver 패스를 거친 뒤부터 사용 가능
+        this.modules = {}; // key: module name, value: module hash
+                           // module resolver 패스를 거친 뒤부터 사용 가능
+        this.moduleScope = null; // module resolver 패스를 거친 뒤부터 사용 가능
         this.statements = statements;
     }
 }
@@ -24,7 +28,7 @@ export class YaksokRoot extends AstNode {
 export class Statements extends AstNodeList {
     constructor() {
         super();
-        this.scope = null;
+        this.scope = null; // analyzer 패스를 거친 뒤부터 접근 가능
     }
 }
 
@@ -90,7 +94,21 @@ export class Call extends Expression {
     constructor(expressions) {
         super();
         this.expressions = expressions;
-        this.callInfo = null;
+        this.callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
+    }
+    fold() {
+        this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
+        // TODO: fold call
+        return super.fold();
+    }
+}
+
+export class ModuleCall extends Expression {
+    constructor(target, expressions) {
+        super();
+        this.target = target;
+        this.expressions = expressions;
+        this.callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
     }
     fold() {
         this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
@@ -446,7 +464,7 @@ export class NodeVisitor {
     constructor() {
         this.translateTargets = [];
     }
-    init() {}
+    async init() {}
     async visit(node) {
         if (node instanceof YaksokRoot) return await this.visitYaksokRoot(node);
         if (node instanceof Statements) return await this.visitStatements(node);
@@ -481,6 +499,7 @@ export class NodeVisitor {
         await this.visit(node.name);
     }
     async visitCall(node) {}
+    async visitModuleCall(node) {}
     async visitIf(node) {
         await this.visit(node.condition);
         await this.visitStatements(node.ifBlock);
@@ -499,6 +518,7 @@ export class NodeVisitor {
     async visitExpressions(node) { for (let expression of node) await this.visitExpression(expression); }
     async visitExpression(node) {
         if (node instanceof Call) return await this.visitCall(node);
+        if (node instanceof ModuleCall) return await this.visitModuleCall(node);
         if (node instanceof Primitive) return await this.visitPrimitive(node);
         if (node instanceof Range) return await this.visitRange(node);
         if (node instanceof List) return await this.visitList(node);

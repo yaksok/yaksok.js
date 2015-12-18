@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var yaksok = require('../dist/yaksok.min.js');
 var fs = require('fs');
+var path = require('path');
 var argv = require('yargs')
     .usage([
         '사용법: ysjs <소스코드> [설정]',
@@ -38,15 +39,19 @@ if (argv._.length === 0) {
     process.exit(1);
 } else {
     var filePath = argv._[0];
-    var code = fs.readFileSync(filePath, { encoding: 'utf8' });
+    var entryContext = new yaksok.context.CommonContext(
+        path.basename(filePath, '.yak'),
+        path.dirname(filePath)
+    );
     switch (argv.target) {
     case 'js': case 'javascript': {
         var compiler = new yaksok.impl.JsTargetCompiler();
         compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
-        compiler.compile(code).then(function (result) {
+        compiler.compile(entryContext).then(function (result) {
             fs.writeFileSync(argv.out, result, { encoding: 'utf8' });
         }).catch(function (err) {
-            throw err;
+            console.error(err instanceof Error ? err.stack : err);
+            process.exit(1);
         });
     } break;
     default: {
