@@ -184,6 +184,15 @@ const code20 = `
 문자열: "\\u <잘못된 문자입니다> 에러를 출력하거나, 일반 u 문자로 취급되도록 수정 필요"
 `;
 
+const code21 =`
+약속 (가) (나) 더하기
+    결과: 가 + 나
+약속 (가) (나) 곱하기
+    결과: 가 * 나
+(2 3 더하기) 보여주기
+(2 3 곱하기) 보여주기
+`;
+
 function test_lexer(code) {
     let lexer = new YaksokLexer();
     lexer.setInput(code);
@@ -210,7 +219,7 @@ async function test_compiler(code) {
     console.log();
 }
 
-let code = code20;
+let code = code21;
 console.log(code + '\n');
 // test_lexer(code);
 // test_parser(code);

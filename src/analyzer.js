@@ -113,7 +113,9 @@ export class Scope {
         return false;
     }
     getVariableType(name, local=true) {
-        let localType = this.variables.find(item => item.value === name.value).type;
+        let localVariable = this.variables.find(item => item.value === name.value);
+        if (!localVariable) return null;
+        let localType = localVariable.type;
         if (local) {
             return localType;
         } else {
