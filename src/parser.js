@@ -7,6 +7,11 @@ let yy = {
     parseInteger: string => string | 0,
     parseFloat: string => +string,
     ast: ast,
+    stmts: stmt => {
+         let stmts = new yy.ast.Statements();
+         stmts.push(stmt);
+         return stmts;
+    },
     parseCall: expressions => {
         if (expressions.length > 1) return new yy.ast.Call(expressions);
         return expressions.childNodes[0];

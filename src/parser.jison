@@ -73,8 +73,8 @@ if_statement
 
 if_else_statement
     : if_statement ELSE block                   { $1.elseBlock = $3; $$ = $1 }
-    | if_statement ELSE if_else_statement       { $1.elseBlock = $3; $$ = $1 }
-    | if_statement ELSEAND if_else_statement    { $1.elseBlock = $3; $$ = $1 }
+    | if_statement ELSE if_else_statement       { $1.elseBlock = yy.stmts($3); $$ = $1 }
+    | if_statement ELSEAND if_else_statement    { $1.elseBlock = yy.stmts($3); $$ = $1 }
     | if_statement                              { $$ = $1 }
     ;
 
