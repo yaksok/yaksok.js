@@ -1,7 +1,7 @@
 # yaksok.js
 한글 프로그래밍 언어 [약속](http://yaksok.org/)을 다루기 위한 자바스크립트 라이브러리입니다.
 
-![build status](https://travis-ci.org/disjukr/yaksok.js.svg)
+[![build status](https://travis-ci.org/disjukr/yaksok.js.svg)](https://travis-ci.org/disjukr/yaksok.js)
 
 
 ## 예시
