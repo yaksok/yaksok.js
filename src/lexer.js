@@ -2,8 +2,6 @@ import Lexer from 'lex-es6';
 
 const INITIAL_STATE = 0;
 const SPECIAL_STATE = 1;
-const ALL_STATES = [INITIAL_STATE, SPECIAL_STATE];
-const LEXING_RULES = [];
 const RESERVED = {
     약속: 'YAKSOK',
     만약: 'IF',
