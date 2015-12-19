@@ -186,16 +186,18 @@ export class And extends BinaryOperator {}
 And.prototype.type = Boolean;
 export class Equal extends BinaryOperator {
     fold() {
-        if (this.lhs.isConstant && this.rhs.isConstant)
+        if (this.lhs.isConstant && this.rhs.isConstant) {
             return new Boolean(this.lhs.fold().value === this.rhs.fold().value);
+        }
         return super.fold();
     }
 }
 Equal.prototype.type = Boolean;
 export class NotEqual extends BinaryOperator {
     fold() {
-        if (this.lhs.isConstant && this.rhs.isConstant) {}
+        if (this.lhs.isConstant && this.rhs.isConstant) {
             return new Boolean(this.lhs.fold().value !== this.rhs.fold().value);
+        }
         return super.fold();
     }
 }
