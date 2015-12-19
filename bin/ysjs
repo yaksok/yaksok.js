@@ -9,7 +9,7 @@ var argv = require('yargs')
     ].join('\n'))
     .example('ysjs', '약속 repl을 실행합니다')
     .example('ysjs -h', '이 도움말을 보여줍니다')
-    .example('ysjs "내.약속" -o "결과.js"', '"내.약속" 파일을 "결과.js"로 컴파일합니다')
+    .example('ysjs "소스코드.yak" -o "결과.js"', '"소스코드.yak" 파일을 "결과.js"로 컴파일합니다')
     .help('h')
     .options({
         h: {
