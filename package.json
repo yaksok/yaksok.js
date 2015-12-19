@@ -9,7 +9,7 @@
     "watch": "babel-node ./build --watch --dev",
     "min": "babel-node ./build --min",
     "test": "npm run build",
-    "prepublish": "npm run test && npm run min"
+    "prepublish": "node ./build/in-publish && npm run test && npm run min || exit 0"
   },
   "preferGlobal": true,
   "bin": {
