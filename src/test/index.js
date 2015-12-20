@@ -1,3 +1,5 @@
+import 'babel-polyfill';
+
 let mochaConfig = {
     reporter: 'nyan',
 };
