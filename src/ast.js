@@ -381,21 +381,24 @@ export class Description extends AstNodeList {
                     args.push(expression);
                     continue;
                 }
-                let next = this.childNodes[++i];
+                let next = this.childNodes[i + 1];
                 let nextExpression = expressions.childNodes[j + 1];
-                if (next.match(nextExpression) || next.needWhiteSpace) {
-                    ++j;
+                if (!next || next.match(nextExpression) || next.needWhiteSpace) {
                     args.push(expression);
                     continue;
                 }
                 let matchLength = next.postMatch(expression);
-                if (matchLength) {
-                    let name = expression.value;
+                let name = expression.value;
+                if (matchLength && name.length > matchLength) {
+                    ++i;
                     args.push(new Name(name.substr(0, name.length - matchLength)));
                     continue;
                 }
-                return null;
+                if (!nextExpression) return null;
+                args.push(expression);
+                continue;
             }
+            throw new Error('unexpected description item');
         }
         return args;
     }
@@ -420,7 +423,8 @@ export class DescriptionName extends AstNode {
     }
     postMatch(param) {
         if (!(param instanceof Name)) return 0;
-        return this.names.find(potential => param.value.endsWith(potential)).length;
+        let match = this.names.find(potential => param.value.endsWith(potential));
+        return match ? match.length : 0;
     }
     get length() { return this.names.length; }
     push(name) { this.names.push(name); }
