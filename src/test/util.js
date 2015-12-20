@@ -21,6 +21,7 @@ export async function run(entryModuleName, modules) {
     let js = await compiler.compile(new CommonContext(entryModuleName));
     let log = '';
     let console = {log: x => log += x + '\n'};
-    eval(js);
+    let babel = eval('require("babel-core")');
+    eval(babel.transform(js).code);
     return log;
 };
