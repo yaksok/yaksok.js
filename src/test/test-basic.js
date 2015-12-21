@@ -1,90 +1,66 @@
 import assert from 'assert';
 import { run } from './util';
 
-async function t(entry, expected) {
-    let actual = await run('entry', { entry: entry });
-    if (expected !== undefined) assert.equal(actual, expected);
+let reqFixture = require.context('raw!./fixtures', true);
+let fixtures = reqFixture.keys();
+
+async function t(file) {
+    let result = await run('entry', { entry: reqFixture('./' + file) });
+    let out = './' + file + '.out';
+    if (fixtures.indexOf(out) !== -1) {
+        assert.equal(result.out, reqFixture(out));
+    }
 }
 
 describe('에러 없이 잘 도나', _=> {
     it('버블소트', async () => {
-        await t(
-            require('raw!./fixtures/bubble-sort.yak'),
-            require('raw!./fixtures/bubble-sort.yak.out')
-        );
+        await t('bubble-sort.yak');
     });
     it('if', async () => {
-        await t(
-            require('raw!./fixtures/if.yak'),
-            require('raw!./fixtures/if.yak.out')
-        );
+        await t('if.yak');
     });
     it('if 두 번', async () => {
-        await t(require('raw!./fixtures/if-and-if.yak'));
+        await t('if-and-if.yak');
     });
     it('if-else 하고 if', async () => {
-        await t(require('raw!./fixtures/if-else-and-if.yak'));
+        await t('if-else-and-if.yak');
     });
     it('복잡한 if', async () => {
-        await t(require('raw!./fixtures/complex-if.yak'));
+        await t('complex-if.yak');
     });
     it('아이 가 종찬이보다 어린가', async () => {
-        await t(
-            require('raw!./fixtures/jongchan.yak'),
-            require('raw!./fixtures/jongchan.yak.out')
-        );
+        await t('jongchan.yak');
     });
     it('깐데또까', async () => {
-        await t(require('raw!./fixtures/assign-twice.yak'));
+        await t('assign-twice.yak');
     });
     it('피보나치', async () => {
-        await t(
-            require('raw!./fixtures/fibonacci.yak'),
-            require('raw!./fixtures/fibonacci.yak.out')
-        );
+        await t('fibonacci.yak');
     });
     it('피보나치2', async () => {
-        await t(
-            require('raw!./fixtures/fibonacci2.yak'),
-            require('raw!./fixtures/fibonacci2.yak.out')
-        );
+        await t('fibonacci2.yak');
     });
     it('공백', async () => {
-        await t(require('raw!./fixtures/void.yak'));
+        await t('void.yak');
     });
     it('번역', async () => {
-        await t(
-            require('raw!./fixtures/translate.yak'),
-            require('raw!./fixtures/translate.yak.out')
-        );
+        await t('translate.yak');
     });
     it('번역2', async () => {
-        await t(
-            require('raw!./fixtures/translate2.yak'),
-            require('raw!./fixtures/translate2.yak.out')
-        );
+        await t('translate2.yak');
     });
     it('바깥', async () => {
-        await t(
-            require('raw!./fixtures/nonlocal.yak'),
-            require('raw!./fixtures/nonlocal.yak.out')
-        );
+        await t('nonlocal.yak');
     });
     it('사전', async () => {
-        await t(
-            require('raw!./fixtures/dic.yak'),
-            require('raw!./fixtures/dic.yak.out')
-        );
+        await t('dic.yak');
     });
     // TODO: 돌리면 깨지는데, 당분간은 해결할 생각이 없습니다.
     // irc 오징어서버 #yaksok 채널로 오셔서 같의 논의해보도록 해요.
     // it('이스케이프', async () => {
-    //     await t(require('raw!./fixtures/escape.yak'));
+    //     await t('escape.yak');
     // });
     it('계산', async () => {
-        await t(
-            require('raw!./fixtures/calc.yak'),
-            require('raw!./fixtures/calc.yak.out')
-        );
+        await t('calc.yak');
     });
 });

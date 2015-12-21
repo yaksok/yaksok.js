@@ -19,9 +19,9 @@ export async function run(entryModuleName, modules) {
     let compiler = new JsTargetCompiler();
     compiler.moduleLoader = new TestLoader(modules);
     let js = await compiler.compile(new CommonContext(entryModuleName));
-    let log = '';
-    let console = {log: x => log += x + '\n'};
-    let babel = eval('require("babel-core")');
-    eval(babel.transform(js).code);
-    return log;
+    let out = '';
+    let console = {log: x => out += x + '\n'};
+    let babeled = eval('require("babel-core")').transform(js).code;
+    eval(babeled);
+    return { js, babeled, out };
 };
