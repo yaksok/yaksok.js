@@ -42,6 +42,9 @@ export default class YaksokLexer extends Lexer {
         this.lexingDescription = false;
         this.parenCount = 0;
         this.indent = [0];
+        if (this.queue[0] === 'START_DESCRIPTION') {
+            this.lexingDescription = true;
+        }
     }
     lex() {
         if (this.queue.length) return this.queue.shift();
