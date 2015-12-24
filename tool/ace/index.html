@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>mode-yaksok</title>
+    <script type="text/javascript" src="http://ajaxorg.github.io/ace-builds/src-noconflict/ace.js"></script>
+    <script type="text/javascript" src="http://ajaxorg.github.io/ace-builds/src-noconflict/mode-python.js"></script>
+    <script type="text/javascript" src="./mode-yaksok.js"></script>
+    <style type="text/css">
+    #editor {
+        width: 640px;
+        height: 480px;
+    }
+    </style>
+</head>
+<body>
+    <div id="editor">와</div>
+    <script>
+    var editor = ace.edit('editor');
+    editor.setValue([
+        '# 주석',
+        '',
+        '공백: ()',
+        '숫자: 123.456',
+        '논리대수: 참',
+        '문자열: \'안녕하세요\'',
+        '',
+        '약속 (값1)와/과 (값2) 중에 큰 값',
+        '    만약 값1 > 값2 이면',
+        '        결과: 값1',
+        '        약속 그만',
+        '    결과: 값2',
+        '',
+        '(2와 3 중에 큰 값) 보여주기',
+        '',
+        '번역(자바스크립트) 플랫폼 본연의 기능',
+        '***',
+        '    console.log(\'안녕 자바스크립트!\');',
+        '***',
+        '',
+        '# 자동 들여쓰기: 다음 줄에 `반복`을 입력하고 엔터를 입력해보세요.',
+        ''
+    ].join('\n'));
+    editor.setOptions({
+        selectionStyle: 'text',
+        useSoftTabs: true,
+        highlightActiveLine: false,
+        showPrintMargin: false,
+        theme: 'ace/theme/monokai'
+    });
+    var YaksokMode = ace.require('ace/mode/yaksok').Mode;
+    editor.getSession().setMode(new YaksokMode());
+    </script>
+</body>
+</html>
