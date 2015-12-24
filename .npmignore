@@ -2,6 +2,7 @@
 .babelrc
 build
 src
+tool
 
 node_modules
 npm-debug.log
