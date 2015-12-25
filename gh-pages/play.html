@@ -1,8 +1,140 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- jquery -->
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <!-- babel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.32/browser-polyfill.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.32/browser.min.js"></script>
+    <!-- ace -->
+    <script src="http://ajaxorg.github.io/ace-builds/src-noconflict/ace.js"></script>
+    <script src="http://ajaxorg.github.io/ace-builds/src-noconflict/mode-python.js"></script>
+    <!-- yaksok -->
+    <script src="../dist/yaksok.min.js"></script>
+    <script src="../tool/ace/mode-yaksok.js"></script>
+    <style type="text/css">
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .wrap {
+        margin-left: 10px;
+        width: calc(100% - 20px);
+        height: calc(100% - 10px);
+    }
+    .col {
+        width: calc(50% - 10px);
+        height: 100%;
+    }
+    .col.left { float: left; }
+    .col.right { float: right; }
+    .row {
+        margin: 5px 0;
+        width: 100%;
+        height: 20px;
+    }
+    .row .title {
+        display: inline-block;
+        height: 100%;
+        padding: 1px 5px;
+        font-size: 18px;
+        font-weight: lighter;
+        outline: 1px solid #888;
+    }
+    .editor {
+        width: 100%;
+        height: calc(100% - 30px);
+    }
+    </style>
 </head>
 <body>
-놀이터
+    <div class="wrap">
+        <div class="col left">
+            <div class="row">
+                <div class="title">약속 소스코드</div>
+                <select id="examples">
+                    <option value="fibonacci.yak">피보나치</option>
+                    <option value="bubble-sort.yak">버블소트</option>
+                </select>
+            </div>
+            <div id="src-editor" class="editor"></div>
+        </div>
+        <div class="col right">
+            <div class="row">
+                <div class="title">자바스크립트 결과코드</div>
+                es5: <input type="checkbox" id="run-babel" checked>
+                <button id="run">실행하기</button>
+            </div>
+            <div id="dst-editor" class="editor"></div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    var srcEditor = ace.edit('src-editor');
+    var dstEditor = ace.edit('dst-editor');
+    var compiler = new yaksok.impl.JsTargetCompiler();
+    compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
+    var current = 0;
+    var lastModified = 0;
+    var compiling = false;
+    function compile() { lastModified = +(new Date()); }
+    function editorConfig(editor, option) {
+        editor.setOptions({
+            selectionStyle: 'text',
+            useSoftTabs: true,
+            highlightActiveLine: false,
+            showPrintMargin: false,
+            theme: 'ace/theme/monokai'
+        });
+        if (option) {
+            editor.setOptions(option);
+        }
+    }
+    { // src config
+        editorConfig(srcEditor);
+        var YaksokMode = ace.require('ace/mode/yaksok').Mode;
+        srcEditor.getSession().setMode(new YaksokMode());
+    }
+    { // dst config
+        editorConfig(dstEditor, {
+            readOnly: true,
+            mode: 'ace/mode/javascript'
+        });
+    }
+    function loadExample(file) {
+        $.ajax({
+            url:'./examples/' + file,
+            dataType: 'text'
+        }).done(function (data) {
+            srcEditor.setValue(data);
+        });
+    }
+    loadExample($('#examples').val());
+    $('#examples').on('change', function () { loadExample($(this).val()); });
+    $('#run-babel').on('change', compile);
+    srcEditor.getSession().on('change', compile);
+    setInterval(function () {
+        if (current > lastModified) return;
+        if (compiling) return;
+        compiling = true;
+        compiler.compile(srcEditor.getValue())
+        .then(function (js) {
+            if ($('#run-babel').prop('checked')) js = babel.transform(js).code;
+            dstEditor.setValue(js);
+            current = +(new Date());
+            compiling = false;
+        })
+        .catch(function (err) {
+            var msg = (err instanceof Error) ? err.message : err;
+            dstEditor.setValue(msg);
+            current = +(new Date());
+            compiling = false;
+        });
+    });
+    $('#run').on('click', function () {
+        eval(dstEditor.getValue());
+    });
+    </script>
 </body>
 </html>
