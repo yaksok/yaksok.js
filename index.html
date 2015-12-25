@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>yaksok.js</title>
+    <style type="text/css">
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+    #header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+    }
+    #iframe {
+        position: absolute;
+        top: 100px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 100px);
+        border: none;
+    }
+    </style>
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+</head>
+<body>
+    <header id="header">
+        <div id="logo"><a href="#main">약속.js</a></div>
+        <ul id="nav-menu">
+            <li><a href="#learn">배우기</a></li>
+            <li><a href="#play">놀이터</a></li>
+            <li><a href="#install">설치하기</a></li>
+        </ul>
+    </header>
+    <iframe id="iframe" src="./gh-pages/main.html"></iframe>
+    <script type="text/javascript">
+    $(function () {
+        var pages = ['main', 'learn', 'play', 'install'];
+        function go() {
+            var to = location.hash.substr(1);
+            if (pages.indexOf(to) === -1) to = 'main';
+            $('#iframe').attr('src', './gh-pages/' + to + '.html');
+        }
+        go();
+        $(window).on('hashchange', go);
+    });
+    </script>
+</body>
+</html>
