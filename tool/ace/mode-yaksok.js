@@ -63,9 +63,9 @@ function YaksokHighlightRules() {
             { token: 'entity.name.function', regex: r.id },
             { token: 'paren.lparen', regex: '\\(', next: 'description_parameter' },
             { token: 'paren.rparen', regex: '\\)' },
+            { token: 'keyword.operator', regex: '\\/' },
             { token: 'text', regex: '$', next: 'start' },
-            { token: 'text', regex: '\\s+' },
-            { defaultToken: 'text' }
+            { token: 'text', regex: '\\s+' }
         ],
         'description_parameter': [
             { token: 'variable.parameter', regex: r.id, next: 'description' },
