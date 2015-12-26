@@ -1,6 +1,4 @@
-# yaksok.js
-
-![yaksok.js 로고](https://cdn.rawgit.com/agemor/yaksok.js/master/logo/logo-noir.svg)
+<img src="https://cdn.rawgit.com/agemor/yaksok.js/master/logo/logo-noir.svg" width="256">
 
 한글 프로그래밍 언어 [약속](http://yaksok.org/)을 다루기 위한 자바스크립트 라이브러리입니다.
 
