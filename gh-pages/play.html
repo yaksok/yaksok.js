@@ -140,7 +140,7 @@
             current = +(new Date());
             compiling = false;
         });
-    });
+    }, 1);
     $('#run').on('click', function () {
         eval(dstEditor.getValue());
     });
