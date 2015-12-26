@@ -3,39 +3,91 @@
 <head>
     <title>yaksok.js</title>
     <style type="text/css">
+    @import url(http://fonts.googleapis.com/earlyaccess/notosanskr.css);
     html, body {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
+        font-family: 'Noto Sans KR', sans-serif;
+    }
+    body {
+        background-color: #2f3129;
+        color: #f0f0f0;
+    }
+    .margin {
+        height: 20px;
+    }
+    .container {
+        width: 100%;
+        height: 100%;
     }
     #header {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100px;
+        margin: 0 auto;
+        width: 720px;
+        height: 80px;
+    }
+    #logo {
+        float: left;
+        width: 220px;
+        height: 100%;
+    }
+    #nav-menu {
+        display: flex;
+        float: right;
+        width: 500px;
+        height: 100%;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    #nav-menu > li {
+        display: inline-flex;
+        margin: auto;
+        font-size: 30px;
+        height: 100%;
+    }
+    #nav-menu > li > * {
+        line-height: 80px;
+        text-decoration: none;
+        font-weight: lighter;
+        color: #f0f0f0;
+        box-sizing: border-box;
+        border-bottom: 0px solid #f0f0f0;
+        transition: border 0.3s;
+    }
+    #nav-menu > li > *.current {
+        border-bottom: 2px solid #808080;
+    }
+    #nav-menu > li > *:hover {
+        font-weight: normal;
+        border-bottom: 5px solid #f0f0f0;
     }
     #iframe {
-        position: absolute;
-        top: 100px;
-        left: 0;
         width: 100%;
-        height: calc(100% - 100px);
+        height: calc(100% - 120px);
         border: none;
     }
     </style>
     <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 </head>
 <body>
+    <div class="margin"></div>
     <header id="header">
-        <div id="logo"><a href="#main">약속.js</a></div>
+        <div id="logo">
+            <a href="#main">
+                <div class="container">
+                    TODO: yaksok.js logo
+                </div>
+            </a>
+        </div>
         <ul id="nav-menu">
-            <li><a href="#learn">배우기</a></li>
+            <li><a href="#learn" class="current">배우기</a></li>
             <li><a href="#play">놀이터</a></li>
             <li><a href="#install">설치하기</a></li>
         </ul>
     </header>
+    <div class="margin"></div>
     <iframe id="iframe" src="./gh-pages/main.html"></iframe>
     <script type="text/javascript">
     $(function () {
@@ -44,6 +96,8 @@
             var to = location.hash.substr(1);
             if (pages.indexOf(to) === -1) to = 'main';
             $('#iframe').attr('src', './gh-pages/' + to + '.html');
+            $('#nav-menu a.current').removeClass('current');
+            $('#nav-menu a[href=#' + to + ']').addClass('current');
         }
         go();
         $(window).on('hashchange', go);

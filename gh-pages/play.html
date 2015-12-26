@@ -13,19 +13,26 @@
     <script src="../dist/yaksok.min.js"></script>
     <script src="../tool/ace/mode-yaksok.js"></script>
     <style type="text/css">
+    @import url(http://fonts.googleapis.com/earlyaccess/notosanskr.css);
     html, body {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
+        font-family: 'Noto Sans KR', sans-serif;
+    }
+    body {
+        background-color: #2f3129;
+        color: #f0f0f0;
     }
     .wrap {
-        margin-left: 10px;
-        width: calc(100% - 20px);
-        height: calc(100% - 10px);
+        margin: 0 auto;
+        max-width: 1024px;
+        width: calc(100% - 40px);
+        height: calc(100% - 20px);
     }
     .col {
-        width: calc(50% - 10px);
+        width: calc(50% - 5px);
         height: 100%;
     }
     .col.left { float: left; }
@@ -33,7 +40,7 @@
     .row {
         margin: 5px 0;
         width: 100%;
-        height: 20px;
+        height: 30px;
     }
     .row .title {
         display: inline-block;
@@ -41,11 +48,10 @@
         padding: 1px 5px;
         font-size: 18px;
         font-weight: lighter;
-        outline: 1px solid #888;
     }
     .editor {
         width: 100%;
-        height: calc(100% - 30px);
+        height: calc(100% - 40px);
     }
     </style>
 </head>
@@ -108,6 +114,7 @@
             dataType: 'text'
         }).done(function (data) {
             srcEditor.setValue(data);
+            srcEditor.execCommand('gotoend');
         });
     }
     loadExample($('#examples').val());
@@ -122,12 +129,14 @@
         .then(function (js) {
             if ($('#run-babel').prop('checked')) js = babel.transform(js).code;
             dstEditor.setValue(js);
+            dstEditor.execCommand('gotoend');
             current = +(new Date());
             compiling = false;
         })
         .catch(function (err) {
             var msg = (err instanceof Error) ? err.message : err;
             dstEditor.setValue(msg);
+            dstEditor.execCommand('gotoend');
             current = +(new Date());
             compiling = false;
         });
