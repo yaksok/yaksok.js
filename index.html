@@ -18,48 +18,34 @@
     .margin {
         height: 20px;
     }
-    .container {
-        width: 100%;
-        height: 100%;
-    }
     #header {
+        display: flex;
         margin: 0 auto;
         width: 720px;
         height: 80px;
     }
-    #logo {
-        float: left;
+    #logo > a {
         width: 220px;
-        height: 100%;
     }
-    #nav-menu {
-        display: flex;
-        float: right;
-        width: 500px;
-        height: 100%;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }
-    #nav-menu > li {
+    #header > * {
         display: inline-flex;
         margin: auto;
-        font-size: 30px;
-        height: 100%;
     }
-    #nav-menu > li > * {
+    #header > a {
+        height: 100%;
         line-height: 80px;
         text-decoration: none;
+        font-size: 30px;
         font-weight: lighter;
         color: #f0f0f0;
         box-sizing: border-box;
         border-bottom: 0px solid #f0f0f0;
         transition: border 0.3s;
     }
-    #nav-menu > li > *.current {
+    #header > a.current {
         border-bottom: 2px solid #808080;
     }
-    #nav-menu > li > *:hover {
+    #header > a:hover {
         font-weight: normal;
         border-bottom: 5px solid #f0f0f0;
     }
@@ -78,15 +64,12 @@
     <header id="header">
         <div id="logo">
             <a href="#main">
-                <div class="container">
-                    <img src="./logo/logo.svg">
-                </div>
+                <img src="./logo/logo.svg">
             </a>
         </div>
-        <ul id="nav-menu">
-            <li><a href="#learn" class="current">배우기</a></li>
-            <li><a href="#play">놀이터</a></li>
-            <li><a href="#install">설치하기</a></li>
+        <a href="#learn" class="current">배우기</a>
+        <a href="#play">놀이터</a>
+        <a href="#install">설치하기</a>
         </ul>
     </header>
     <div class="margin"></div>
@@ -98,8 +81,8 @@
             var to = location.hash.substr(1);
             if (pages.indexOf(to) === -1) to = 'main';
             $('#iframe').attr('src', './gh-pages/' + to + '.html');
-            $('#nav-menu a.current').removeClass('current');
-            $('#nav-menu a[href=#' + to + ']').addClass('current');
+            $('#header > a.current').removeClass('current');
+            $('#header > a[href=#' + to + ']').addClass('current');
         }
         go();
         $(window).on('hashchange', go);
