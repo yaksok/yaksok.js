@@ -5,7 +5,44 @@
 </head>
 <body>
     <div id="content">
-        TODO: 설치하기
+        <h1>Node.js</h1>
+<pre class="simple code">
+# ysjs 설치
+$ npm install -g yaksok
+
+# 컴파일
+$ ysjs "소스코드.yak" -o "결과.js"
+</pre>
+
+        <h1>HTML</h1>
+<pre class="code">
+&lt;!-- yaksok.js --&gt;
+&lt;script src="http://0xabcdef.com/yaksok.js/dist/yaksok.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- 아래와 같이 사용합니다. --&gt;
+&lt;script&gt;
+var compiler = new yaksok.impl.JsTargetCompiler();
+compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
+compiler.compile(`
+
+
+약속 (숫자)의 피보나치
+    만약 숫자 = 0 이면
+        결과: 0
+    아니면서 만약 숫자 = 1 이면
+        결과: 1
+    아니라면
+        결과: ((숫자-1)의 피보나치) + ((숫자-2)의 피보나치)
+
+(10의 피보나치) 보여주기
+
+
+`).then(js =&gt; {
+    console.log(js);
+});
+&lt;/script&gt;
+</pre>
+
     </div>
 </body>
 </html>

@@ -20,13 +20,21 @@ iframe {
     height: 510px;
     border: none;
 }
+code, pre.code {
+    font-family: monospace;
+    background-color: #272822;
+    word-wrap: break-word;
+}
 code {
+    color: #f92672;
     padding: 3px 5px;
     border-radius: 3px;
-    font-family: monospace;
-    color: #f92672;
-    background-color: #272822;
 }
+pre.code {
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+pre.simple.code { font-size: 14pt; }
 #content {
     margin: 0 auto;
     margin-bottom: 50vh;
