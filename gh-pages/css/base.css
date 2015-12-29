@@ -37,6 +37,6 @@ pre.code {
 pre.simple.code { font-size: 14pt; }
 #content {
     margin: 0 auto;
-    margin-bottom: 50vh;
+    padding-bottom: 50vh;
     width: 720px;
 }
