@@ -4,47 +4,7 @@
 
 [![build status](https://travis-ci.org/disjukr/yaksok.js.svg)](https://travis-ci.org/disjukr/yaksok.js)
 
-
-## 예시
-```js
-var compiler = new yaksok.impl.JsTargetCompiler();
-compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
-compiler.compile(`
-
-
-약속 예제 뭘로하지
-    결과: '몰라'
-만약 (예제 뭘로하지) = '몰라' 이면
-    '어쩌라고' 보여주기
-
-# 아, 이런거 되는거 자랑해야지
-만약 1 < 2 이면
-    '이 코드는 살아남는 코드입니다' 보여주기
-아니라면
-    '이 코드는 사라지는 코드입니다' 보여주기
-
-
-`).then(js => {
-    console.log(js);
-});
-```
-위 코드는 아래의 코드를 출력합니다.
-```js
-(function () {
-"use strict";
-function y0s예제_뭘로하지() {
-    var 결과;
-    결과 = "몰라";
-    return 결과;
-}
-if ((y0s예제_뭘로하지() === "몰라")) {
-    console.log("어쩌라고");
-}
-console.log("이 코드는 살아남는 코드입니다");
-})();
-```
-
-복사해서 웹브라우저 개발자도구에 붙이고 실행해보세요!
+[![튜토리얼 영상](./tutorial.png)](https://youtu.be/98nz9HjRXro)
 
 
 ## 직접 돌려보기
