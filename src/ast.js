@@ -123,6 +123,11 @@ export class Primitive extends Expression {
     get isConstant() { return true; }
 }
 export class Name extends Primitive {
+    constructor(value) {
+        super(value);
+        this.call = false; // true: 식별자 하나짜리 약속일지도 모름
+                           // analyzer 패스에서 사용되고 난 이후에는 의미가 없다.
+    }
     get isConstant() {
         // TODO: 상수 접기 구현
         return false;

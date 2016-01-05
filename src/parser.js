@@ -8,13 +8,17 @@ let yy = {
     parseFloat: string => +string,
     ast: ast,
     stmts: stmt => {
-         let stmts = new yy.ast.Statements();
+         let stmts = new ast.Statements();
          stmts.push(stmt);
          return stmts;
     },
     parseCall: expressions => {
-        if (expressions.length > 1) return new yy.ast.Call(expressions);
-        return expressions.childNodes[0];
+        if (expressions.length > 1) return new ast.Call(expressions);
+        let expression = expressions.childNodes[0];
+        if (expression instanceof ast.Name) {
+            expression.call = true;
+        }
+        return expression;
     },
     postprocessDescription: description => {
         let filteredDescription = new ast.Description();
