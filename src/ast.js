@@ -1,3 +1,61 @@
+function ast() {
+    let childFields = Array.from(arguments);
+    return function decorator(target) {
+        for (let field of childFields) {
+            let privateField = '_' + field;
+            Object.defineProperty(target.prototype, field, {
+                configurable: true,
+                enumerable: false,
+                get: function () { return this[privateField]; },
+                set: function (value) {
+                    if (value !== null) {
+                        value.parent = this;
+                    }
+                    this[privateField] = value;
+                }
+            });
+        }
+        target.prototype.replaceChild = function replaceChild(before, after) {
+            for (let field of childFields) {
+                if (this[field] === before) {
+                    after.parent = this;
+                    this[field] = after;
+                }
+            }
+            throw new Error('이 노드의 자식이 아닙니다.');
+        };
+    };
+}
+
+function astList(listField) {
+    return function decorator(target) {
+        Object.defineProperty(target.prototype, 'length', {
+            configurable: true,
+            enumerable: false,
+            get: function () {
+                return this[listField].length;
+            }
+        });
+        target.prototype.push = function push(childNode) {
+            if (childNode !== null) {
+                childNode.parent = this;
+            }
+            this[listField].push(childNode);
+        };
+        target.prototype[Symbol.iterator] = function () {
+            return this[listField][Symbol.iterator]();
+        };
+        target.prototype.replaceChild = function replaceChild(before, after) {
+            let index = this[listField].indexOf(before);
+            if (index === -1) {
+                throw new Error('이 노드의 자식이 아닙니다.');
+            }
+            after.parent = this;
+            this[listField][index] = after;
+        };
+    };
+}
+
 export class AstNode {
     constructor() {
         this.parent = null;
@@ -14,23 +72,15 @@ export class AstNode {
     }
 }
 
+@astList('childNodes')
 export class AstNodeList extends AstNode {
     constructor() {
         super();
         this.childNodes = [];
     }
-    get length() { return this.childNodes.length; }
-    push(childNode) {
-        if (childNode !== null) {
-            childNode.parent = this;
-        }
-        this.childNodes.push(childNode);
-    }
-    [Symbol.iterator]() {
-        return this.childNodes[Symbol.iterator]();
-    }
 }
 
+@ast('statements')
 export class YaksokRoot extends AstNode {
     constructor(statements) {
         super();
@@ -39,7 +89,6 @@ export class YaksokRoot extends AstNode {
                            // module resolver 패스를 거친 뒤부터 사용 가능
         this.moduleScope = null; // module resolver 패스를 거친 뒤부터 사용 가능
         this.statements = statements;
-        statements.parent = this;
     }
 }
 // block is statements
@@ -56,50 +105,40 @@ export class Statement {
         return false; // prevent elimination
     }
 }
+
+@ast('expression')
 export class PlainStatement extends Statement {
     constructor(expression) {
         super();
-        expression.parent = this;
         this.expression = expression;
     }
 }
+
+@ast('lvalue', 'rvalue')
 export class Assign extends Statement {
     constructor(lvalue, rvalue) {
         super();
-        lvalue.parent = rvalue.parent = this;
         this.lvalue = lvalue;
         this.rvalue = rvalue;
         this.isDeclaration = false;
     }
 }
+
+@ast('name')
 export class Outside extends Statement {
     constructor(name) {
         super();
-        name.parent = this;
         this.name = name;
     }
 }
+
+@ast('condition', 'ifBlock', 'elseBlock')
 export class If extends Statement {
     constructor(condition, ifBlock, elseBlock) {
         super();
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
-    }
-    get condition() { return this._condition; }
-    get ifBlock() { return this._ifBlock; }
-    get elseBlock() { return this._elseBlock; }
-    set condition(value) {
-        if (value !== null) value.parent = this;
-        this._condition = value;
-    }
-    set ifBlock(value) {
-        if (value !== null) value.parent = this;
-        this._ifBlock = value;
-    }
-    set elseBlock(value) {
-        if (value !== null) value.parent = this;
-        this._elseBlock = value;
     }
     eliminateDeadCode() {
         let bool = this.condition.fold();
@@ -109,23 +148,27 @@ export class If extends Statement {
         return false;
     }
 }
+
+@ast('block')
 export class Loop extends Statement {
     constructor(block) {
         super();
-        block.parent = this;
         this.block = block;
     }
 }
+
+@ast('iterator', 'iteratee', 'block')
 export class Iterate extends Statement {
     constructor(iterator, iteratee, block) {
         super();
-        iterator.parent = iteratee.parent = block.parent = this;
         this.iterator = iterator;
         this.iteratee = iteratee;
         this.block = block;
     }
 }
+
 export class LoopEnd extends Statement {}
+
 export class YaksokEnd extends Statement {}
 
 // expression
@@ -136,17 +179,12 @@ export class Expression extends AstNode {
 }
 Expression.prototype.type = null;
 
+@ast('expressions', 'callInfo')
 export class Call extends Expression {
     constructor(expressions) {
         super();
-        expressions.parent = this;
         this.expressions = expressions; // analyzer 패스를 거친 뒤로는 무의미
-        this._callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
-    }
-    get callInfo() { return this._callInfo; }
-    set callInfo(value) {
-        value.parent = this;
-        this._callInfo = value;
+        this.callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
     }
     fold() {
         this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
@@ -155,18 +193,13 @@ export class Call extends Expression {
     }
 }
 
+@ast('target', 'expressions', 'callInfo')
 export class ModuleCall extends Expression {
     constructor(target, expressions) {
         super();
-        target.parent = expressions.parent = this;
         this.target = target;
         this.expressions = expressions; // analyzer 패스를 거친 뒤로는 무의미
-        this._callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
-    }
-    get callInfo() { return this._callInfo; }
-    set callInfo(value) {
-        value.parent = this;
-        this._callInfo = value;
+        this.callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
     }
     fold() {
         this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
@@ -198,57 +231,48 @@ export class Boolean extends Primitive {} Boolean.prototype.type = Boolean;
 export class Void extends Primitive {} Void.prototype.type = Void;
 
 // etc
+@ast('start', 'stop')
 export class Range extends Expression {
     constructor(start, stop) {
         super();
-        start.parent = stop.parent = this;
         this.start = start;
         this.stop = stop;
     }
 }
 Range.prototype.type = Range;
+
+@astList('items')
 export class List extends Expression {
     constructor() {
         super();
         this.items = [];
     }
-    push(value) {
-        value.parent = this;
-        this.items.push(value);
-    }
-    [Symbol.iterator]() {
-        return this.items[Symbol.iterator]();
-    }
 }
 List.prototype.type = List;
+
+@astList('items')
 export class Dict extends Expression {
     constructor() {
         super();
         this.items = [];
     }
-    push(value) {
-        value.parent = this;
-        this.items.push(value);
-    }
-    [Symbol.iterator]() {
-        return this.items[Symbol.iterator]();
-    }
 }
 Dict.prototype.type = Dict;
+
+@ast('key', 'value')
 export class DictKeyValue extends AstNode {
     constructor(key, value) {
         super();
-        key.parent = value.parent = this;
         this.key = key;
         this.value = value;
     }
 }
 
 // binary opeartor
+@ast('lhs', 'rhs')
 export class BinaryOperator extends Expression {
     constructor(lhs, rhs) {
         super();
-        lhs.parent = rhs.parent = this;
         this.lhs = lhs;
         this.rhs = rhs;
     }
@@ -440,22 +464,12 @@ export class Modular extends BinaryOperator {
     }
 }
 
+@astList('args')
 export class CallInfo extends AstNode {
     constructor(def) {
         super();
-        // def는 callInfo의 자식이 아니고,
-        // 호출되는 정의를 가르키는 속성이기 때문에,
-        // def의 parent를 callInfo로 설정하면 안된다.
         this.def = def;
         this.args = [];
-    }
-    get length() { return this.args.length; }
-    push(childNode) {
-        childNode.parent = this;
-        this.args.push(childNode);
-    }
-    [Symbol.iterator]() {
-        return this.args[Symbol.iterator]();
     }
 }
 
@@ -534,6 +548,7 @@ export class DescriptionName extends AstNode {
 }
 
 // defs
+@ast('description')
 export class Def extends Statement {
     constructor() {
         super();
@@ -549,10 +564,10 @@ export class Def extends Statement {
     }
 }
 
+@ast('description', 'block')
 export class Yaksok extends Def {
     constructor(description, block) {
         super();
-        description.parent = block.parent = this;
         this.description = description;
         this.block = block;
     }
@@ -565,10 +580,10 @@ export class Yaksok extends Def {
     }
 }
 
+@ast('description')
 export class Translate extends Def {
     constructor(description, target, code) {
         super();
-        description.parent = this;
         this.description = description;
         this.target = target; // string
         this.code = code; // string
