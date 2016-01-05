@@ -126,17 +126,17 @@ export class Scope {
     }
     addDef(def) { this.defs.push(def); }
     getCallInfo(call, builtinDefs={}) {
-        let matchArgs = null;
+        let matchCallInfo = null;
         let matchDefs = [];
         for (let def of this.defs) {
-            let args = def.match(call);
-            if (args) {
-                matchArgs = args;
+            let callInfo = def.match(call);
+            if (callInfo) {
+                matchCallInfo = callInfo;
                 matchDefs.push(def);
             }
         }
         if (matchDefs.length === 1) {
-            return new CallInfo(matchDefs[0], matchArgs);
+            return matchCallInfo;
         } else if (matchDefs.length > 1) {
             throw new Error(
                 '같은 스코프 안에서 호출 가능한 정의가 여러개입니다:\n' +
@@ -148,8 +148,8 @@ export class Scope {
         }
         for (const key of Object.keys(builtinDefs)) {
             let def = builtinDefs[key];
-            let args = def.match(call);
-            if (args) return new CallInfo(def, args);
+            let callInfo = def.match(call);
+            if (callInfo) return callInfo;
         }
         throw new Error('호출 가능한 정의를 찾지 못했습니다');
     }
@@ -161,10 +161,3 @@ export class Scope {
 }
 
 export class ModuleScope extends Scope {}
-
-export class CallInfo {
-    constructor(def, args) {
-        this.def = def;
-        this.args = args;
-    }
-}

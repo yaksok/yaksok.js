@@ -7,7 +7,9 @@ export class Builtin extends ast.AstNode {};
 export class Yaksok extends Builtin {
     constructor(description) {
         super();
-        this.description = descriptionParser.parse(description);
+        let desc = descriptionParser.parse(description);
+        desc.parent = this;
+        this.description = desc;
     }
     match(call) { // same as ast.Def.match
         return this.description.match(call.expressions);

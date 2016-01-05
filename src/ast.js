@@ -1,4 +1,18 @@
-export class AstNode {}
+export class AstNode {
+    constructor() {
+        this.parent = null;
+    }
+    replaceChild(before, after) {
+        // after.parent = this;
+        throw new Error('구현되지 않았습니다.');
+    }
+    replace(after) {
+        if (this.parent === null) {
+            throw new Error('부모가 없습니다.');
+        }
+        return this.parent.replaceChild(this, after);
+    }
+}
 
 export class AstNodeList extends AstNode {
     constructor() {
@@ -7,6 +21,9 @@ export class AstNodeList extends AstNode {
     }
     get length() { return this.childNodes.length; }
     push(childNode) {
+        if (childNode !== null) {
+            childNode.parent = this;
+        }
         this.childNodes.push(childNode);
     }
     [Symbol.iterator]() {
@@ -22,6 +39,7 @@ export class YaksokRoot extends AstNode {
                            // module resolver 패스를 거친 뒤부터 사용 가능
         this.moduleScope = null; // module resolver 패스를 거친 뒤부터 사용 가능
         this.statements = statements;
+        statements.parent = this;
     }
 }
 // block is statements
@@ -39,11 +57,16 @@ export class Statement {
     }
 }
 export class PlainStatement extends Statement {
-    constructor(expression) { super(); this.expression = expression; }
+    constructor(expression) {
+        super();
+        expression.parent = this;
+        this.expression = expression;
+    }
 }
 export class Assign extends Statement {
     constructor(lvalue, rvalue) {
         super();
+        lvalue.parent = rvalue.parent = this;
         this.lvalue = lvalue;
         this.rvalue = rvalue;
         this.isDeclaration = false;
@@ -52,6 +75,7 @@ export class Assign extends Statement {
 export class Outside extends Statement {
     constructor(name) {
         super();
+        name.parent = this;
         this.name = name;
     }
 }
@@ -62,6 +86,21 @@ export class If extends Statement {
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
     }
+    get condition() { return this._condition; }
+    get ifBlock() { return this._ifBlock; }
+    get elseBlock() { return this._elseBlock; }
+    set condition(value) {
+        if (value !== null) value.parent = this;
+        this._condition = value;
+    }
+    set ifBlock(value) {
+        if (value !== null) value.parent = this;
+        this._ifBlock = value;
+    }
+    set elseBlock(value) {
+        if (value !== null) value.parent = this;
+        this._elseBlock = value;
+    }
     eliminateDeadCode() {
         let bool = this.condition.fold();
         if (bool instanceof Boolean) {
@@ -70,10 +109,17 @@ export class If extends Statement {
         return false;
     }
 }
-export class Loop extends Statement { constructor(block) { super(); this.block = block; } }
+export class Loop extends Statement {
+    constructor(block) {
+        super();
+        block.parent = this;
+        this.block = block;
+    }
+}
 export class Iterate extends Statement {
     constructor(iterator, iteratee, block) {
         super();
+        iterator.parent = iteratee.parent = block.parent = this;
         this.iterator = iterator;
         this.iteratee = iteratee;
         this.block = block;
@@ -93,8 +139,14 @@ Expression.prototype.type = null;
 export class Call extends Expression {
     constructor(expressions) {
         super();
-        this.expressions = expressions;
-        this.callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
+        expressions.parent = this;
+        this.expressions = expressions; // analyzer 패스를 거친 뒤로는 무의미
+        this._callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
+    }
+    get callInfo() { return this._callInfo; }
+    set callInfo(value) {
+        value.parent = this;
+        this._callInfo = value;
     }
     fold() {
         this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
@@ -106,9 +158,15 @@ export class Call extends Expression {
 export class ModuleCall extends Expression {
     constructor(target, expressions) {
         super();
+        target.parent = expressions.parent = this;
         this.target = target;
-        this.expressions = expressions;
-        this.callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
+        this.expressions = expressions; // analyzer 패스를 거친 뒤로는 무의미
+        this._callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
+    }
+    get callInfo() { return this._callInfo; }
+    set callInfo(value) {
+        value.parent = this;
+        this._callInfo = value;
     }
     fold() {
         this.callInfo.args = this.callInfo.args.map(arg => arg.fold());
@@ -141,7 +199,12 @@ export class Void extends Primitive {} Void.prototype.type = Void;
 
 // etc
 export class Range extends Expression {
-    constructor(start, stop) { super(); this.start = start; this.stop = stop; }
+    constructor(start, stop) {
+        super();
+        start.parent = stop.parent = this;
+        this.start = start;
+        this.stop = stop;
+    }
 }
 Range.prototype.type = Range;
 export class List extends Expression {
@@ -150,6 +213,7 @@ export class List extends Expression {
         this.items = [];
     }
     push(value) {
+        value.parent = this;
         this.items.push(value);
     }
     [Symbol.iterator]() {
@@ -163,6 +227,7 @@ export class Dict extends Expression {
         this.items = [];
     }
     push(value) {
+        value.parent = this;
         this.items.push(value);
     }
     [Symbol.iterator]() {
@@ -173,6 +238,7 @@ Dict.prototype.type = Dict;
 export class DictKeyValue extends AstNode {
     constructor(key, value) {
         super();
+        key.parent = value.parent = this;
         this.key = key;
         this.value = value;
     }
@@ -180,7 +246,12 @@ export class DictKeyValue extends AstNode {
 
 // binary opeartor
 export class BinaryOperator extends Expression {
-    constructor(lhs, rhs) { super(); this.lhs = lhs; this.rhs = rhs; }
+    constructor(lhs, rhs) {
+        super();
+        lhs.parent = rhs.parent = this;
+        this.lhs = lhs;
+        this.rhs = rhs;
+    }
 }
 export class Access extends BinaryOperator {}
 export class DotAccess extends BinaryOperator {}
@@ -369,11 +440,30 @@ export class Modular extends BinaryOperator {
     }
 }
 
+export class CallInfo extends AstNode {
+    constructor(def) {
+        super();
+        // def는 callInfo의 자식이 아니고,
+        // 호출되는 정의를 가르키는 속성이기 때문에,
+        // def의 parent를 callInfo로 설정하면 안된다.
+        this.def = def;
+        this.args = [];
+    }
+    get length() { return this.args.length; }
+    push(childNode) {
+        childNode.parent = this;
+        this.args.push(childNode);
+    }
+    [Symbol.iterator]() {
+        return this.args[Symbol.iterator]();
+    }
+}
+
 // description
 export class Description extends AstNodeList {
     match(expressions) {
         if (expressions.length > this.length) return null;
-        let args = [];
+        let callInfo = new CallInfo(this.parent);
         for (let [i, j] = [0, 0]; i < this.length; ++i, ++j) {
             let curr = this.childNodes[i];
             let expression = expressions.childNodes[j];
@@ -383,29 +473,29 @@ export class Description extends AstNodeList {
             }
             if (curr instanceof DescriptionParameter) {
                 if (!(expression instanceof Name)) {
-                    args.push(expression);
+                    callInfo.push(expression);
                     continue;
                 }
                 let next = this.childNodes[i + 1];
                 let nextExpression = expressions.childNodes[j + 1];
                 if (!next || next.match(nextExpression) || next.needWhiteSpace) {
-                    args.push(expression);
+                    callInfo.push(expression);
                     continue;
                 }
                 let matchLength = next.postMatch(expression);
                 let name = expression.value;
                 if (matchLength && name.length > matchLength) {
                     ++i;
-                    args.push(new Name(name.substr(0, name.length - matchLength)));
+                    callInfo.push(new Name(name.substr(0, name.length - matchLength)));
                     continue;
                 }
                 if (!nextExpression) return null;
-                args.push(expression);
+                callInfo.push(expression);
                 continue;
             }
             throw new Error('unexpected description item');
         }
-        return args;
+        return callInfo;
     }
     get parameters() {
         return this.childNodes.filter(item => item instanceof DescriptionParameter);
@@ -432,7 +522,10 @@ export class DescriptionName extends AstNode {
         return match ? match.length : 0;
     }
     get length() { return this.names.length; }
-    push(name) { this.names.push(name); }
+    push(name) {
+        // name: string
+        this.names.push(name);
+    }
     sort() { this.names.sort((a, b) => b.length - a.length); }
     [Symbol.iterator]() {
         return this.names[Symbol.iterator]();
@@ -440,14 +533,14 @@ export class DescriptionName extends AstNode {
     get repr() { return (this.needWhiteSpace ? ' ' : '') + this.names.join('/'); }
 }
 
-//defs
+// defs
 export class Def extends Statement {
     constructor() {
         super();
         this.scope = null;
         this.returnType = null;
     }
-    match(call) { // return match arguments else null
+    match(call) { // return call info or null
         return this.description.match(call.expressions);
     }
     get hasSideEffect() { return true; }
@@ -459,6 +552,7 @@ export class Def extends Statement {
 export class Yaksok extends Def {
     constructor(description, block) {
         super();
+        description.parent = block.parent = this;
         this.description = description;
         this.block = block;
     }
@@ -474,9 +568,10 @@ export class Yaksok extends Def {
 export class Translate extends Def {
     constructor(description, target, code) {
         super();
+        description.parent = this;
         this.description = description;
-        this.target = target;
-        this.code = code;
+        this.target = target; // string
+        this.code = code; // string
     }
     get repr() {
         return `번역(${ this.target }) ${ this.description.repr }`;
