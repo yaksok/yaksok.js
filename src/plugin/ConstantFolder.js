@@ -2,11 +2,8 @@ import Plugin from 'plugin';
 import * as ast from 'ast';
 
 export default class ConstantFolder extends Plugin {
-    async visitPlainStatement(node) {
-        node.expression = node.expression.fold();
-    }
-    async visitAssign(node) {
-        node.rvalue = node.rvalue.fold();
+    async visitExpression(node) {
+        node.fold();
     }
     async visitStatements(node) {
         for (let i = 0; i < node.length; ++i) {

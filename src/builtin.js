@@ -4,15 +4,13 @@ import * as ast from 'ast';
 let descriptionParser = new YaksokParser(['START_DESCRIPTION']);
 
 export class Builtin extends ast.AstNode {};
+
+@ast.ast('description')
+@ast.def
 export class Yaksok extends Builtin {
     constructor(description) {
         super();
-        let desc = descriptionParser.parse(description);
-        desc.parent = this;
-        this.description = desc;
-    }
-    match(call) { // same as ast.Def.match
-        return this.description.match(call.expressions);
+        this.description = descriptionParser.parse(description);
     }
 };
 
