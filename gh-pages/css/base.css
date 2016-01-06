@@ -12,6 +12,7 @@ body {
 }
 a { color: #66d9ef; } a:visited { color: #e6d874; }
 h1, h2, h3 { font-weight: lighter; }
+h1.headline { font-weight: normal; }
 p { text-indent: 1em; }
 iframe {
     display: block;
@@ -39,4 +40,14 @@ pre.simple.code { font-size: 14pt; }
     margin: 0 auto;
     padding-bottom: 50vh;
     width: 720px;
+}
+pre code {
+    padding: 0px;
+}
+blockquote {
+    border-left: 10px solid rgba(128,128,128,0.075);
+    background-color:rgba(128,128,128,0.1);
+    border-top-right-radius:5px;
+    border-bottom-right-radius:5px;
+    padding:15px 20px
 }
