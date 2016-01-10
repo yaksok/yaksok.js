@@ -20,7 +20,7 @@
 3. `npm run build` or `npm run watch`
 4. `node dist/test`
 
-## 빌드명령어
+## 빌드 명령어
 
 * `npm run build` 그냥 한 번 빌드합니다.
 * `npm run watch` 파일이 수정될 때마다 알아서 다시 빌드합니다.
