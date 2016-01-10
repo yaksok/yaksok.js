@@ -21,6 +21,19 @@ export default class Analyzer extends NodeVisitor {
         // analyze entry point
         await this.visit(await this.prepare());
     }
+    async visitName(node) {
+        if (!node.call) return super.visitName(node);
+        let callExpressions = new ast.Expressions();
+        callExpressions.push(node.clone());
+        let fakeCall = new ast.Call(callExpressions);
+        try {
+            let callInfo = this.currentScope.getCallInfo(fakeCall, this.compiler.builtinDefs);
+            fakeCall.callInfo = callInfo;
+            node.replace(fakeCall);
+        } catch (e) {
+            return super.visitName(node);
+        }
+    }
     async visitCall(node) {
         let callInfo = this.currentScope.getCallInfo(node, this.compiler.builtinDefs);
         node.callInfo = callInfo;

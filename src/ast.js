@@ -227,6 +227,7 @@ export class ModuleCall extends Expression {
 export class Primitive extends Expression {
     constructor(value) { super(); this.value = value; }
     get isConstant() { return true; }
+    clone() { return new this.constructor(this.value); }
 }
 export class Name extends Primitive {
     constructor(value) {
