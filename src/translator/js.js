@@ -14,11 +14,31 @@ export default class JsTranslator extends TextTranslator {
         this.functionNameMap = new Map(); // key: ast yaksok node, value: function name string
     }
     getFunctionNameFromDef(def) {
+        if (def instanceof Builtin) {
+            switch (def) {
+            case this.compiler.builtinDefs.보여주기: {
+                this.runtime['log'] = true;
+                return 'yaksokLog';
+            }
+            case this.compiler.builtinDefs.호출하기:
+            case this.compiler.builtinDefs.호출하기2:{
+                this.runtime['call'] = true;
+                return 'yaksokCall';
+            }
+            default: throw new Error('unimplemented builtin');
+            }
+        }
         if (this.functionNameMap.has(def)) {
             return this.functionNameMap.get(def);
         }
         let functionName = `ys_${ this.functionNameIndex++ }_${ yaksokDescriptionToJsIdentifier(def.description) }`;
         this.functionNameMap.set(def, functionName);
+        return functionName;
+    }
+    getFunctionExprFromCall(call) {
+        let functionName = this.getFunctionNameFromDef(call.callInfo.def);
+        if (call instanceof ast.ModuleCall || call instanceof ast.ModuleCallBind)
+            return `ys_m_${ call.target.value }.${ functionName }`;
         return functionName;
     }
     async translate(astRoot) {
@@ -124,57 +144,56 @@ export default class JsTranslator extends TextTranslator {
     async visitCall(node) {
         let { def, args } = node.callInfo;
         let expressions = node.expressions.childNodes;
-        if (def instanceof Builtin) {
-            switch (def) {
-            case this.compiler.builtinDefs.보여주기: {
-                let arg = args[0];
-                switch (arg.type) {
-                case ast.Integer: case ast.Float: case ast.String: {
-                    this.write('console.log(');
-                    await this.visit(args[0]);
-                    this.write(')');
-                } return;
-                case ast.Void: {
-                    this.write('console.log("()"');
-                } return;
-                case ast.Boolean: {
-                    this.write('console.log("' + (arg.value ? '참' : '거짓') + '")');
-                } return;
-                default: {
-                    this.runtime['log'] = true;
-                    this.write('yaksokLog(');
-                    await this.visit(arg);
-                    this.write(')');
-                } return;
-                }
-            } return;
-            default: throw new Error('unimplemented builtin');
-            }
-        }
-        let functionName = this.getFunctionNameFromDef(def);
-        this.write(functionName);
+        let functionExpr = this.getFunctionExprFromCall(node);
+        this.write(functionExpr);
         this.write('(');
         let first = true;
         for (let arg of args) {
-            if (!first) this.write(', ');
-            first = false;
+            if (!first) this.write(', '); else first = false;
             await this.visit(arg);
         }
         this.write(')');
     }
     async visitModuleCall(node) {
+        return await this.visitCall(node);
+    }
+    async visitCallBind(node) {
         let { def, args } = node.callInfo;
         let expressions = node.expressions.childNodes;
-        let functionName = this.getFunctionNameFromDef(def);
-        this.write(`ys_m_${ node.target.value }.${ functionName }`);
-        this.write('(');
-        let first = true;
-        for (let arg of args) {
-            if (!first) this.write(', ');
-            first = false;
-            await this.visit(arg);
+        let functionExpr = this.getFunctionExprFromCall(node);
+        if (args.find(arg => arg instanceof ast.Question)) {
+            let q = args.reduce(
+                (prev, arg) => arg instanceof ast.Question ? prev + 1 : prev,
+                0
+            );
+            this.write('((');
+            for (let i = 0; i < q; ++i) {
+                if (i > 0) this.write(',');
+                this.write('_' + i);
+            }
+            this.write(')=>');
+        } else {
+            this.write('(_=>');
+        }
+        this.write(functionExpr);
+        { // arguments
+            let i = 0;
+            let first = true;
+            this.write('(');
+            for (let arg of args) {
+                if (first) first = false; else this.write(',');
+                if (arg instanceof ast.Question) {
+                    this.write('_' + (i++));
+                } else {
+                    await this.visit(arg);
+                }
+            }
+            this.write(')');
         }
         this.write(')');
+    }
+    async visitModuleCallBind(node) {
+        return await this.visitCallBind(node);
     }
     async visitIf(node) {
         this.writeIndent();

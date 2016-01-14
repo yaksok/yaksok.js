@@ -59,6 +59,8 @@ export default class Analyzer extends NodeVisitor {
             }
         }
     }
+    async visitCallBind(node) { return await this.visitCall(node); }
+    async visitModuleCallBind(node) { return await this.visitModuleCall(node); }
     async visitOutside(node) {
         let scope = this.currentScope;
         let { name } = node;

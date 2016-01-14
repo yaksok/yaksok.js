@@ -66,4 +66,7 @@ describe('에러 없이 잘 도나', _=> {
     it('식별자 하나짜리 약속', async () => {
         await t('1name.yak');
     });
+    it('결속', async () => {
+        await t('bind.yak');
+    });
 });

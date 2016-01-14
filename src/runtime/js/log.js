@@ -3,9 +3,7 @@ function yaksokLog(value) {
     case 'boolean': console.log(value ? '참' : '거짓'); return;
     case 'object': {
         if (value.isYaksokList) {
-            let copy = value.slice();
-            copy.shift();
-            console.log(copy);
+            console.log(value.toJsArray());
         } else {
             console.log(value);
         }

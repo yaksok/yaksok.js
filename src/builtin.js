@@ -15,5 +15,7 @@ export class Yaksok extends Builtin {
 };
 
 export var yaksok = {
-    보여주기: new Yaksok('(입력) 보여주기')
+    보여주기: new Yaksok('(입력) 보여주기'),
+    호출하기: new Yaksok('(약속_) 호출하기'),
+    호출하기2: new Yaksok('(약속_) 호출하기 (인자목록)')
 };

@@ -223,6 +223,26 @@ export class ModuleCall extends Expression {
     }
 }
 
+@ast('expressions', 'callInfo')
+export class CallBind extends Expression {
+    constructor(expressions) {
+        super();
+        this.expressions = expressions;
+        this.callInfo = null;
+    }
+}
+
+@ast('target', 'expressions', 'callInfo')
+export class ModuleCallBind extends Expression {
+    constructor(target, expressions) {
+        super();
+        this.target = target;
+        this.expressions = expressions;
+        this.callInfo = null;
+    }
+}
+export class Question extends Expression {}
+
 // primitive
 export class Primitive extends Expression {
     constructor(value) { super(); this.value = value; }
@@ -648,6 +668,8 @@ export class NodeVisitor {
     }
     async visitCall(node) {}
     async visitModuleCall(node) {}
+    async visitCallBind(node) {}
+    async visitModuleCallBind(node) {}
     async visitIf(node) {
         await this.visit(node.condition);
         await this.visitStatements(node.ifBlock);
@@ -667,11 +689,14 @@ export class NodeVisitor {
     async visitExpression(node) {
         if (node instanceof Call) return await this.visitCall(node);
         if (node instanceof ModuleCall) return await this.visitModuleCall(node);
+        if (node instanceof CallBind) return await this.visitCallBind(node);
+        if (node instanceof ModuleCallBind) return await this.visitModuleCallBind(node);
         if (node instanceof Primitive) return await this.visitPrimitive(node);
         if (node instanceof Range) return await this.visitRange(node);
         if (node instanceof List) return await this.visitList(node);
         if (node instanceof Dict) return await this.visitDict(node);
         if (node instanceof BinaryOperator) return await this.visitBinaryOperator(node);
+        if (node instanceof Question) return await this.visitQuestion(node);
         throw new Error('unknown node type');
     }
     async visitPrimitive(node) {
@@ -689,6 +714,7 @@ export class NodeVisitor {
     async visitFloat(node) {}
     async visitBoolean(node) {}
     async visitVoid(node) {}
+    async visitQuestion(node) {}
     async visitRange(node) {
         await this.visit(node.start);
         await this.visit(node.stop);

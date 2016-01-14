@@ -4,6 +4,7 @@ const INITIAL_STATE = 0;
 const SPECIAL_STATE = 1;
 const RESERVED = {
     약속: 'YAKSOK',
+    결속: 'BIND',
     만약: 'IF',
     이면: 'THEN',
     이라면: 'THEN',
@@ -162,6 +163,7 @@ YaksokLexer.addRule(/,/, 'COMMA');
 YaksokLexer.addRule(/\./, 'DOT');
 YaksokLexer.addRule(/~/, 'TILDE');
 YaksokLexer.addRule(/@/, 'ATMARK');
+YaksokLexer.addRule(/\?/, 'QUESTION');
 YaksokLexer.addRule(/\+/, 'PLUS');
 YaksokLexer.addRule(/-/, 'MINUS');
 YaksokLexer.addRule(/\*/, 'MULT');

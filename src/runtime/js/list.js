@@ -9,6 +9,11 @@ class YaksokList extends Array {
             ++i
         ) yield this[i];
     }
+    toJsArray() {
+        let copy = this.slice();
+        copy.shift();
+        return copy;
+    }
 }
 YaksokList.prototype.isYaksokList = true;
 function yaksokList(array) {
