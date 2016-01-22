@@ -677,6 +677,18 @@ export class NodeVisitor {
     async visitCallBind(node) {}
     async visitModuleCallBind(node) {}
     async visitCondition(node) {
+        if (node instanceof If) return await this.visitIf(node);
+        if (node instanceof IfNot) return await this.visitIfNot(node);
+        throw new Error('unknown node type');
+    }
+    async visitIf(node) {
+        await this.visit(node.condition);
+        await this.visitStatements(node.ifBlock);
+        if (node.elseBlock) {
+            await this.visitStatements(node.elseBlock);
+        }
+    }
+    async visitIfNot(node) {
         await this.visit(node.condition);
         await this.visitStatements(node.ifBlock);
         if (node.elseBlock) {
