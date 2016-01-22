@@ -146,13 +146,12 @@ export class Outside extends Statement {
 }
 
 @ast('condition', 'ifBlock', 'elseBlock')
-export class If extends Statement {
-    constructor(condition, ifBlock, elseBlock, isIfNot) {
+export class Condition extends Statement {
+    constructor(condition, ifBlock, elseBlock) {
         super();
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
-        this.isIfNot = isIfNot;
     }
     eliminateDeadCode() {
         let bool = this.condition.fold();
@@ -161,6 +160,12 @@ export class If extends Statement {
         }
         return false;
     }
+}
+
+export class If extends Condition {
+}
+
+export class IfNot extends Condition {
 }
 
 @ast('block')
@@ -651,7 +656,7 @@ export class NodeVisitor {
         if (node instanceof PlainStatement) return await this.visitPlainStatement(node);
         if (node instanceof Assign) return await this.visitAssign(node);
         if (node instanceof Outside) return await this.visitOutside(node);
-        if (node instanceof If) return await this.visitIf(node);
+        if (node instanceof Condition) return await this.visitCondition(node);
         if (node instanceof Loop) return await this.visitLoop(node);
         if (node instanceof Iterate) return await this.visitIterate(node);
         if (node instanceof LoopEnd) return await this.visitLoopEnd(node);
@@ -671,7 +676,7 @@ export class NodeVisitor {
     async visitModuleCall(node) {}
     async visitCallBind(node) {}
     async visitModuleCallBind(node) {}
-    async visitIf(node) {
+    async visitCondition(node) {
         await this.visit(node.condition);
         await this.visitStatements(node.ifBlock);
         if (node.elseBlock) {
