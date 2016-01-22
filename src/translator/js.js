@@ -198,7 +198,11 @@ export default class JsTranslator extends TextTranslator {
     async visitIf(node) {
         this.writeIndent();
         this.write('if ');
-        this.write('('); await this.visit(node.condition); this.write(') ');
+        if (node.isIfNot) {
+            this.write('(!('); await this.visit(node.condition); this.write(')) ');
+        } else {
+            this.write('('); await this.visit(node.condition); this.write(') ');
+        }
         this.write('{\n');
         ++this.indent;
         await this.visit(node.ifBlock);

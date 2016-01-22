@@ -79,7 +79,8 @@ block
     ;
 
 if_statement
-    : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null) }
+    : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null, false) }
+    | IF expression ELSE block          { $$ = new yy.ast.If($expression, $block, null, true) }
     ;
 
 if_else_statement

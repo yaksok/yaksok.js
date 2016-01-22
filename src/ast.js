@@ -147,11 +147,12 @@ export class Outside extends Statement {
 
 @ast('condition', 'ifBlock', 'elseBlock')
 export class If extends Statement {
-    constructor(condition, ifBlock, elseBlock) {
+    constructor(condition, ifBlock, elseBlock, isIfNot) {
         super();
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
+        this.isIfNot = isIfNot;
     }
     eliminateDeadCode() {
         let bool = this.condition.fold();
