@@ -80,6 +80,7 @@ block
 
 if_statement
     : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null) }
+    | IF expression ELSE block          { $$ = new yy.ast.IfNot($expression, $block, null) }
     ;
 
 if_else_statement

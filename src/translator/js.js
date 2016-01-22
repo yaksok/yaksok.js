@@ -195,10 +195,16 @@ export default class JsTranslator extends TextTranslator {
     async visitModuleCallBind(node) {
         return await this.visitCallBind(node);
     }
-    async visitIf(node) {
+    async visitCondition(node) {
         this.writeIndent();
         this.write('if ');
-        this.write('('); await this.visit(node.condition); this.write(') ');
+        if (node instanceof ast.If) {
+            this.write('('); await this.visit(node.condition); this.write(') ');
+        } else if (node instanceof ast.IfNot) {
+            this.write('(!('); await this.visit(node.condition); this.write(')) ');
+        } else {
+            throw new Error("Unknown condition node");
+        }
         this.write('{\n');
         ++this.indent;
         await this.visit(node.ifBlock);
