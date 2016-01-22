@@ -156,7 +156,7 @@ export class Condition extends Statement {
     eliminateDeadCode() {
         let bool = this.condition.fold();
         if (bool instanceof Boolean) {
-            return bool.value? this.ifBlock : this.elseBlock;
+            return (bool.value ? this.ifBlock : this.elseBlock) || true;
         }
         return false;
     }
