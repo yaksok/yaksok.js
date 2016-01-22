@@ -146,7 +146,10 @@ export class Outside extends Statement {
 }
 
 @ast('condition', 'ifBlock', 'elseBlock')
-export class Condition extends Statement {
+export class Condition extends Statement {}
+
+@ast('condition', 'ifBlock', 'elseBlock')
+export class If extends Condition {
     constructor(condition, ifBlock, elseBlock) {
         super();
         this.condition = condition;
@@ -162,10 +165,21 @@ export class Condition extends Statement {
     }
 }
 
-export class If extends Condition {
-}
-
+@ast('condition', 'ifBlock', 'elseBlock')
 export class IfNot extends Condition {
+    constructor(condition, ifBlock, elseBlock) {
+        super();
+        this.condition = condition;
+        this.ifBlock = ifBlock;
+        this.elseBlock = elseBlock;
+    }
+    eliminateDeadCode() {
+        let bool = this.condition.fold();
+        if (bool instanceof Boolean) {
+            return (bool.value ? this.ifBlock : this.elseBlock) || true;
+        }
+        return false;
+    }
 }
 
 @ast('block')
