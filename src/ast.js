@@ -1,4 +1,16 @@
+// NOTE: 이 파일에서 String, Number, Boolean은 javascript builtin object가 아닙니다.
+
 // decorators
+function abstract(target) {
+    return class cls extends target {
+        constructor(...args) {
+            super(...args);
+            if (this.constructor === cls)
+                throw new Error('instantiating abstract class is disallowed');
+        }
+    }
+}
+
 export function ast() {
     let childFields = Array.from(arguments);
     return function decorator(target) {
@@ -69,6 +81,7 @@ export function def(target) {
 }
 
 // ast
+@abstract
 export class AstNode {
     constructor() {
         this.parent = null;
@@ -85,6 +98,7 @@ export class AstNode {
     }
 }
 
+@abstract
 @astList('childNodes')
 export class AstNodeList extends AstNode {
     constructor() {
@@ -145,7 +159,7 @@ export class Outside extends Statement {
     }
 }
 
-@ast('condition', 'ifBlock', 'elseBlock')
+@abstract
 export class Condition extends Statement {}
 
 @ast('condition', 'ifBlock', 'elseBlock')
@@ -281,8 +295,13 @@ export class Name extends Primitive {
     }
 }
 export class String extends Primitive {} String.prototype.type = String;
-export class Integer extends Primitive {} Integer.prototype.type = Integer;
-export class Float extends Primitive {} Float.prototype.type = Float;
+
+@abstract
+export class Number extends Primitive {}
+
+export class Integer extends Number {} Integer.prototype.type = Integer;
+export class Float extends Number {} Float.prototype.type = Float;
+
 export class Boolean extends Primitive {} Boolean.prototype.type = Boolean;
 export class Void extends Primitive {} Void.prototype.type = Void;
 
@@ -325,6 +344,7 @@ export class DictKeyValue extends AstNode {
 }
 
 // binary opeartor
+@abstract
 @ast('lhs', 'rhs')
 export class BinaryOperator extends Expression {
     constructor(lhs, rhs) {
@@ -364,13 +384,7 @@ export class GreaterThan extends BinaryOperator {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
             let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value > rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value > rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Boolean(lhs.value > rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Boolean(lhs.value > rhs.value));
         }
         return this;
@@ -382,13 +396,7 @@ export class LessThan extends BinaryOperator {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
             let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value < rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value < rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Boolean(lhs.value < rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Boolean(lhs.value < rhs.value));
         }
         return this;
@@ -400,13 +408,7 @@ export class GreaterThanEqual extends BinaryOperator {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
             let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value >= rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value >= rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Boolean(lhs.value >= rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Boolean(lhs.value >= rhs.value));
         }
         return this;
@@ -418,13 +420,7 @@ export class LessThanEqual extends BinaryOperator {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
             let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value <= rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Boolean(lhs.value <= rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Boolean(lhs.value <= rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Boolean(lhs.value <= rhs.value));
         }
         return this;
@@ -441,11 +437,7 @@ export class Plus extends BinaryOperator {
                 return this.replace(new String(lhs.value + rhs.value));
             if (lhs instanceof Integer && rhs instanceof Integer)
                 return this.replace(new Integer(lhs.value + rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Float(lhs.value + rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Float(lhs.value + rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Float(lhs.value + rhs.value));
         }
         return this;
@@ -458,11 +450,7 @@ export class Minus extends BinaryOperator {
             let rhs = this.rhs.fold();
             if (lhs instanceof Integer && rhs instanceof Integer)
                 return this.replace(new Integer(lhs.value - rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Float(lhs.value - rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Float(lhs.value - rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Float(lhs.value - rhs.value));
         }
         return this;
@@ -475,11 +463,7 @@ export class Multiply extends BinaryOperator {
             let rhs = this.rhs.fold();
             if (lhs instanceof Integer && rhs instanceof Integer)
                 return this.replace(new Integer(lhs.value * rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Float(lhs.value * rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Float(lhs.value * rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Float(lhs.value * rhs.value));
         }
         return this;
@@ -490,13 +474,7 @@ export class Divide extends BinaryOperator {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
             let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Float(lhs.value / rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Float(lhs.value / rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Float(lhs.value / rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Float(lhs.value / rhs.value));
         }
         return this;
@@ -510,11 +488,7 @@ export class Modular extends BinaryOperator {
             let rhs = this.rhs.fold();
             if (lhs instanceof Integer && rhs instanceof Integer)
                 return this.replace(new Integer(lhs.value % rhs.value));
-            if (lhs instanceof Float && rhs instanceof Integer)
-                return this.replace(new Float(lhs.value % rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Float)
-                return this.replace(new Float(lhs.value % rhs.value));
-            if (lhs instanceof Float && rhs instanceof Float)
+            if (lhs instanceof Number && rhs instanceof Number)
                 return this.replace(new Float(lhs.value % rhs.value));
         }
         return this;
@@ -605,8 +579,8 @@ export class DescriptionName extends AstNode {
 }
 
 // defs
+@abstract @def
 @ast('description')
-@def
 export class Def extends Statement {
     constructor() {
         super();
