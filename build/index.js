@@ -10,7 +10,10 @@ import WebpackNotifierPlugin from 'webpack-notifier';
 
 let argv = yargs.argv;
 if (argv.clean) {
-    let deletedFiles = del.sync([ path.join(__dirname, '../dist/*') ]);
+    let deletedFiles = del.sync([
+        path.join(__dirname, '../dist/*'),
+        path.join(__dirname, '../dump/*')
+    ]);
     for (let deletedFile of deletedFiles)
         console.log('REMOVED: ' + deletedFile);
     process.exit(0);

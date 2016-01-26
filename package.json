@@ -37,6 +37,7 @@
     "babel-loader": "^5.3.2",
     "babel-polyfill": "^6.3.14",
     "del": "^2.0.2",
+    "fs-extra": "^0.26.4",
     "jison-loader": "^1.0.0",
     "json-loader": "^0.5.3",
     "mocha": "^2.3.4",

@@ -1,75 +1,63 @@
-import assert from 'assert';
-import { run } from './util';
-
-let reqFixture = require.context('raw!./fixtures', true);
-let fixtures = reqFixture.keys();
-
-async function t(file) {
-    let result = await run('entry', { entry: reqFixture('./' + file) });
-    let out = './' + file + '.out';
-    if (fixtures.indexOf(out) !== -1) {
-        assert.equal(result.out, reqFixture(out));
-    }
-}
+import { t } from './util';
 
 describe('에러 없이 잘 도나', _=> {
     it('버블소트', async () => {
-        await t('bubble-sort.yak');
+        await t('bubble-sort');
     });
     it('if', async () => {
-        await t('if.yak');
+        await t('if');
     });
     it('if 두 번', async () => {
-        await t('if-and-if.yak');
+        await t('if-and-if');
     });
     it('if-else 하고 if', async () => {
-        await t('if-else-and-if.yak');
+        await t('if-else-and-if');
     });
     it('복잡한 if', async () => {
-        await t('complex-if.yak');
+        await t('complex-if');
     });
     it('부정조건문', async () => {
-        await t('if-not.yak');
+        await t('if-not');
     });
     it('아이 가 종찬이보다 어린가', async () => {
-        await t('jongchan.yak');
+        await t('jongchan');
     });
     it('깐데또까', async () => {
-        await t('assign-twice.yak');
+        await t('assign-twice');
     });
     it('피보나치', async () => {
-        await t('fibonacci.yak');
+        await t('fibonacci');
     });
     it('피보나치2', async () => {
-        await t('fibonacci2.yak');
+        await t('fibonacci2');
     });
     it('공백', async () => {
-        await t('void.yak');
+        await t('void');
     });
     it('번역', async () => {
-        await t('translate.yak');
+        await t('translate');
     });
     it('번역2', async () => {
-        await t('translate2.yak');
+        await t('translate2');
     });
     it('바깥', async () => {
-        await t('nonlocal.yak');
+        await t('nonlocal');
     });
     it('사전', async () => {
-        await t('dic.yak');
+        await t('dic');
     });
     // TODO: 돌리면 깨지는데, 당분간은 해결할 생각이 없습니다.
     // irc 오징어서버 #yaksok 채널로 오셔서 같의 논의해보도록 해요.
     // it('이스케이프', async () => {
-    //     await t('escape.yak');
+    //     await t('escape');
     // });
     it('계산', async () => {
-        await t('calc.yak');
+        await t('calc');
     });
     it('식별자 하나짜리 약속', async () => {
-        await t('1name.yak');
+        await t('1name');
     });
     it('결속', async () => {
-        await t('bind.yak');
+        await t('bind');
     });
 });
