@@ -77,7 +77,7 @@ YaksokLexer.addRule(/\*{3}/, function (lexeme) {
     this.state = SPECIAL_STATE;
 });
 
-YaksokLexer.addRule(/(.|\n)*?\n\s*\*{3}/, function (lexeme) {
+YaksokLexer.addRule(/(.|\r?\n)*?\r?\n\s*\*{3}/, function (lexeme) {
     this.yytext = lexeme.substring(0, lexeme.length - 3);
     this.state = INITIAL_STATE;
     return 'SPECIALBLOCK';
@@ -88,7 +88,7 @@ YaksokLexer.addRule(/번역/, function (lexeme) {
     return 'TRANSLATE';
 });
 
-YaksokLexer.addRule(/[\t ]*#[^\n]*/); // comment
+YaksokLexer.addRule(/[\t ]*#[^\r\n]*/); // comment
 
 YaksokLexer.addRule(/^[\t ]*/gm, function (lexeme) {
     if (this.parenCount !== 0) {

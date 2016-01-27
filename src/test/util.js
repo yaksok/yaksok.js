@@ -43,7 +43,7 @@ export async function t(entryFixture) {
     let result = await run(entryFixture);
     let out = './' + entryFixture + '.yak.out';
     if (fixtures.indexOf(out) !== -1) {
-        assert.equal(result.out, reqFixture(out));
+        assert.equal(result.out, reqFixture(out).replace(/\r?\n/g, '\n'));
     }
 }
 
