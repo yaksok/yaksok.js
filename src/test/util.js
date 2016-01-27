@@ -13,6 +13,12 @@ import {
 let reqFixture = require.context('raw!./fixtures', true);
 let fixtures = reqFixture.keys();
 
+function reqOut(path) {
+    if (reqOut.cache[path]) return reqOut.cache[path];
+    return reqOut.cache[path] = reqFixture(path).replace(/\r?\n/g, '\n');
+}
+reqOut.cache = {};
+
 class FixtureLoader extends ModuleLoader {
     async load(context) {
         if (context instanceof CommonContext) {
@@ -43,7 +49,7 @@ export async function t(entryFixture) {
     let result = await run(entryFixture);
     let out = './' + entryFixture + '.yak.out';
     if (fixtures.indexOf(out) !== -1) {
-        assert.equal(result.out, reqFixture(out).replace(/\r?\n/g, '\n'));
+        assert.equal(result.out, reqOut(out));
     }
 }
 
