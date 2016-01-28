@@ -34,7 +34,7 @@ function goToLineStart(nextMessage) {
 
 // webpack config
 
-let srcPath = path.resolve(__dirname, '../src');
+let srcPath = path.join(__dirname, '../src');
 
 let config = {
     entry: {
@@ -42,15 +42,16 @@ let config = {
         test: 'test',
     },
     output: {
-        path: path.resolve(__dirname, '../dist'),
+        path: path.join(__dirname, '../dist'),
         publicPath: '/dist/',
         filename: '[name].js',
         libraryTarget: 'umd',
         library: 'yaksok',
     },
     resolve: {
+        root: path.join(__dirname, '../src'),
         extensions: ['', '.js'],
-        modulesDirectories: ['src', 'node_modules']
+        modulesDirectories: ['node_modules']
     },
     node: {
         fs: 'empty',
@@ -65,10 +66,10 @@ let config = {
                 loader: 'babel',
                 include: [
                     srcPath,
-                    path.resolve(__dirname, '../node_modules/lex-es6')
+                    path.join(__dirname, '../node_modules/lex-es6')
                 ],
                 exclude: [
-                    path.resolve(srcPath, 'runtime')
+                    path.join(srcPath, 'runtime')
                 ],
             },
             { test: /\.jison$/, loader: 'jison-loader', include: [srcPath] },
