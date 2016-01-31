@@ -7,8 +7,12 @@ import {
 import Analyzer from 'analyzer';
 import { yaksok as builtinYaksok } from 'builtin';
 
+export const BEFORE_RESOLVE = {};
+export const AFTER_RESOLVE = {};
 export const BEFORE_ANALYZE = {};
 export const AFTER_ANALYZE = {};
+export const BEFORE_TRANSLATE = {};
+export const AFTER_TRANSLATE = {};
 
 export default class Compiler extends NodeVisitor {
     constructor(config={}) {
@@ -54,26 +58,55 @@ export default class Compiler extends NodeVisitor {
                 this.entryContext = context;
             }
         }
-        let entryAstRoot = await this.moduleResolver.resolve(this.entryContext);
-        // before analyze
-        for (let plugin of this.plugins.get(BEFORE_ANALYZE)) {
-            plugin.compiler = this;
-            await plugin.run(entryAstRoot, this.config);
+        let ast = null;
+        { // resolve pass
+            await this.pluginPass(ast, BEFORE_RESOLVE);
+            ast = await this.resolvePass(this.entryContext);
+            await this.pluginPass(ast, AFTER_RESOLVE);
         }
-        // analyze
-        await this.analyzer.analyze(entryAstRoot);
-        // after analyze
-        for (let plugin of this.plugins.get(AFTER_ANALYZE)) {
-            plugin.compiler = this;
-            await plugin.run(entryAstRoot, this.config);
+        { // analyze pass
+            await this.pluginPass(ast, BEFORE_ANALYZE);
+            await this.analyzePass(ast);
+            await this.pluginPass(ast, AFTER_ANALYZE);
         }
+        { // translate pass
+            let result;
+            await this.pluginPass(ast, BEFORE_TRANSLATE);
+            result = this.translatePass(ast);
+            await this.pluginPass(ast, AFTER_TRANSLATE);
+            return result;
+        }
+    }
+    async resolvePass(entryContext) {
+        return await this.moduleResolver.resolve(entryContext);
+    }
+    async analyzePass(entryAstRoot) {
+        return await this.analyzer.analyze(entryAstRoot);
+    }
+    async translatePass(entryAstRoot) {
         return await this.translator.translate(entryAstRoot);
+    }
+    async pluginPass(entryAstRoot, phase) {
+        for (let plugin of this.plugins.get(phase)) {
+            plugin.compiler = this;
+            await plugin.run(entryAstRoot, this.config);
+        }
     }
 }
 
 class CompilerPlugins {
     constructor() { this.clear(); }
     clear() { this.map = new Map(); }
-    get(phase=AFTER_ANALYZE) { return this.map.has(phase)? this.map.get(phase).slice() : []; }
-    add(plugins=[], phase=AFTER_ANALYZE) { this.map.set(phase, this.get(phase).concat(plugins)); }
+    get(phase=AFTER_ANALYZE) {
+        return this.map.has(phase)? this.map.get(phase).slice() : [];
+    }
+    add(plugin, phase=null) {
+        if (Array.isArray(plugin)) {
+            for (let _plugin of plugin) {
+                this.add(_plugin, phase);
+            }
+        }
+        phase = phase || plugin.phase || AFTER_ANALYZE;
+        this.map.set(phase, this.get(phase).concat(plugin));
+    }
 }
