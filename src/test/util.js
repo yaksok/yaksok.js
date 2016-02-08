@@ -4,7 +4,7 @@ import assert from 'assert';
 let fs = eval('require("fs-extra")');
 let babel = eval('require("babel-core")');
 
-import JsTargetCompiler from 'compiler/js';
+import { JsTargetCompiler } from 'compiler';
 import {
     Loader as ModuleLoader,
     CommonContext

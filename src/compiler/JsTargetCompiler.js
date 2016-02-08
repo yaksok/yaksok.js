@@ -1,7 +1,7 @@
-import YaksokCompiler from 'compiler';
+import { Compiler } from 'compiler';
 import JsTranslator from 'translator/js';
 
-export default class JsTargetCompiler extends YaksokCompiler {
+export default class JsTargetCompiler extends Compiler {
     constructor() {
         super(...arguments);
         this.translator = new JsTranslator();

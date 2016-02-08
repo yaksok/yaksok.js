@@ -45,7 +45,7 @@ if (argv._.length === 0) {
     );
     switch (argv.target) {
     case 'js': case 'javascript': {
-        var compiler = new yaksok.impl.JsTargetCompiler();
+        var compiler = new yaksok.compiler.JsTargetCompiler();
         compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
         compiler.compile(entryContext).then(function (result) {
             fs.writeFileSync(argv.out, result, { encoding: 'utf8' });
