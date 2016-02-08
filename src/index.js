@@ -1,5 +1,6 @@
 export * as ast from 'ast';
 export * as compiler from 'compiler';
+export * as translator from 'translator';
 
 export Parser from 'parser';
 export Plugin from 'plugin';
