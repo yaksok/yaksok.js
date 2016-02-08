@@ -13,7 +13,7 @@ import {
     AFTER_ANALYZE,
     BEFORE_TRANSLATE,
     AFTER_TRANSLATE
-} from './index';
+} from 'compiler';
 
 export default class Compiler extends NodeVisitor {
     constructor(config={}) {
