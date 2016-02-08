@@ -4,7 +4,7 @@ import {
     Resolver as ModuleResolver,
     RawContext as ModuleRawContext
 } from 'module';
-import Analyzer from 'analyzer';
+import { Analyzer } from 'analyzer';
 import { yaksok as builtinYaksok } from 'builtin';
 import {
     BEFORE_RESOLVE,

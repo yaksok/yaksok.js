@@ -5,7 +5,7 @@ import {
 } from 'ast';
 import { yaksok as builtinYaksok } from 'builtin';
 
-export default class Analyzer extends NodeVisitor {
+export class Analyzer extends NodeVisitor {
     async prepare(moduleHash) {
         this.currentScope = new Scope();
         this.currentAstRoot = await this.compiler.getAstRoot(moduleHash);
