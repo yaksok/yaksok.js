@@ -68,7 +68,7 @@
     <script type="text/javascript">
     var srcEditor = ace.edit('src-editor');
     var dstEditor = ace.edit('dst-editor');
-    var compiler = new yaksok.impl.JsTargetCompiler();
+    var compiler = new yaksok.compiler.JsTargetCompiler();
     compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
     var current = 0;
     var lastModified = 0;

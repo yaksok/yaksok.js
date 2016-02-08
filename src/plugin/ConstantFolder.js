@@ -1,4 +1,4 @@
-import Plugin from 'plugin';
+import { Plugin } from 'plugin';
 import * as ast from 'ast';
 import { AFTER_ANALYZE } from 'compiler';
 

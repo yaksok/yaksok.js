@@ -175,7 +175,7 @@
 
 
 <pre class="code"><code class="language-javascript hljs "><span class="hljs-keyword">var</span> yaksok = <span class="hljs-built_in">require</span>(<span class="hljs-string">'yaksok'</span>); <span class="hljs-comment">//yaksok import</span>
-<span class="hljs-keyword">var</span> compiler = <span class="hljs-keyword">new</span> yaksok.impl.JsTargetCompiler(); <span class="hljs-comment">//컴파일러</span>
+<span class="hljs-keyword">var</span> compiler = <span class="hljs-keyword">new</span> yaksok.compiler.JsTargetCompiler(); <span class="hljs-comment">//컴파일러</span>
 compiler.plugins.add(<span class="hljs-keyword">new</span> yaksok.plugin.ConstantFolder({ dce: <span class="hljs-literal">true</span> })); <span class="hljs-comment">//optional</span>
 
 <span class="hljs-comment">//컴파일 수행</span>

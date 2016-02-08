@@ -1,20 +1,8 @@
 export * as ast from 'ast';
-
-export Parser from 'parser';
-export Compiler from 'compiler';
-export Plugin from 'plugin';
-
-import JsTargetCompiler from 'compiler/js';
-export var impl = {
-    JsTargetCompiler
-};
-
-import ConstantFolder from 'plugin/ConstantFolder';
-export var plugin = {
-    ConstantFolder
-};
-
-import { CommonContext } from 'module';
-export var context = {
-    CommonContext
-};
+export * as builtin from 'builtin';
+export * as parser from 'parser';
+export * as module from 'module';
+export * as compiler from 'compiler';
+export * as analyzer from 'analyzer';
+export * as translator from 'translator';
+export * as plugin from 'plugin';

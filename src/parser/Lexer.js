@@ -1,4 +1,4 @@
-import Lexer from 'lex-es6';
+import Lex from 'lex-es6';
 
 const INITIAL_STATE = 0;
 const SPECIAL_STATE = 1;
@@ -29,7 +29,7 @@ const RESERVED_IN_LOOP = Object.assign({
     마다: 'MADA',
 }, RESERVED);
 
-export default class YaksokLexer extends Lexer {
+export default class Lexer extends Lex {
     constructor(startQueue=[]) {
         super();
         this.tabSize = 8;
@@ -65,7 +65,7 @@ export default class YaksokLexer extends Lexer {
         this._tabSpaces = Array(value + 1).join(' ');
     }
 }
-YaksokLexer.defunct = function (chr) {
+Lexer.defunct = function (chr) {
     if (this.state === SPECIAL_STATE) {
         throw new Error('번역의 *** 쌍이 맞지 않습니다.');
     } else {
@@ -73,24 +73,24 @@ YaksokLexer.defunct = function (chr) {
     }
 };
 
-YaksokLexer.addRule(/\*{3}/, function (lexeme) {
+Lexer.addRule(/\*{3}/, function (lexeme) {
     this.state = SPECIAL_STATE;
 });
 
-YaksokLexer.addRule(/(.|\r?\n)*?\r?\n\s*\*{3}/, function (lexeme) {
+Lexer.addRule(/(.|\r?\n)*?\r?\n\s*\*{3}/, function (lexeme) {
     this.yytext = lexeme.substring(0, lexeme.length - 3);
     this.state = INITIAL_STATE;
     return 'SPECIALBLOCK';
 }, [SPECIAL_STATE]);
 
-YaksokLexer.addRule(/번역/, function (lexeme) {
+Lexer.addRule(/번역/, function (lexeme) {
     this.lexingDescription = true;
     return 'TRANSLATE';
 });
 
-YaksokLexer.addRule(/[\t ]*#[^\r\n]*/); // comment
+Lexer.addRule(/[\t ]*#[^\r\n]*/); // comment
 
-YaksokLexer.addRule(/^[\t ]*/gm, function (lexeme) {
+Lexer.addRule(/^[\t ]*/gm, function (lexeme) {
     if (this.parenCount !== 0) {
         this.reject = true;
         return;
@@ -111,17 +111,17 @@ YaksokLexer.addRule(/^[\t ]*/gm, function (lexeme) {
     }
 });
 
-YaksokLexer.addRule(/[\t ]+/, function (lexeme) {
+Lexer.addRule(/[\t ]+/, function (lexeme) {
     if (this.lexingDescription) {
         return 'WS';
     }
 });
 
-YaksokLexer.addRule(/0[xX][0-9a-fA-F]+/, function (lexeme) {
+Lexer.addRule(/0[xX][0-9a-fA-F]+/, function (lexeme) {
     this.yytext = parseInt(lexeme) + '';
     return 'INTEGER';
 });
-YaksokLexer.addRule(/\d*\.?\d+(?:[Ee](?:[+-]?\d+)?)?/, function (lexeme) {
+Lexer.addRule(/\d*\.?\d+(?:[Ee](?:[+-]?\d+)?)?/, function (lexeme) {
     this.yytext = lexeme;
     if (/^[1-9][0-9]*$/.test(lexeme)) {
         return 'INTEGER';
@@ -132,9 +132,9 @@ YaksokLexer.addRule(/\d*\.?\d+(?:[Ee](?:[+-]?\d+)?)?/, function (lexeme) {
     }
     return 'FLOAT';
 });
-YaksokLexer.addRule(/"([^\\"]|\\.)*"|'([^\\']|\\.)*'/, 'STRING');
+Lexer.addRule(/"([^\\"]|\\.)*"|'([^\\']|\\.)*'/, 'STRING');
 
-YaksokLexer.addRule(/[$_a-zA-Z가-힣][$_a-zA-Z가-힣0-9]*/, function (lexeme) {
+Lexer.addRule(/[$_a-zA-Z가-힣][$_a-zA-Z가-힣0-9]*/, function (lexeme) {
     this.yytext = lexeme;
     let reserved = this.lexingLoopCondition ? RESERVED_IN_LOOP[lexeme] : RESERVED[lexeme];
     if (reserved) {
@@ -158,25 +158,25 @@ YaksokLexer.addRule(/[$_a-zA-Z가-힣][$_a-zA-Z가-힣0-9]*/, function (lexeme) 
     return 'IDENTIFIER';
 });
 
-YaksokLexer.addRule(/:/, 'ASSIGN');
-YaksokLexer.addRule(/,/, 'COMMA');
-YaksokLexer.addRule(/\./, 'DOT');
-YaksokLexer.addRule(/~/, 'TILDE');
-YaksokLexer.addRule(/@/, 'ATMARK');
-YaksokLexer.addRule(/\?/, 'QUESTION');
-YaksokLexer.addRule(/\+/, 'PLUS');
-YaksokLexer.addRule(/-/, 'MINUS');
-YaksokLexer.addRule(/\*/, 'MULT');
-YaksokLexer.addRule(/\//, 'DIV');
-YaksokLexer.addRule(/\%/, 'MOD');
-YaksokLexer.addRule(/=/, 'EQ');
-YaksokLexer.addRule(/>/, 'GT');
-YaksokLexer.addRule(/</, 'LT');
-YaksokLexer.addRule(/!=/, 'NE');
-YaksokLexer.addRule(/>=/, 'GTEQ');
-YaksokLexer.addRule(/<=/, 'LTEQ');
+Lexer.addRule(/:/, 'ASSIGN');
+Lexer.addRule(/,/, 'COMMA');
+Lexer.addRule(/\./, 'DOT');
+Lexer.addRule(/~/, 'TILDE');
+Lexer.addRule(/@/, 'ATMARK');
+Lexer.addRule(/\?/, 'QUESTION');
+Lexer.addRule(/\+/, 'PLUS');
+Lexer.addRule(/-/, 'MINUS');
+Lexer.addRule(/\*/, 'MULT');
+Lexer.addRule(/\//, 'DIV');
+Lexer.addRule(/\%/, 'MOD');
+Lexer.addRule(/=/, 'EQ');
+Lexer.addRule(/>/, 'GT');
+Lexer.addRule(/</, 'LT');
+Lexer.addRule(/!=/, 'NE');
+Lexer.addRule(/>=/, 'GTEQ');
+Lexer.addRule(/<=/, 'LTEQ');
 
-YaksokLexer.addRule(/(\r?\n)+/, function (lexeme) {
+Lexer.addRule(/(\r?\n)+/, function (lexeme) {
     if (this.lexingDescription) {
         this.lexingDescription = false;
     }
@@ -186,32 +186,32 @@ YaksokLexer.addRule(/(\r?\n)+/, function (lexeme) {
     }
 });
 
-YaksokLexer.addRule(/\{/, function (lexeme) {
+Lexer.addRule(/\{/, function (lexeme) {
     ++this.parenCount;
     return 'LCURLY';
 });
 
-YaksokLexer.addRule(/\}/, function (lexeme) {
+Lexer.addRule(/\}/, function (lexeme) {
     --this.parenCount;
     return 'RCURLY';
 });
 
-YaksokLexer.addRule(/\[/, function (lexeme) {
+Lexer.addRule(/\[/, function (lexeme) {
     ++this.parenCount;
     return 'LSQUARE';
 });
 
-YaksokLexer.addRule(/\]/, function (lexeme) {
+Lexer.addRule(/\]/, function (lexeme) {
     --this.parenCount;
     return 'RSQUARE';
 });
 
-YaksokLexer.addRule(/\(/, function (lexeme) {
+Lexer.addRule(/\(/, function (lexeme) {
     ++this.parenCount;
     return 'LPAR';
 });
 
-YaksokLexer.addRule(/\)/, function (lexeme) {
+Lexer.addRule(/\)/, function (lexeme) {
     --this.parenCount;
     return 'RPAR';
 });

@@ -39,13 +39,15 @@ if (argv._.length === 0) {
     process.exit(1);
 } else {
     var filePath = argv._[0];
-    var entryContext = new yaksok.context.CommonContext(
+    var moduleLoader = new yaksok.module.loader.CommonLoader();
+    var entryContext = new yaksok.module.context.CommonContext(
         path.basename(filePath, '.yak'),
         path.dirname(filePath)
     );
     switch (argv.target) {
     case 'js': case 'javascript': {
-        var compiler = new yaksok.impl.JsTargetCompiler();
+        var compiler = new yaksok.compiler.JsTargetCompiler();
+        compiler.moduleLoader = moduleLoader;
         compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
         compiler.compile(entryContext).then(function (result) {
             fs.writeFileSync(argv.out, result, { encoding: 'utf8' });

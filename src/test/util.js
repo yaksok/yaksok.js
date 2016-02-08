@@ -1,17 +1,15 @@
 import path from 'path';
 import assert from 'assert';
 
-let fs = eval('require("fs-extra")');
-let babel = eval('require("babel-core")');
+const fs = eval('require("fs-extra")');
+const babel = eval('require("babel-core")');
 
-import JsTargetCompiler from 'compiler/js';
-import {
-    Loader as ModuleLoader,
-    CommonContext
-} from 'module';
+import { JsTargetCompiler } from 'compiler';
+import { Loader as ModuleLoader } from 'module/loader';
+import { CommonContext } from 'module/context';
 
-let reqFixture = require.context('raw!./fixtures', true);
-let fixtures = reqFixture.keys();
+const reqFixture = require.context('raw!./fixtures', true);
+const fixtures = reqFixture.keys();
 
 function reqOut(path) {
     if (reqOut.cache[path]) return reqOut.cache[path];
