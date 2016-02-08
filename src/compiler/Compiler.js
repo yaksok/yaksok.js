@@ -1,9 +1,7 @@
 import { NodeVisitor } from 'ast';
-import {
-    Loader as ModuleLoader,
-    Resolver as ModuleResolver,
-    RawContext as ModuleRawContext
-} from 'module';
+import { Resolver as ModuleResolver } from 'module';
+import { Loader as ModuleLoader } from 'module/loader';
+import { RawContext as ModuleRawContext } from 'module/context';
 import { Analyzer } from 'analyzer';
 import { yaksok as builtinYaksok } from 'builtin';
 import {

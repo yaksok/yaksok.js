@@ -1,15 +1,13 @@
-import path from 'path';
-import uuid from 'uuid';
-
-import * as ast from 'ast';
-import { NodeVisitor } from 'ast';
+import { NodeVisitor, Def } from 'ast';
 import { Parser } from 'parser';
 import { ModuleScope } from 'analyzer';
+import { CommonContext } from 'module/context';
 
 export class Resolver extends NodeVisitor {
     constructor() {
         super();
         this.parser = new Parser();
+        this.loader = null; // see compiler.Compiler init method
     }
     async init() {
         await super.init();
@@ -35,7 +33,7 @@ export class Resolver extends NodeVisitor {
         { // module scope
             let moduleScope = new ModuleScope();
             for (let statement of astRoot.statements) {
-                if (statement instanceof ast.Def) {
+                if (statement instanceof Def) {
                     moduleScope.addDef(statement);
                 }
             }
@@ -78,58 +76,3 @@ export class Resolver extends NodeVisitor {
         }
     }
 };
-
-export class Context {
-    constructor() {
-        this.from = null;
-    }
-    hash() {
-        if (this.__hash__)
-            return this.__hash__;
-        this.__hash__ = uuid.v4();
-        return this.__hash__;
-    }
-    toString() { return this.hash(); }
-};
-
-export class RawContext extends Context {
-    constructor(sourceCode) {
-        super();
-        this.sourceCode = sourceCode + '';
-    }
-};
-
-export class CommonContext extends Context {
-    constructor(name, dir='.') {
-        super();
-        this.name = name;
-        this._dir = dir;
-    }
-    get dir() {
-        if (this.from instanceof CommonContext) {
-            return path.join(this.from.dir, this._dir);
-        } else {
-            return this._dir;
-        }
-    }
-    hash() { return `common:${ this.name }`; }
-};
-
-export class Loader {
-    async load(context) {
-        if (context instanceof RawContext) return context.sourceCode;
-        if (context instanceof CommonContext) return await load(context);
-        else throw new Error('unexpected module context');
-    }
-};
-
-function load(commonContext) {
-    return new Promise((resolve, reject) => {
-        let fs = eval('require("fs")');
-        let filePath = path.join(commonContext.dir, commonContext.name + '.yak');
-        fs.readFile(filePath, 'utf8', (err, data) => {
-            if (err) reject(err);
-            else resolve(data);
-        });
-    });
-}
