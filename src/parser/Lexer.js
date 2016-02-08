@@ -29,7 +29,7 @@ const RESERVED_IN_LOOP = Object.assign({
     마다: 'MADA',
 }, RESERVED);
 
-export class Lexer extends Lex {
+export default class Lexer extends Lex {
     constructor(startQueue=[]) {
         super();
         this.tabSize = 8;
