@@ -1,3 +1,5 @@
+import { RawContext, CommonContext } from 'module/context';
+
 export class Loader {
     async load(context) {
         if (context instanceof RawContext) return context.sourceCode;
