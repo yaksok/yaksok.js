@@ -1,4 +1,5 @@
 export * as ast from 'ast';
+export * as builtin from 'builtin';
 export * as parser from 'parser';
 export * as compiler from 'compiler';
 export * as analyzer from 'analyzer';
