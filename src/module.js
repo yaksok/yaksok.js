@@ -3,13 +3,13 @@ import uuid from 'uuid';
 
 import * as ast from 'ast';
 import { NodeVisitor } from 'ast';
-import YaksokParser from 'parser';
+import { Parser } from 'parser';
 import { ModuleScope } from 'analyzer';
 
 export class Resolver extends NodeVisitor {
     constructor() {
         super();
-        this.parser = new YaksokParser();
+        this.parser = new Parser();
     }
     async init() {
         await super.init();

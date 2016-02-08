@@ -1,4 +1,4 @@
-import YaksokLexer from 'lexer';
+import { Lexer } from 'lexer';
 import * as ast from 'ast';
 import { Parser as JisonYaksokParser } from 'parser.jison';
 
@@ -39,10 +39,10 @@ let yy = {
     }
 };
 
-export default class YaksokParser {
+export class Parser {
     constructor(startTokens=['START_AST']) {
         this.jisonParser = new JisonYaksokParser();
-        this.jisonParser.lexer = new YaksokLexer(startTokens);
+        this.jisonParser.lexer = new Lexer(startTokens);
         this.jisonParser.yy = yy;
     }
     parse(code) {
