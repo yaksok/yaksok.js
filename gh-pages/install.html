@@ -21,7 +21,7 @@ $ ysjs "소스코드.yak" -o "결과.js"
 
 &lt;!-- 아래와 같이 사용합니다. --&gt;
 &lt;script&gt;
-var compiler = new yaksok.impl.JsTargetCompiler();
+var compiler = new yaksok.compiler.JsTargetCompiler();
 compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
 compiler.compile(`
 
