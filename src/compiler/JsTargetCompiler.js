@@ -1,5 +1,5 @@
 import { Compiler } from 'compiler';
-import JsTranslator from 'translator/js';
+import { JsTranslator } from 'translator';
 
 export default class JsTargetCompiler extends Compiler {
     constructor() {
