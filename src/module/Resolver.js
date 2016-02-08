@@ -3,7 +3,7 @@ import { Parser } from 'parser';
 import { ModuleScope } from 'analyzer';
 import { CommonContext } from 'module/context';
 
-export class Resolver extends NodeVisitor {
+export default class Resolver extends NodeVisitor {
     constructor() {
         super();
         this.parser = new Parser();
