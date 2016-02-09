@@ -82,6 +82,15 @@ export default class JsTranslator extends TextTranslator {
         } else {
             await this.visitYaksokRoot(astRoot);
         }
+        let { exports } = this.compiler;
+        if (exports) {
+            for (let [key, call] of Object.entries(exports)) {
+                this.writeIndent();
+                this.write(`export var ${ key } = `);
+                await this.visit(call);
+                this.write(';\n');
+            }
+        }
         this.write('})();');
         return this.result.join('');
     }

@@ -1,11 +1,20 @@
 import 'babel-polyfill';
 
+import path from 'path';
+
 async function main() {
+    const stdout = eval('process.stdout');
     { // dump compiler results
+        console.log('-- dump compiler results --');
         let reqDump = require.context('.', true, /^\.\/.*dump-[^/]+\.js$/i);
-        for (let dumpCode of reqDump.keys()) await reqDump(dumpCode).run();
+        for (let dumpCode of reqDump.keys()) {
+            stdout.write(`running "${ path.join('src/test', dumpCode) }"...`);
+            await reqDump(dumpCode).run();
+            stdout.write(' ok\n');
+        }
     }
     { // mocha
+        console.log('-- mocha --');
         let mochaConfig = {
             reporter: 'nyan',
         };

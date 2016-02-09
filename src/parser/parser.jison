@@ -22,6 +22,7 @@ empty_or_whitespace
 ast
     : START_AST statements              { return new yy.ast.YaksokRoot($statements) }
     | START_DESCRIPTION description     { return $description }
+    | START_CALL call                   { return $call }
     ;
 
 statements
