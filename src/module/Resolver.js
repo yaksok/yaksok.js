@@ -1,12 +1,10 @@
 import { NodeVisitor, Def } from 'ast';
-import { Parser } from 'parser';
 import { ModuleScope } from 'analyzer';
 import { CommonContext } from 'module/context';
 
 export default class Resolver extends NodeVisitor {
     constructor() {
         super();
-        this.parser = new Parser();
         this.loader = null; // see compiler.Compiler init method
     }
     async init() {
@@ -26,8 +24,7 @@ export default class Resolver extends NodeVisitor {
                 return this.compiler.astMap[moduleHash];
         }
         await this.init();
-        let code = await this.loader.load(context);
-        let astRoot = this.parser.parse(code);
+        let astRoot = await this.loader.get(context);
         this.compiler.astMap[moduleHash] = astRoot;
         astRoot.hash = moduleHash;
         { // module scope

@@ -1,6 +1,13 @@
 import { RawContext, CommonContext } from 'module/context';
+import { Parser } from 'parser';
 
 export class Loader {
+    constructor() {
+        this.parser = new Parser();
+    }
+    async get(context) {
+        return this.parser.parse(await this.load(context));
+    }
     async load(context) {
         if (context instanceof RawContext) return context.sourceCode;
         else throw new Error('unexpected module context');
