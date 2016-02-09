@@ -20,6 +20,7 @@ export class Analyzer extends NodeVisitor {
         }
         // analyze entry point
         await this.visit(await this.prepare());
+        return astRoot;
     }
     async visitName(node) {
         if (!node.call) return super.visitName(node);

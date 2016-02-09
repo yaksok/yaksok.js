@@ -57,20 +57,20 @@ export default class Compiler extends NodeVisitor {
                 this.entryContext = context;
             }
         }
-        let ast = null;
+        let ast;
         { // resolve pass
-            await this.pluginPass(ast, BEFORE_RESOLVE);
+            await this.pluginPass(null, BEFORE_RESOLVE);
             ast = await this.resolvePass(this.entryContext);
-            await this.pluginPass(ast, AFTER_RESOLVE);
+            ast = await this.pluginPass(ast, AFTER_RESOLVE);
         }
         { // analyze pass
-            await this.pluginPass(ast, BEFORE_ANALYZE);
-            await this.analyzePass(ast);
-            await this.pluginPass(ast, AFTER_ANALYZE);
+            ast = await this.pluginPass(ast, BEFORE_ANALYZE);
+            ast = await this.analyzePass(ast);
+            ast = await this.pluginPass(ast, AFTER_ANALYZE);
         }
         { // translate pass
             let result;
-            await this.pluginPass(ast, BEFORE_TRANSLATE);
+            ast = await this.pluginPass(ast, BEFORE_TRANSLATE);
             result = this.translatePass(ast);
             await this.pluginPass(ast, AFTER_TRANSLATE);
             return result;
@@ -86,10 +86,12 @@ export default class Compiler extends NodeVisitor {
         return await this.translator.translate(entryAstRoot);
     }
     async pluginPass(entryAstRoot, phase) {
+        let ast = entryAstRoot;
         for (let plugin of this.plugins.get(phase)) {
             plugin.compiler = this;
-            await plugin.run(entryAstRoot, this.config);
+            ast = await plugin.run(ast, this.config) || ast;
         }
+        return ast;
     }
 }
 
