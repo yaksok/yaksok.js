@@ -60,4 +60,7 @@ describe('에러 없이 잘 도나', _=> {
     it('결속', async () => {
         await t('bind');
     });
+    it('조건문 안에서 약속 호출 #37', async () => {
+        await t('call-in-if');
+    });
 });

@@ -80,8 +80,8 @@ block
     ;
 
 if_statement
-    : IF expression THEN block          { $$ = new yy.ast.If($expression, $block, null) }
-    | IF expression ELSE block          { $$ = new yy.ast.IfNot($expression, $block, null) }
+    : IF call THEN block                { $$ = new yy.ast.If($call, $block, null) }
+    | IF call ELSE block                { $$ = new yy.ast.IfNot($call, $block, null) }
     ;
 
 if_else_statement
@@ -92,8 +92,8 @@ if_else_statement
     ;
 
 loop_statement
-    : LOOP block                            { $$ = new yy.ast.Loop($block) }
-    | LOOP expression EUI name MADA block   { $$ = new yy.ast.Iterate($expression, $name, $block) }
+    : LOOP block                        { $$ = new yy.ast.Loop($block) }
+    | LOOP call EUI name MADA block     { $$ = new yy.ast.Iterate($call, $name, $block) }
     ;
 
 loop_end_statement
