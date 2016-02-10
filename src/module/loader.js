@@ -1,3 +1,4 @@
+import path from 'path';
 import { RawContext, CommonContext } from 'module/context';
 import { Parser } from 'parser';
 
