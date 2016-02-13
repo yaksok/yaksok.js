@@ -44,12 +44,17 @@ export class CommonContext extends Context {
         else basename = path.basename(filePath);
         return new CommonContext(basename, path.dirname(filePath));
     }
-    static async getScriptPath(commonContext) {
-        let p1 = path.join(commonContext.dir, commonContext.name + '.약속');
-        let p2 = path.join(commonContext.dir, commonContext.name + '.yak');
-        let p3 = path.join(commonContext.dir, commonContext.name + '.ㅇㅅ');
-        let p4 = path.join(commonContext.dir, commonContext.name + '.yaksok');
-        let p5 = path.join(commonContext.dir, commonContext.name);
+    static async getScriptPathFromContext(commonContext) {
+        return await CommonContext.getScriptPath(
+            path.join(commonContext.dir, commonContext.name)
+        );
+    }
+    static async getScriptPath(scriptPath) {
+        let p1 = scriptPath + '.약속';
+        let p2 = scriptPath + '.yak';
+        let p3 = scriptPath + '.ㅇㅅ';
+        let p4 = scriptPath + '.yaksok';
+        let p5 = scriptPath;
         if (await isFile(p1)) return p1;
         if (await isFile(p2)) return p2;
         if (await isFile(p3)) return p3;

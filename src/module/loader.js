@@ -23,7 +23,7 @@ export class CommonLoader extends Loader {
 }
 
 async function load(commonContext) {
-    let filePath = await CommonContext.getScriptPath(commonContext);
+    let filePath = await CommonContext.getScriptPathFromContext(commonContext);
     return await readFile(filePath);
 }
 
