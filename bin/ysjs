@@ -1,64 +1,53 @@
 #!/usr/bin/env node
-var yaksok = require('../dist/yaksok.min.js');
-var fs = require('fs');
-var path = require('path');
-var argv = require('yargs')
+require('babel-polyfill');
+
+var yargs = require('yargs');
+var myYargs = yargs
     .usage([
-        '사용법: ysjs <소스코드> [설정]',
-        '`ysjs`만 입력하면 repl 모드로 동작합니다'
+        '사용법: ysjs <명령> [설정] 또는 ysjs help <명령>',
+        '',
+        '사용할 수 있는 명령 목록은 다음과 같습니다:',
+        require('./command').toString()
     ].join('\n'))
-    .example('ysjs', '약속 repl을 실행합니다')
-    .example('ysjs -h', '이 도움말을 보여줍니다')
-    .example('ysjs "소스코드.yak" -o "결과.js"', '"소스코드.yak" 파일을 "결과.js"로 컴파일합니다')
+    .example('ysjs', '약속 repl을 실행합니다. (미구현)')
+    .example('ysjs help', '이 도움말을 보여줍니다')
     .help('h')
     .options({
         h: {
             alias: 'help',
             describe: '이 도움말을 보여줍니다',
             type: 'boolean'
-        },
-        o: {
-            alias: 'out',
-            describe: '결과 파일 또는 경로를 지정합니다',
-            default: 'out',
-            type: 'string'
-        },
-        t: {
-            alias: 'target',
-            describe: '컴파일 타겟을 지정합니다',
-            default: 'js',
-            type: 'string'
-        },
-    })
-    .argv;
+        }
+    });
+var argv = myYargs.argv;
 
 process.title = 'ysjs';
 
+function getCommand(name) {
+    var command = require('./command').commands[name];
+    if (!command) {
+        console.error('존재하지 않는 명령입니다:', name);
+        console.error('사용가능한 명령 목록:');
+        console.error(require('./command').toString());
+        process.exit(1);
+    } else {
+        return command;
+    }
+}
+
+var my = {
+    yargs: myYargs,
+    command(command) {
+        return getCommand(command).yargs(
+            yargs(process.argv.splice(3))
+        );
+    }
+};
 if (argv._.length === 0) {
-    console.error('repl은 아직 지원되지 않습니다.');
+    console.error('repl은 아직 구현되지 않았습니다.');
+    console.error('`ysjs help`를 입력해보세요.');
     process.exit(1);
 } else {
-    var filePath = argv._[0];
-    var moduleLoader = new yaksok.module.loader.CommonLoader();
-    var entryContext = new yaksok.module.context.CommonContext(
-        path.basename(filePath, '.yak'),
-        path.dirname(filePath)
-    );
-    switch (argv.target) {
-    case 'js': case 'javascript': {
-        var compiler = new yaksok.compiler.JsTargetCompiler();
-        compiler.moduleLoader = moduleLoader;
-        compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
-        compiler.compile(entryContext).then(function (result) {
-            fs.writeFileSync(argv.out, result, { encoding: 'utf8' });
-        }).catch(function (err) {
-            console.error(err instanceof Error ? err.stack : err);
-            process.exit(1);
-        });
-    } break;
-    default: {
-        console.error('지원하지 않는 컴파일 타겟입니다.');
-        process.exit(1);
-    } break;
-    }
+    var cmdName = argv._[0];
+    getCommand(cmdName).run(my.command(cmdName).argv, my);
 }

@@ -4,27 +4,49 @@
 
 [![build status](https://travis-ci.org/disjukr/yaksok.js.svg)](https://travis-ci.org/disjukr/yaksok.js)
 
-[![튜토리얼 영상](./tutorial.png)](https://youtu.be/98nz9HjRXro)
 
+## yaksok.js 써보기
 
-## 직접 돌려보기
-
-먼저 nodejs를 설치하세요.
+nodejs를 설치합니다.
 
 * osx: [brew](http://brew.sh/) 설치 후 `brew install node`
 * windows: [chocolatey](https://chocolatey.org/) 설치 후 `choco install nodejs`
 * ubuntu: `sudo apt-get install nodejs npm`
 
-1. `cd 저장소_최상위_폴더`
-2. `npm install`
-3. `npm run build` or `npm run watch`
+yaksok.js를 설치합니다:
 
-## 빌드 명령어
+```sh
+$ npm install -g yaksok
+```
 
-* `npm run build` 개발용 빌드 및 테스트를 수행합니다.
-* `npm run watch` 파일이 수정될 때마다 알아서 다시 빌드합니다.
-* `npm run clean` 빌드된 파일을 다 지웁니다.
-* `npm run min` 실제로 배포할 코드를 빌드합니다.
+`package.yaml` 파일을 만들고 다음과 같이 입력합니다:
+
+```yaml
+시작: 메인
+결과: result.js
+```
+
+`메인.약속` 혹은 `메인.yak` 파일을 만들고 다음과 같이 입력합니다:
+
+```yaksok
+'안녕하세요' 보여주기
+```
+
+다음과 같이 컴파일하고 실행해봅니다:
+
+```sh
+$ ysjs compile
+$ node result
+안녕하세요
+```
+
+
+## 더 알아보기
+
+* [약속.js 놀이터](http://0xabcdef.com/yaksok.js/#play) 여기서 약속 코드가 어떻게 컴파일 되는지 확인해보세요.
+* [약속.js 배우기](http://0xabcdef.com/yaksok.js/#learn) 약속 프로그래밍 언어의 문법은 이 곳에서 배우실 수 있습니다.
+* [약속.js 위키](https://github.com/disjukr/yaksok.js/wiki) yaksok.js의 세부 기능을 알아보고 싶다면 여기로 가시면 됩니다.
+
 
 ## 소스코드 라이센스
 zlib 라이센스 하에 배포합니다. `LICENSE` 파일을 보세요.
