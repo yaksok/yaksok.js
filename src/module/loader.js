@@ -22,10 +22,14 @@ export class CommonLoader extends Loader {
     }
 }
 
-function load(commonContext) {
+async function load(commonContext) {
+    let filePath = await CommonContext.getScriptPath(commonContext);
+    return await readFile(filePath);
+}
+
+function readFile(filePath) {
+    const fs = eval('require("fs-extra")');
     return new Promise((resolve, reject) => {
-        const fs = eval('require("fs-extra")');
-        let filePath = path.join(commonContext.dir, commonContext.name + '.yak');
         fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) reject(err);
             else resolve(data);
