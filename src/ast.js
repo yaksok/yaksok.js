@@ -639,7 +639,7 @@ export class NodeVisitor {
         throw new Error('unknown node type');
     }
     async visitYaksokRoot(node) { await this.visitStatements(node.statements); }
-    async visitStatements(node) { for (let statement of node) await this.visitStatement(statement); }
+    async visitStatements(node) { for (let statement of Array.from(node)) await this.visitStatement(statement); }
     async visitStatement(node) {
         if (node instanceof PlainStatement) return await this.visitPlainStatement(node);
         if (node instanceof Assign) return await this.visitAssign(node);
@@ -691,7 +691,7 @@ export class NodeVisitor {
     }
     async visitLoopEnd(node) {}
     async visitYaksokEnd(node) {}
-    async visitExpressions(node) { for (let expression of node) await this.visitExpression(expression); }
+    async visitExpressions(node) { for (let expression of Array.from(node)) await this.visitExpression(expression); }
     async visitExpression(node) {
         if (node instanceof Call) return await this.visitCall(node);
         if (node instanceof ModuleCall) return await this.visitModuleCall(node);
@@ -725,8 +725,8 @@ export class NodeVisitor {
         await this.visit(node.start);
         await this.visit(node.stop);
     }
-    async visitList(node) { for (let item of node) await this.visitExpression(item); }
-    async visitDict(node) { for (let item of node) await this.visitDictKeyValue(item); }
+    async visitList(node) { for (let item of Array.from(node)) await this.visitExpression(item); }
+    async visitDict(node) { for (let item of Array.from(node)) await this.visitDictKeyValue(item); }
     async visitDictKeyValue(node) {
         await this.visitName(node.key);
         await this.visitExpression(node.value);
