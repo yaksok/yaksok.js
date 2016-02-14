@@ -70,6 +70,7 @@
     var dstEditor = ace.edit('dst-editor');
     var compiler = new yaksok.compiler.JsTargetCompiler();
     compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true }));
+    compiler.plugins.add(new yaksok.plugin.UnusedDefRemover());
     var current = 0;
     var lastModified = 0;
     var compiling = false;

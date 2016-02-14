@@ -152,6 +152,7 @@ export class Scope {
             }
         }
         if (matchDefs.length === 1) {
+            matchCallInfo.def.used = true;
             return matchCallInfo;
         } else if (matchDefs.length > 1) {
             throw new Error(
@@ -165,7 +166,10 @@ export class Scope {
         for (const key of Object.keys(builtinDefs)) {
             let def = builtinDefs[key];
             let callInfo = def.match(call);
-            if (callInfo) return callInfo;
+            if (callInfo) {
+                callInfo.def.used = true;
+                return callInfo;
+            }
         }
         throw new Error('호출 가능한 정의를 찾지 못했습니다');
     }

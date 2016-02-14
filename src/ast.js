@@ -600,6 +600,8 @@ export class Def extends Statement {
         super();
         this.scope = null;
         this.returnType = null;
+        this.used = false; // 어딘가에서 호출된 적이 있는 정의인지 여부.
+                           // see getCallInfo from analyzer.Scope
     }
     get hasSideEffect() { return true; }
     get repr() {
