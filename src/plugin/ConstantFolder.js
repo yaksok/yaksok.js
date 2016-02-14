@@ -8,8 +8,7 @@ export default class ConstantFolder extends Plugin {
         node.fold();
     }
     async visitStatements(node) {
-        for (let i = 0; i < node.length; ++i) {
-            let statement = node.childNodes[i];
+        for (let statement of Array.from(node)) {
             if (!this.config.dce) {
                 await this.visitStatement(statement);
                 continue;
@@ -17,21 +16,19 @@ export default class ConstantFolder extends Plugin {
             let replacement = statement.eliminateDeadCode(); // dce
             if (replacement) {
                 if (replacement instanceof ast.Statements) {
-                    node.childNodes.splice.apply(
-                        node.childNodes,
-                        [i, 1].concat(replacement.childNodes)
-                    );
-                    let statement = node.childNodes[i];
-                    await this.visitStatement(statement);
+                    node.replaceChild(statement, replacement);
+                    for (let statement of replacement) {
+                        await this.visitStatement(statement);
+                    }
                     continue;
                 }
                 if (replacement instanceof Statement) {
-                    node.childNodes[i] = replacement;
+                    node.replaceChild(statement, replacement);
                     await this.visitStatement(replacement);
                     continue;
                 }
-                if (typeof replacement === 'boolean') {
-                    node.childNodes.splice(i, 1);
+                if (replacement === true) {
+                    node.removeChild(statement);
                     continue;
                 }
                 throw new Error('dce must return boolean or ast.Statements or ast.Statement');

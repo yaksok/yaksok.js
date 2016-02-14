@@ -67,9 +67,23 @@ export function astList(listField) {
             if (index === -1) {
                 throw new Error('이 노드의 자식이 아닙니다.');
             }
-            after.parent = this;
-            this[listField][index] = after;
-            return after;
+            if (after.constructor === this.constructor) { // after가 목록인 경우
+                for (let child of after[listField]) {
+                    child.parent = this;
+                }
+                this[listField].splice(index, 1, ...after[listField]);
+            } else {
+                after.parent = this;
+                this[listField][index] = after;
+                return after;
+            }
+        };
+        target.prototype.removeChild = function removeChild(child) {
+            let index = this[listField].indexOf(child);
+            if (index === -1) {
+                throw new Error('이 노드의 자식이 아닙니다.');
+            }
+            this[listField].splice(index, 1);
         };
     };
 }
