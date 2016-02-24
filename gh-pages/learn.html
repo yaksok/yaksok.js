@@ -49,6 +49,15 @@ compiler.compile(yaksokCode).then(function (jsCode) {
 <li><code>npm install -g yaksok</code></li>
 <li><code>ysjs &quot;약속파일.yak&quot;</code> 또는 <code>ysjs &quot;약속파일.yak&quot; -o &quot;결과파일.js&quot;</code></li>
 </ol>
+<h4 id="yaml 파일을 이용하는 방법">yaml 파일을 이용하는 방법</h4>
+<ol>
+<li><code>pakcage.yaml</code> 파일을 만들고 다음과 같이 입력합니다.<pre class="code">시작: 메인
+결과: result.js</pre></li>
+<li><code>메인.약속</code> 혹은 <code>메인.yak</code> 파일을 만들고 다음과 같이 입력합니다.<pre class="code">'안녕하세요' 보여주기</pre></li>
+<li>다음과 같이 컴파일하고 실행해봅니다.<pre class="code">$ ysjs compile
+$ node result
+안녕하세요</pre></li>
+</ol>
 <h2 id="약속 문법">약속 문법</h2>
 <p>yaksok.js에서 사용하는 약속 문법은 약속의 레퍼런스 문법과 차이가 있을 수 있습니다.</p>
 <h3 id="1. 값">1. 값</h3>
@@ -128,7 +137,7 @@ compiler.compile(yaksokCode).then(function (jsCode) {
 <h4 id="인코딩과 줄 구분">인코딩과 줄 구분</h4>
 <p>기본 인코딩으로 <code>utf-8</code>을 사용하며, <code>CRLF</code>와 <code>LF</code>로 줄을 구분합니다. 한 줄에는 하나의 문장만이 들어가지만 <code>()</code>, <code>{}</code>, <code>[]</code> 등의 괄호쌍 내부에서는 줄구분을 하지 않습니다. 따라서 배열, 사전 등은 여러 줄에 걸쳐 사용할 수 있습니다.</p>
 <h4 id="확장자">확장자</h4>
-<p><code>.yak</code> 확장자를 사용합니다.</p>
+<p><code>.yak</code>와 <code>.약속</code> 확장자를 사용합니다.</p>
 <h4 id="주석">주석</h4>
 <p><code>#</code>(샵) 문자 뒤에 코드를 입력하면 주석으로 처리되어 프로그램의 실행에 영향을 미치지 않게 됩니다.</p>
 <h4 id="블록">블록</h4>
