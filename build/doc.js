@@ -17,6 +17,10 @@ renderer.heading = function (text, level, raw) {
     + '>\n';
 };
 
+renderer.code = function (code, language) {
+    return '<pre class="code">' + code + '</pre>'
+};
+
 marked.setOptions({
     renderer: renderer,
     gfm: true
