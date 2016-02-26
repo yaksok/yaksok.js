@@ -5,7 +5,7 @@ import marked from 'marked';
 let renderer = new marked.Renderer();
 
 renderer.heading = function (text, level, raw) {
-  return `<h${level} id="${this.options.headerPrefix}${raw}">${text}</h${level}>\n`;
+    return `<h${level} id="${this.options.headerPrefix}${raw}">${text}</h${level}>\n`;
 };
 
 let codeCount = 0;
