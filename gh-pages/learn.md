@@ -50,7 +50,7 @@ yaksok.js는 UMD import를 지원합니다. AMD, CommonJS, global 등 환경에 
 
 ```javascript
 var yaksok = require('yaksok'); //yaksok import
-var compiler = new yaksok.impl.JsTargetCompiler(); //컴파일러
+var compiler = new yaksok.compiler.JsTargetCompiler(); //컴파일러
 compiler.plugins.add(new yaksok.plugin.ConstantFolder({ dce: true })); //optional
 
 //컴파일 수행
@@ -62,7 +62,7 @@ compiler.compile(yaksokCode).then(function (jsCode) {
 #### 커맨드라인 툴을 이용해 컴파일하는 방법
 1. npm을 이용하기 위해 먼저 node.js를 설치합니다.
 2. `npm install -g yaksok`
-3. `ysjs "약속파일.yak"` 또는 `ysjs "약속파일.yak" -o "결과파일.js"`
+3. `ysjs compile "약속파일.yak"` 또는 `ysjs compile "약속파일.yak" -o "결과파일.js"`
 
 #### yaml 파일을 이용하는 방법
 1. `pakcage.yaml` 파일을 만들고 다음과 같이 입력합니다.
