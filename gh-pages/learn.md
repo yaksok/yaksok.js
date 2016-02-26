@@ -71,7 +71,7 @@ compiler.compile(yaksokCode).then(function (jsCode) {
 결과: result.js
 ```
 2. `메인.약속` 혹은 `메인.yak` 파일을 만들고 다음과 같이 입력합니다.
-```
+```yaksok
 '안녕하세요' 보여주기
 ```
 3. 다음과 같이 컴파일하고 실행해봅니다.
