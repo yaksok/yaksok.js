@@ -9,7 +9,8 @@
     "watch": "babel-node ./build --watch --dev",
     "min": "babel-node ./build --min",
     "test": "npm run build",
-    "prepublish": "node ./build/in-publish && npm run test && npm run min || node ./build/not-in-publish"
+    "prepublish": "node ./build/in-publish && npm run test && npm run min && npm run doc || node ./build/not-in-publish",
+    "doc": "babel-node ./build/doc"
   },
   "preferGlobal": true,
   "bin": {
@@ -41,6 +42,7 @@
     "del": "^2.0.2",
     "jison-loader": "^1.0.0",
     "json-loader": "^0.5.3",
+    "marked": "^0.3.5",
     "mocha": "^2.3.4",
     "raw-loader": "^0.5.1",
     "source-map-support": "^0.3.2",
