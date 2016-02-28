@@ -124,7 +124,7 @@
             compiling = false;
         })
         .catch(function (err) {
-            var msg = (err instanceof Error) ? err.message : err + '';
+            var msg = ((err instanceof Error || err.message) ? err.message : err) + '';
             dstEditor.setValue(msg);
             dstEditor.execCommand('gotoend');
             current = +(new Date());
