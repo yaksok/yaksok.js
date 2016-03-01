@@ -13,9 +13,8 @@ describe('잘 불러와지나', _=> {
     });
 });
 
-let commonLoader = new CommonLoader();
-
 async function l(filePath) {
+    let commonLoader = new CommonLoader();
     return await commonLoader.load(c(filePath));
 }
 

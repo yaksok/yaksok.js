@@ -1,4 +1,4 @@
-import { Plugin } from 'plugin';
+import Plugin from 'plugin/Plugin';
 import { AFTER_ANALYZE } from 'compiler';
 
 export default class UnusedDefRemover extends Plugin {

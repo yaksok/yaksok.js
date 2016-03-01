@@ -1,6 +1,6 @@
+import TextTranslator from 'translator/TextTranslator';
 import * as ast from 'ast';
 import { Builtin } from 'builtin';
-import { TextTranslator } from 'translator';
 
 // runtime
 import prelude from 'raw!runtime/js/prelude';

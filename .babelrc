@@ -1,7 +1,13 @@
 {
-    "nonStandard": true,
-    "modules": "common",
-    "stage": 0,
-    "loose": ["es6.modules", "es6.classes"],
-    "optional": ["runtime"]
+    "presets": [
+        "es2015-loose",
+        "stage-3"
+    ],
+    "plugins": [
+        "transform-class-properties",
+        "transform-decorators-legacy",
+        "transform-export-extensions",
+        "transform-object-rest-spread",
+        "transform-runtime"
+    ]
 }

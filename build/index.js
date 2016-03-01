@@ -12,7 +12,8 @@ let argv = yargs.argv;
 if (argv.clean) {
     let deletedFiles = del.sync([
         path.join(__dirname, '../dist/*'),
-        path.join(__dirname, '../dump/*')
+        path.join(__dirname, '../dump/*'),
+        path.join(__dirname, '../tmp/*')
     ]);
     for (let deletedFile of deletedFiles)
         console.log('REMOVED: ' + deletedFile);
@@ -71,6 +72,9 @@ let config = {
                 exclude: [
                     path.join(srcPath, 'runtime')
                 ],
+                query: {
+                    cacheDirectory: path.join(__dirname, '../tmp/babel-cache')
+                }
             },
             { test: /\.jison$/, loader: 'jison-loader', include: [srcPath] },
         ]

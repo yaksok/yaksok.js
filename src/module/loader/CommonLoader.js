@@ -1,21 +1,7 @@
-import path from 'path';
-import { RawContext, CommonContext } from 'module/context';
-import { Parser } from 'parser';
+import Loader from 'module/loader/Loader';
+import { CommonContext } from 'module/context';
 
-export class Loader {
-    constructor() {
-        this.parser = new Parser();
-    }
-    async get(context) {
-        return this.parser.parse(await this.load(context));
-    }
-    async load(context) {
-        if (context instanceof RawContext) return context.sourceCode;
-        else throw new Error('unexpected module context');
-    }
-};
-
-export class CommonLoader extends Loader {
+export default class CommonLoader extends Loader {
     async load(context) {
         if (context instanceof CommonContext) return await load(context);
         else return await super.load(context);

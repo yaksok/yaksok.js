@@ -1,4 +1,4 @@
-import { NodeVisitor } from 'ast';
+import NodeVisitor from 'ast/NodeVisitor';
 
 export default class Translator extends NodeVisitor {
     async translate(astRoot) {
