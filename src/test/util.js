@@ -2,7 +2,7 @@ import path from 'path';
 import assert from 'assert';
 
 const fs = eval('require("fs-extra")');
-const babel = eval('require("babel-core")');
+import babel from './babel';
 
 import ModuleLoader from 'module/loader/Loader';
 import { JsTargetCompiler } from 'compiler';
@@ -38,7 +38,7 @@ async function run(entryFixture) {
     );
     let out = '';
     let console = {log: x => out += x + '\n'};
-    let babeled = babel.transform(js, { presets: [ 'es2015' ] }).code;
+    let babeled = babel(js);
     eval(babeled);
     return { js, babeled, out };
 };
@@ -98,7 +98,7 @@ export class TextDumper extends Dumper {
     }
 }
 
-export async function d(compiler, dumper) {
+export async function d(compiler, dumper, doBabel) {
     compiler.moduleLoader = new FixtureLoader();
     for (let dumpPath of dumpables) {
         try {
@@ -109,6 +109,9 @@ export async function d(compiler, dumper) {
                 )
             );
             await dumper.dump(dumpPath, result);
+            if (doBabel) {
+                await dumper.dump(dumpPath + '.babeled', babel(result));
+            }
         } catch (e) {
             await dumper.error(dumpPath, e);
         }
