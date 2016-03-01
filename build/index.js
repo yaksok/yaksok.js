@@ -12,7 +12,8 @@ let argv = yargs.argv;
 if (argv.clean) {
     let deletedFiles = del.sync([
         path.join(__dirname, '../dist/*'),
-        path.join(__dirname, '../dump/*')
+        path.join(__dirname, '../dump/*'),
+        path.join(__dirname, '../tmp/*')
     ]);
     for (let deletedFile of deletedFiles)
         console.log('REMOVED: ' + deletedFile);
