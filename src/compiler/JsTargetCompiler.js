@@ -1,5 +1,5 @@
+import Compiler from 'compiler/Compiler';
 import { Parser } from 'parser';
-import { Compiler } from 'compiler';
 import { JsTranslator } from 'translator';
 
 const callParser = new Parser(['START_CALL']);

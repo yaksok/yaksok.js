@@ -1,8 +1,7 @@
+import NodeVisitor from 'ast/NodeVisitor';
+
 import * as ast from 'ast';
-import {
-    NodeVisitor,
-    Name,
-} from 'ast';
+import { Name } from 'ast';
 import { yaksok as builtinYaksok } from 'builtin';
 
 export class Analyzer extends NodeVisitor {

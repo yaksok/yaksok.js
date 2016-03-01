@@ -1,4 +1,4 @@
-import { NodeVisitor } from 'ast';
+import NodeVisitor from 'ast/NodeVisitor';
 import { Resolver as ModuleResolver } from 'module';
 import { Loader as ModuleLoader } from 'module/loader';
 import { RawContext as ModuleRawContext } from 'module/context';

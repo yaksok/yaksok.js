@@ -1,4 +1,4 @@
-import { Translator } from 'translator';
+import Translator from 'translator/Translator';
 
 export default class TextTranslator extends Translator {
     async init() {

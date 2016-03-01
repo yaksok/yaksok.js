@@ -4,8 +4,8 @@ import assert from 'assert';
 const fs = eval('require("fs-extra")');
 const babel = eval('require("babel-core")');
 
+import ModuleLoader from 'module/loader/Loader';
 import { JsTargetCompiler } from 'compiler';
-import { Loader as ModuleLoader } from 'module/loader';
 import { CommonContext } from 'module/context';
 
 const reqFixture = require.context('raw!./fixtures', true);
