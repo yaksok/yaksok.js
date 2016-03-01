@@ -38,7 +38,7 @@ async function run(entryFixture) {
     );
     let out = '';
     let console = {log: x => out += x + '\n'};
-    let babeled = babel.transform(js).code;
+    let babeled = babel.transform(js, { presets: [ 'es2015' ] }).code;
     eval(babeled);
     return { js, babeled, out };
 };
