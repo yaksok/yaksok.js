@@ -71,6 +71,9 @@ let config = {
                 exclude: [
                     path.join(srcPath, 'runtime')
                 ],
+                query: {
+                    cacheDirectory: path.join(__dirname, '../tmp/babel-cache')
+                }
             },
             { test: /\.jison$/, loader: 'jison-loader', include: [srcPath] },
         ]
