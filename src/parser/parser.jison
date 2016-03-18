@@ -158,12 +158,12 @@ expression
     ;
 
 or_expression
-    : or_expression OR and_expression   { $$ = new yy.Or($1, $3) }
+    : or_expression OR and_expression   { $$ = new yy.ast.Or($1, $3) }
     | and_expression                    { $$ = $1 }
     ;
 
 and_expression
-    : and_expression AND logical_expression     { $$ = new yy.And($1, $3) }
+    : and_expression AND logical_expression     { $$ = new yy.ast.And($1, $3) }
     | logical_expression                        { $$ = $1 }
     ;
 
