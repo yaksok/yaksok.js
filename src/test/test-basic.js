@@ -19,6 +19,9 @@ describe('에러 없이 잘 도나', _=> {
     it('부정조건문', async () => {
         await t('if-not');
     });
+    it('논리식 중첩', async () => {
+        await t('if-logical-and-or');
+    });
     it('아이 가 종찬이보다 어린가', async () => {
         await t('jongchan');
     });
