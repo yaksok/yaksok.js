@@ -66,4 +66,7 @@ describe('에러 없이 잘 도나', _=> {
     it('조건문 안에서 약속 호출 #37', async () => {
         await t('call-in-if');
     });
+    it('음수 대입 #60', async () => {
+        await t('assign-minus');
+    });
 });
