@@ -184,10 +184,16 @@ additive_expression
     ;
 
 multiplicative_expression
-    : multiplicative_expression MULT primary_expression     { $$ = new yy.ast.Multiply($1, $3) }
-    | multiplicative_expression DIV primary_expression      { $$ = new yy.ast.Divide($1, $3) }
-    | multiplicative_expression MOD primary_expression      { $$ = new yy.ast.Modular($1, $3) }
-    | primary_expression                                    { $$ = $1 }
+    : multiplicative_expression MULT prefix_expression      { $$ = new yy.ast.Multiply($1, $3) }
+    | multiplicative_expression DIV prefix_expression       { $$ = new yy.ast.Divide($1, $3) }
+    | multiplicative_expression MOD prefix_expression       { $$ = new yy.ast.Modular($1, $3) }
+    | prefix_expression                                     { $$ = $1 }
+    ;
+
+prefix_expression
+    : PLUS primary_expression           { $$ = new yy.ast.UnaryPlus($2) }
+    | MINUS primary_expression          { $$ = new yy.ast.UnaryMinus($2) }
+    | primary_expression                { $$ = $1 }
     ;
 
 primary_expression

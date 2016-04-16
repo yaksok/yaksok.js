@@ -307,6 +307,8 @@ export default class JsTranslator extends TextTranslator {
         this.write(': ');
         await this.visitExpression(node.value);
     }
+    async visitUnaryPlus(node) { await uop.call(this, node, '+'); }
+    async visitUnaryMinus(node) { await uop.call(this, node, '-'); }
     async visitAccess(node) {
         await this.visit(node.lhs);
         this.write('[');
@@ -357,6 +359,13 @@ export default class JsTranslator extends TextTranslator {
         this.write(`function ${ functionName }(${ parameters.join(', ') }) `);
         this.write('{'); this.write(node.code); this.write('}\n');
     }
+}
+
+async function uop(node, op) {
+    this.write('(');
+    this.write(`${ op } `);
+    await this.visit(node.rhs);
+    this.write(')');
 }
 
 async function op(node, op) {

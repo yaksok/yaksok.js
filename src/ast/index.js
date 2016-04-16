@@ -357,6 +357,42 @@ export class DictKeyValue extends AstNode {
     }
 }
 
+// unary operator
+@abstract
+@ast('rhs')
+export class UnaryOperator extends Expression {
+    constructor(rhs) {
+        super();
+        this.rhs = rhs;
+    }
+    get isConstant() { return this.rhs.isConstant; }
+}
+// arithmetical
+export class UnaryPlus extends UnaryOperator {
+    fold() {
+        if (this.isConstant) {
+            let rhs = this.rhs.fold();
+            if (rhs instanceof Integer)
+                return this.replace(new Integer(rhs.value));
+            if (rhs instanceof Number)
+                return this.replace(new Float(rhs.value));
+        }
+        return this;
+    }
+}
+export class UnaryMinus extends UnaryOperator {
+    fold() {
+        if (this.isConstant) {
+            let rhs = this.rhs.fold();
+            if (rhs instanceof Integer)
+                return this.replace(new Integer(-rhs.value));
+            if (rhs instanceof Number)
+                return this.replace(new Float(-rhs.value));
+        }
+        return this;
+    }
+}
+
 // binary opeartor
 @abstract
 @ast('lhs', 'rhs')

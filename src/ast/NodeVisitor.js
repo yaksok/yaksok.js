@@ -79,6 +79,7 @@ export default class NodeVisitor {
         if (node instanceof ast.Range) return await this.visitRange(node);
         if (node instanceof ast.List) return await this.visitList(node);
         if (node instanceof ast.Dict) return await this.visitDict(node);
+        if (node instanceof ast.UnaryOperator) return await this.visitUnaryOperator(node);
         if (node instanceof ast.BinaryOperator) return await this.visitBinaryOperator(node);
         if (node instanceof ast.Question) return await this.visitQuestion(node);
         throw new Error('unknown node type');
@@ -109,6 +110,12 @@ export default class NodeVisitor {
         await this.visitName(node.key);
         await this.visitExpression(node.value);
     }
+    async visitUnaryOperator(node) {
+        if (node instanceof ast.UnaryPlus) return await this.visitUnaryPlus(node);
+        if (node instanceof ast.UnaryMinus) return await this.visitUnaryMinus(node);
+    }
+    async visitUnaryPlus(node) { await visitUnaryOperator.call(this, node); }
+    async visitUnaryMinus(node) { await visitUnaryOperator.call(this, node); }
     async visitBinaryOperator(node) {
         if (node instanceof ast.Access) return await this.visitAccess(node);
         if (node instanceof ast.DotAccess) return await this.visitDotAccess(node);
@@ -152,6 +159,10 @@ export default class NodeVisitor {
     }
     async visitYaksok(node) {}
     async visitTranslate(node) {}
+}
+
+async function visitUnaryOperator(node) {
+    await this.visit(node.rhs);
 }
 
 async function visitOperator(node) {
