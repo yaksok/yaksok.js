@@ -63,7 +63,16 @@ export class Dumper {
     }
     async dump(dumpPath, result) {}
     async error(dumpPath, error) {
-        let errorString = (error && error.stack || error) + '';
+        let errorString;
+        try {
+            errorString = (error && error.stack || error) + '';
+        } catch (err) {
+            if (err instanceof TypeError && err.message === 'Function.prototype.toString is not generic') {
+                errorString = JSON.stringify(error) + '';
+            } else {
+                throw err;
+            }
+        }
         return new Promise((resolve, reject) => {
             let dirs = path.join('dump', this.name, path.dirname(dumpPath));
             let file = path.join(dirs, path.basename(dumpPath) + this.ext);
