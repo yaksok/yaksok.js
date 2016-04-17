@@ -79,15 +79,30 @@ block
     : empty_or_newlines INDENT statements DEDENT    { $$ = $statements }
     ;
 
+if_phrase
+    : call THEN block                   { $$ = new yy.ast.If($call, $block, null) }
+    | call ELSE block                   { $$ = new yy.ast.IfNot($call, $block, null) }
+    ;
+
 if_statement
-    : IF call THEN block                { $$ = new yy.ast.If($call, $block, null) }
-    | IF call ELSE block                { $$ = new yy.ast.IfNot($call, $block, null) }
+    : IF if_phrase                      { $$ = $if_phrase }
+    ;
+
+elseif_statement
+    : ELSEIF if_phrase                  { $$ = $if_phrase }
+    | ELSEIF if_else_statement          { $$ = $if_else_statement }
+    ;
+
+elseif_else_statement
+    : elseif_statement ELSE block               { $1.elseBlock = $3; $$ = $1 }
+    | elseif_statement elseif_else_statement    { $1.elseBlock = yy.stmts($2); $$ = $1 }
+    | elseif_statement                          { $$ = $1 }
     ;
 
 if_else_statement
     : if_statement ELSE block                   { $1.elseBlock = $3; $$ = $1 }
     | if_statement ELSE if_else_statement       { $1.elseBlock = yy.stmts($3); $$ = $1 }
-    | if_statement ELSEAND if_else_statement    { $1.elseBlock = yy.stmts($3); $$ = $1 }
+    | if_statement elseif_else_statement        { $1.elseBlock = yy.stmts($2); $$ = $1 }
     | if_statement                              { $$ = $1 }
     ;
 

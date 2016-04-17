@@ -69,4 +69,7 @@ describe('에러 없이 잘 도나', _=> {
     it('음수 대입 #60', async () => {
         await t('assign-minus');
     });
+    it('아니면서 #61', async () => {
+        await t('elseif');
+    });
 });

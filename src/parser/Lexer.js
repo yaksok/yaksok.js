@@ -10,7 +10,7 @@ const RESERVED = {
     이라면: 'THEN',
     아니면: 'ELSE',
     아니라면: 'ELSE',
-    아니면서: 'ELSEAND',
+    아니면서: 'ELSEIF',
     참: 'TRUE',
     거짓: 'FALSE',
     반복: 'LOOP',
