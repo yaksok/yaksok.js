@@ -217,10 +217,14 @@ $ node result
 아니면/아니라면/아니면서 만약 (조건2) 이면/이라면
     # 조건1이 거짓이고, 조건2가 참이라면 실행
 아니면/아니라면
-    # 조건1과 조건2가 모두 거짓이라면 실행</div><h3 id="7. 반복문">7. 반복문</h3>
+    # 조건1과 조건2가 모두 거짓이라면 실행</div><p><code>아니면서</code>가 사용된 경우, <code>만약</code> 키워드는 생략해도 됩니다.</p>
+<div id="code-15" class="editor" data-language="yaksok">만약 (조건1) 이면/이라면
+    # 조건1이 참이라면 실행
+아니면서 (조건2) 이면/이라면
+    # 조건1이 거짓이고, 조건2가 참이라면 실행</div><h3 id="7. 반복문">7. 반복문</h3>
 <p>약속에서 반복문을 쓰려면 <code>반복</code> 키워드를 사용합니다. 반복문에는 두 종류가 있습니다.</p>
 <h4 id="반복">반복</h4>
-<div id="code-15" class="editor" data-language="yaksok">현재시간: 12
+<div id="code-16" class="editor" data-language="yaksok">현재시간: 12
 반복
     현재시간: 현재시간 + 1
     만약 현재시간 = 18 이면
@@ -228,19 +232,19 @@ $ node result
         반복 그만</div><p><code>반복</code> 하나만 사용할 경우 다음 블록의 문장들이 순서대로 계속 실행되며, <code>반복 그만</code>으로 반복을 종료할 수 있습니다.</p>
 <h4 id="반복 ~의 ~마다">반복 ~의 ~마다</h4>
 <p>배열 안의 값 하나하나에 대해 반복문을 실행할 수 있습니다. 배열 안의 값들을 <code>마다</code> 앞에 지정된 이름의 변수처럼 사용할 수 있습니다.</p>
-<div id="code-16" class="editor" data-language="yaksok">약속 (식사) 먹기
+<div id="code-17" class="editor" data-language="yaksok">약속 (식사) 먹기
     식사 + " 냠냠쩝쩝" 보여주기
 
 하루: ["아침", "점심", "저녁"]
 반복 하루 의 끼니 마다
     끼니 먹기 # 끼니를 변수처럼 사용. 끼니 변수에 "아침", "점심", "저녁"이 들어간다.</div><h5 id="범위">범위</h5>
 <p>특정 범위를 표현하기 위해 <code>시작~끝</code> 표현을 사용할 수 있습니다. 다음과 같이 응용해서 사용할 수 있습니다.</p>
-<div id="code-17" class="editor" data-language="yaksok">반복 1~100 의 반성문횟수 마다
+<div id="code-18" class="editor" data-language="yaksok">반복 1~100 의 반성문횟수 마다
     반성문횟수 + "번째 반성문을 썼다" 보여주기</div><p>범위와 배열은 반복문에서 거의 유사하게 사용할 수 있지만 몇 가지 차이점이 있습니다. 범위에는 <code>범위.시작</code> <code>범위.끝</code>을 이용해 범위의 시작과 끝 값을 알아내는 기능이 있습니다. 또한 범위는 대괄호를 이용해 값을 뽑아 사용할 수 없습니다.</p>
 <h3 id="8. 고급 기능">8. 고급 기능</h3>
 <h4 id="모듈">모듈</h4>
 <p>다른 파일에 있는 약속을 사용할 수 있습니다. 약속 사용 문장 앞에 <code>@파일명</code>을 붙이면 됩니다.</p>
-<div id="code-18" class="editor" data-language="yaksok"># 요리책.yak
+<div id="code-19" class="editor" data-language="yaksok"># 요리책.yak
 약속 (재료) 굽기
     "구웠다" 보여주기
 
@@ -251,7 +255,7 @@ $ node result
 @요리책 "돌멩이" 굽기
 @요리책 "칫솔" 튀기기</div><h4 id="번역">번역</h4>
 <p>약속의 FFI(Foreign Function Interface)로 컴파일 될 내용을 직접 작성하는 기능입니다. <code>번역(언어명) 약속정의</code> 안쪽에 <code>*</code> 기호 세 개를 블럭 앞뒤에 붙이고 그 안쪽에 내용을 직접 작성하면 됩니다.</p>
-<div id="code-19" class="editor" data-language="yaksok">번역(자바스크립트) (내용) 경고하기
+<div id="code-20" class="editor" data-language="yaksok">번역(자바스크립트) (내용) 경고하기
 ***
     window.alert(내용);
 ***</div><h2 id="참고자료">참고자료</h2>
@@ -266,7 +270,7 @@ $ node result
 
     var language;
     var editor;
-    for (var i = 0; i < 20; i++) {
+    for (var i = 0; i < 21; i++) {
         language = document.getElementById('code-' + i).getAttribute('data-language');
 
         editor = ace.edit('code-' + i);
