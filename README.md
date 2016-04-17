@@ -5,6 +5,11 @@
 [![build status](https://travis-ci.org/disjukr/yaksok.js.svg)](https://travis-ci.org/disjukr/yaksok.js)
 
 
+## 축하해주세요!
+
+yaksok.js가 [D2CAMPUS-FEST/2015 장려상](https://github.com/D2CAMPUS-FEST/2015#yaksokjs--장려상)을 수상했어요!
+
+
 ## yaksok.js 써보기
 
 nodejs를 설치합니다.
