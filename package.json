@@ -5,6 +5,7 @@
   "main": "dist/yaksok.min.js",
   "scripts": {
     "build": "babel-node ./build --dev && node ./dist/test.js",
+    "debug": "babel-node ./build --dev && node debug ./dist/test.js",
     "clean": "babel-node ./build --clean",
     "watch": "babel-node ./build --watch --dev",
     "min": "babel-node ./build --min",

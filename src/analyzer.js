@@ -170,7 +170,7 @@ export class Scope {
                 return callInfo;
             }
         }
-        throw new Error('호출 가능한 정의를 찾지 못했습니다');
+        throw new Error('호출 가능한 정의를 찾지 못했습니다: ' + call.repr);
     }
     newChildScope() {
         let child = new Scope();

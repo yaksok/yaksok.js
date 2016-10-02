@@ -233,7 +233,11 @@ export class LoopEnd extends Statement {}
 export class YaksokEnd extends Statement {}
 
 // expression
-export class Expressions extends AstNodeList {}
+export class Expressions extends AstNodeList {
+    get repr() {
+        return this.childNodes.map(childNode => childNode.repr).join(' ');
+    }
+}
 export class Expression extends AstNode {
     get isConstant() { return false; }
     fold() { return this; }
@@ -253,6 +257,9 @@ export class Call extends Expression {
         }
         return this; // TODO: fold call
     }
+    get repr() {
+        return this.expressions.repr;
+    }
 }
 
 @ast('target', 'expressions', 'callInfo')
@@ -268,6 +275,9 @@ export class ModuleCall extends Expression {
             arg.fold();
         }
         return this; // TODO: fold call
+    }
+    get repr() {
+        return `@${ this.target.repr } ${ this.expressions.repr }`;
     }
 }
 
@@ -296,6 +306,9 @@ export class Primitive extends Expression {
     constructor(value) { super(); this.value = value; }
     get isConstant() { return true; }
     clone() { return new this.constructor(this.value); }
+    get repr() {
+        return `${ this.value }`;
+    }
 }
 export class Name extends Primitive {
     constructor(value) {
@@ -308,7 +321,11 @@ export class Name extends Primitive {
         return false;
     }
 }
-export class String extends Primitive {} String.prototype.type = String;
+export class String extends Primitive {
+    get repr() {
+        return `"${ this.value }"`;
+    }
+} String.prototype.type = String;
 
 @abstract
 export class Number extends Primitive {}
@@ -317,7 +334,11 @@ export class Integer extends Number {} Integer.prototype.type = Integer;
 export class Float extends Number {} Float.prototype.type = Float;
 
 export class Boolean extends Primitive {} Boolean.prototype.type = Boolean;
-export class Void extends Primitive {} Void.prototype.type = Void;
+export class Void extends Primitive {
+    get repr() {
+        return '()';
+    }
+} Void.prototype.type = Void;
 
 // etc
 @ast('start', 'stop')
