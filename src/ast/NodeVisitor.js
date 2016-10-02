@@ -157,7 +157,9 @@ export default class NodeVisitor {
         if (node instanceof ast.Translate) return await this.visitTranslate(node);
         throw new Error('unknown node type');
     }
-    async visitYaksok(node) {}
+    async visitYaksok(node) {
+        return await this.visit(node.block);
+    }
     async visitTranslate(node) {}
 }
 
