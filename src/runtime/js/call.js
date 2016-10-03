@@ -1,3 +1,3 @@
 function yaksokCall(yaksok, args) {
-    return yaksok(...(args.toJsArray()));
+    return args ? yaksok(...(args.toJsArray())) : yaksok();
 }

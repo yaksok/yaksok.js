@@ -63,6 +63,9 @@ describe('에러 없이 잘 도나', _=> {
     it('결속', async () => {
         await t('bind');
     });
+    it('결속 호출', async () => {
+        await t('call-binded-with-empty-args');
+    });
     it('사전 안의 결속', async () => {
         await t('bind-in-dic');
     });
