@@ -288,6 +288,9 @@ export class CallBind extends Expression {
         this.expressions = expressions;
         this.callInfo = null;
     }
+    get repr() {
+        return `결속 ${ this.expressions.repr }`;
+    }
 }
 
 @ast('target', 'expressions', 'callInfo')
@@ -298,8 +301,15 @@ export class ModuleCallBind extends Expression {
         this.expressions = expressions;
         this.callInfo = null;
     }
+    get repr() {
+        return `결속 @${ this.target.repr } ${ this.expressions.repr }`;
+    }
 }
-export class Question extends Expression {}
+export class Question extends Expression {
+    get repr() {
+        return '?';
+    }
+}
 
 // primitive
 export class Primitive extends Expression {

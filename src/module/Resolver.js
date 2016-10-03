@@ -73,4 +73,6 @@ export default class Resolver extends NodeVisitor {
             await this.visit(expression);
         }
     }
+    async visitCallBind(node) { return await this.visitCall(node); }
+    async visitModuleCallBind(node) { return await this.visitModuleCall(node); }
 };
