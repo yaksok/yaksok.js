@@ -270,5 +270,5 @@ dict_key_values
     ;
 
 dict_key_value
-    : name ASSIGN expression            { $$ = new yy.ast.DictKeyValue($name, $expression) }
+    : name ASSIGN call                  { $$ = new yy.ast.DictKeyValue($name, $call) }
     ;
