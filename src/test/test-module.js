@@ -13,4 +13,7 @@ describe('모듈', _=> {
     it('약속 안에서 모듈약속 결속', async () => {
         await t('module/bind-in-yaksok');
     });
+    it('한글이름모듈', async () => {
+        await t('module/hangul/가');
+    });
 });
