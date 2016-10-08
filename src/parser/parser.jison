@@ -254,8 +254,8 @@ LIST
     ;
 
 list_items
-    : list_items COMMA expression       { $1.push($3); $$ = $1 }
-    | expression                        { $$ = new yy.ast.List(); $$.push($1) }
+    : list_items COMMA call             { $1.push($3); $$ = $1 }
+    | call                              { $$ = new yy.ast.List(); $$.push($1) }
     ;
 
 DICT

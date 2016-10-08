@@ -81,4 +81,7 @@ describe('에러 없이 잘 도나', _=> {
     it('반복 그만', async () => {
         await t('loopend');
     });
+    it('목록 리터럴 안에서 약속 호출', async () => {
+        await t('call-in-list');
+    });
 });
