@@ -37,7 +37,8 @@ export default class Compiler extends NodeVisitor {
         await super.init();
         { // module
             this.moduleResolver.loader = this.moduleLoader;
-            this.moduleOrder = []; // module context(except entry context) hash list
+            this.moduleDependencyMap = {}; // key: module context(except entry context) hash, value: dependency context hash set
+            this.moduleOrder = null;
             this.astMap = {}; // key: module context hash, value: module ast root
         }
         { // compiler instance is global state of all pass
@@ -47,6 +48,18 @@ export default class Compiler extends NodeVisitor {
             this.translator.compiler =
             this;
         }
+    }
+    touchDependency(moduleHash) {
+        const dependencySet = this.moduleDependencyMap[moduleHash] || new Set();
+        this.moduleDependencyMap[moduleHash] = dependencySet;
+        return dependencySet;
+    }
+    touchDependencies(...args) {
+        return args.map(arg => this.touchDependency(arg));
+    }
+    addModuleDependency(moduleHash, submoduleHash) {
+        const [dependencySet] = this.touchDependencies(moduleHash, submoduleHash);
+        dependencySet.add(submoduleHash);
     }
     async compile(context) {
         await this.init();
@@ -62,6 +75,16 @@ export default class Compiler extends NodeVisitor {
             await this.pluginPass(null, BEFORE_RESOLVE);
             ast = await this.resolvePass(this.entryContext);
             ast = await this.pluginPass(ast, AFTER_RESOLVE);
+        }
+        { // calculate module order
+            this.moduleOrder = Object.keys(this.moduleDependencyMap).filter(
+                hash => hash !== this.entryContext.hash()
+            ).sort((a, b) => {
+                const {[a]: aSet, [b]: bSet} = this.moduleDependencyMap;
+                if (aSet.has(b)) return 1;
+                if (bSet.has(a)) return -1;
+                return 0;
+            });
         }
         { // analyze pass
             ast = await this.pluginPass(ast, BEFORE_ANALYZE);

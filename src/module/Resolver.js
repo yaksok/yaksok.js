@@ -12,12 +12,6 @@ export default class Resolver extends NodeVisitor {
         await super.init();
         this.submoduleNames = [];
     }
-    pushModuleOrder(moduleHash) {
-        let entryHash = this.compiler.entryContext.hash();
-        if (entryHash === moduleHash) return;
-        let index = this.compiler.moduleOrder.indexOf(moduleHash);
-        if (index === -1) this.compiler.moduleOrder.push(moduleHash);
-    }
     async resolve(context) {
         let moduleHash = context.hash();
         { // pragma once
@@ -47,10 +41,10 @@ export default class Resolver extends NodeVisitor {
                 submoduleContext.from = context;
                 submoduleContext.name = submoduleName;
                 let submoduleHash = submoduleContext.hash();
-                let submoduleAstRoot = submoduleResolver.resolve(submoduleContext);
+                let submoduleAstRoot = await submoduleResolver.resolve(submoduleContext);
                 this.compiler.astMap[submoduleHash] = submoduleAstRoot;
                 astRoot.modules[submoduleName] = submoduleHash;
-                this.pushModuleOrder(submoduleHash);
+                this.compiler.addModuleDependency(moduleHash, submoduleHash);
             }
         }
         return astRoot;

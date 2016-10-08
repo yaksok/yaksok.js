@@ -16,4 +16,7 @@ describe('모듈', _=> {
     it('한글이름모듈', async () => {
         await t('module/hangul/가');
     });
+    it('의존성 처리순서', async () => {
+        await t('module/order/a');
+    });
 });
