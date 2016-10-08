@@ -112,7 +112,7 @@ loop_statement
     ;
 
 loop_end_statement
-    : LOOP END_BLOCK                    { $$ = new yy.ast.LoopEnd() }
+    : LOOP END_BLOCK empty_or_newlines  { $$ = new yy.ast.LoopEnd() }
     ;
 
 yaksok_statement

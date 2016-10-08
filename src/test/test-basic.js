@@ -78,4 +78,7 @@ describe('에러 없이 잘 도나', _=> {
     it('아니면서 #61', async () => {
         await t('elseif');
     });
+    it('반복 그만', async () => {
+        await t('loopend');
+    });
 });
