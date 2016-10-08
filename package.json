@@ -1,6 +1,6 @@
 {
   "name": "yaksok",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "yaksok toolkit",
   "main": "dist/yaksok.min.js",
   "scripts": {
