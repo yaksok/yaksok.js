@@ -16,7 +16,7 @@ $ npm install -g yaksok
 $ ysjs compile "소스코드.yak" -o "결과.js"`;
 
 const htmlText = `<!-- yaksok.js -->
-<script src="http://0xabcdef.com/yaksok.js/dist/yaksok.min.js"></script>
+<script src="https://yaksokjs.0xabcdef.com/yaksok.min.js"></script>
 
 <!-- 아래와 같이 사용합니다. -->
 <script>
