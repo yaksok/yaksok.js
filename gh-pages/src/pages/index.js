@@ -1,21 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="stylesheet" type="text/css" href="css/base.css">
-</head>
-<body>
-    <div id="content">
+function Page() {
+    return <>
         <h1 id="what-is-yaksok">약속이 뭐에요?</h1>
         <p>
-            언어 창시자의
-            <a href="http://www.pycon.kr/2015/" target="_parent">파이콘 2015</a>
+            언어 창시자의{' '}
+            <a href="https://archive.pycon.kr/2015/" target="_parent">파이콘 2015</a>{' '}
             발표자료로 대신하겠습니다.
         </p>
-        <iframe src="https://docs.google.com/presentation/d/1d3X4r-U-2L2e2UgWLxLgc_CO0Af3RNqMS3qic3t7iAE/embed?start=false&loop=false"
-                allowfullscreen="true"
-                mozallowfullscreen="true"
-                webkitallowfullscreen="true"
-        ></iframe>
+        <iframe
+            src="https://docs.google.com/presentation/d/1d3X4r-U-2L2e2UgWLxLgc_CO0Af3RNqMS3qic3t7iAE/embed?start=false&loop=false"
+            allowFullScreen={true}
+        />
         <h1 id="what-is-yaksok-js">약속.js는 뭐죠?</h1>
         <p>
             약속 프로그래밍 언어를 사용할 수 있게 도와주는 툴킷입니다.
@@ -50,9 +44,9 @@
         </ul>
         <h1 id="">약속과 약속.js의 발전에 참여하고 싶어요!</h1>
         <ul>
-            <li><a href="http://webchat.ozinger.org/#yaksok" target="_parent">오징어 irc 네트워크 - #yaksok 채널</a></li>
-            <li><a href="https://github.com/disjukr/yaksok.js" target="_parent">약속.js 깃헙 저장소</a></li>
+            <li><a href="https://ozinger.org/" target="_parent">오징어 irc 네트워크 - #yaksok 채널</a></li>
+            <li><a href="https://github.com/yaksok/yaksok.js" target="_parent">약속.js 깃헙 저장소</a></li>
         </ul>
-    </div>
-</body>
-</html>
+    </>;
+}
+export default Page;
