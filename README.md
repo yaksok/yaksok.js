@@ -14,7 +14,7 @@ yaksok.js가 [D2CAMPUS-FEST/2015 장려상](https://github.com/D2CAMPUS-FEST/201
 
 nodejs를 설치합니다.
 
-* osx: [brew](http://brew.sh/) 설치 후 `brew install node`
+* osx: [brew](https://brew.sh/) 설치 후 `brew install node`
 * windows: [chocolatey](https://chocolatey.org/) 설치 후 `choco install nodejs`
 * ubuntu: `sudo apt-get install nodejs npm`
 
@@ -48,9 +48,9 @@ $ node result
 
 ## 더 알아보기
 
-* [약속.js 놀이터](http://0xabcdef.com/yaksok.js/#play) 여기서 약속 코드가 어떻게 컴파일 되는지 확인해보세요.
-* [약속.js 배우기](http://0xabcdef.com/yaksok.js/#learn) 약속 프로그래밍 언어의 문법은 이 곳에서 배우실 수 있습니다.
-* [약속.js 위키](https://github.com/disjukr/yaksok.js/wiki) yaksok.js의 세부 기능을 알아보고 싶다면 여기로 가시면 됩니다.
+* [약속.js 놀이터](https://yaksokjs.0xabcdef.com/play) 여기서 약속 코드가 어떻게 컴파일 되는지 확인해보세요.
+* [약속.js 배우기](https://yaksokjs.0xabcdef.com//learn) 약속 프로그래밍 언어의 문법은 이 곳에서 배우실 수 있습니다.
+* [약속.js 위키](https://github.com/yaksok/yaksok.js/wiki) yaksok.js의 세부 기능을 알아보고 싶다면 여기로 가시면 됩니다.
 
 
 ## 소스코드 라이센스
