@@ -41,10 +41,13 @@ export default class JsTranslator extends TextTranslator {
             return `ys_m_${ call.target.value }.${ functionName }`;
         return functionName;
     }
+    prologue() {}
+    epilogue() {}
     async translate(astRoot) {
         await this.init();
         this.write('(function () {\n');
         this.write(prelude);
+        await this.prologue();
         this.lazyWrite(_=> {
             let runtimes = [];
             for (let key in this.runtime) {
@@ -91,6 +94,7 @@ export default class JsTranslator extends TextTranslator {
                 this.write(';\n');
             }
         }
+        await this.epilogue();
         this.write('})();');
         return this.result.join('');
     }

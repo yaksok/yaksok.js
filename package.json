@@ -1,6 +1,6 @@
 {
   "name": "yaksok",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "yaksok toolkit",
   "main": "dist/yaksok.min.js",
   "scripts": {
@@ -8,10 +8,9 @@
     "debug": "babel-node ./build --dev && node debug ./dist/test.js",
     "clean": "babel-node ./build --clean",
     "watch": "babel-node ./build --watch --dev",
-    "min": "babel-node ./build --min",
+    "min": "babel-node ./build --minify",
     "test": "npm run build",
-    "prepublish": "node ./build/in-publish && npm run test && npm run min && npm run doc || node ./build/not-in-publish",
-    "doc": "babel-node ./build/doc"
+    "prepublish": "node ./build/in-publish && npm run test && npm run min || node ./build/not-in-publish"
   },
   "preferGlobal": true,
   "bin": {
@@ -20,7 +19,7 @@
   "author": {
     "name": "JongChan Choi",
     "email": "jong@chan.moe",
-    "url": "http://0xABCDEF.com/"
+    "url": "https://0xABCDEF.com/"
   },
   "license": "Zlib",
   "repository": {

@@ -107,7 +107,7 @@ let config = {
     }
 };
 
-if (argv.min) {
+if (argv.minify) {
     process.env.BABEL_ENV = 'min';
     config.output.filename = '[name].min.js';
     config.plugins.push(new UglifyJsPlugin());
