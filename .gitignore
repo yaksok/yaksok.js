@@ -4,6 +4,8 @@ npm-debug.log
 Thumbs.db
 .DS_Store
 
+/src/generated
+
 /dist/test*
 /dist/yaksok.js
 /dist/yaksok.js.map
