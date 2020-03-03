@@ -76,7 +76,6 @@ let config = {
                     cacheDirectory: path.join(__dirname, '../tmp/babel-cache')
                 }
             },
-            { test: /\.jison$/, loader: 'jison-loader', include: [srcPath] },
         ]
     },
     plugins: [

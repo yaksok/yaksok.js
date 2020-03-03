@@ -4,12 +4,16 @@
   "description": "yaksok toolkit",
   "main": "dist/yaksok.min.js",
   "scripts": {
-    "build": "babel-node ./build --dev && node ./dist/test.js",
+    "build": "run-s build:jison build:js",
+    "build:js": "babel-node ./build --dev",
+    "build:jison": "jison src/parser/parser.jison -o src/generated/parser.js",
     "debug": "babel-node ./build --dev && node debug ./dist/test.js",
     "clean": "babel-node ./build --clean",
-    "watch": "babel-node ./build --watch --dev",
+    "watch": "npm run build && run-p watch:*",
+    "watch:build": "babel-node ./build --watch --dev",
+    "watch:jison": "onchange 'src/parser/parser.jison' -- npm run build:jison",
     "min": "babel-node ./build --minify",
-    "test": "npm run build",
+    "test": "node ./dist/test.js",
     "prepublish": "node ./build/in-publish && npm run test && npm run min || node ./build/not-in-publish"
   },
   "preferGlobal": true,
@@ -27,7 +31,7 @@
     "url": "http://github.com/disjukr/yaksok.js.git"
   },
   "engines": {
-    "node" : ">=12"
+    "node": ">=12"
   },
   "dependencies": {
     "babel-polyfill": "^6.5.0",
@@ -51,10 +55,11 @@
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-stage-3": "^6.5.0",
     "del": "^2.0.2",
-    "jison-loader": "^1.0.0",
     "json-loader": "^0.5.3",
     "marked": "^0.3.5",
     "mocha": "^2.3.4",
+    "npm-run-all": "^4.1.5",
+    "onchange": "^6.1.0",
     "raw-loader": "^0.5.1",
     "source-map-support": "^0.3.2",
     "webpack": "^1.12.2",

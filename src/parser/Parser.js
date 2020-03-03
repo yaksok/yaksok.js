@@ -1,6 +1,6 @@
 import * as ast from 'ast';
 import Lexer from './Lexer';
-import { Parser as JisonYaksokParser } from './parser.jison';
+import { Parser as JisonYaksokParser } from '../generated/parser';
 
 let yy = {
     parseString: string => eval(string),
