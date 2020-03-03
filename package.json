@@ -26,6 +26,9 @@
     "type": "git",
     "url": "http://github.com/disjukr/yaksok.js.git"
   },
+  "engines": {
+    "node" : ">=12"
+  },
   "dependencies": {
     "babel-polyfill": "^6.5.0",
     "babel-runtime": "^6.6.1",
