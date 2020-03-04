@@ -1,8 +1,8 @@
-import NodeVisitor from 'ast/NodeVisitor';
+import NodeVisitor from '~/ast/NodeVisitor';
 
-import * as ast from 'ast';
-import { Name } from 'ast';
-import { yaksok as builtinYaksok } from 'builtin';
+import * as ast from '~/ast';
+import { Name } from '~/ast';
+import { yaksok as builtinYaksok } from '~/builtin';
 
 export class Analyzer extends NodeVisitor {
     async prepare(moduleHash) {

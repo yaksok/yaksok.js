@@ -2,25 +2,24 @@ import path from 'path';
 import assert from 'assert';
 
 const fs = eval('require("fs-extra")');
-import babel from './babel';
 
-import ModuleLoader from 'module/loader/Loader';
-import { JsTargetCompiler } from 'compiler';
-import { CommonContext } from 'module/context';
+import ModuleLoader from '~/module/loader/Loader';
+import { JsTargetCompiler } from '~/compiler';
+import { CommonContext } from '~/module/context';
 
-const reqFixture = require.context('raw!./fixtures', true);
+const reqFixture = require.context('raw-loader!./fixtures', true);
 const fixtures = reqFixture.keys();
 
 function reqOut(path) {
     if (reqOut.cache[path]) return reqOut.cache[path];
-    return reqOut.cache[path] = reqFixture(path).replace(/\r?\n/g, '\n');
+    return reqOut.cache[path] = reqFixture(path).default.replace(/\r?\n/g, '\n');
 }
 reqOut.cache = {};
 
 class FixtureLoader extends ModuleLoader {
     async load(context) {
         if (context instanceof CommonContext) {
-            return reqFixture('./' + path.join(context.dir, context.name + '.yak'));
+            return reqFixture('./' + path.join(context.dir, context.name + '.yak')).default;
         } else {
             return await super.load(context);
         }
@@ -38,9 +37,8 @@ async function run(entryFixture) {
     );
     let out = '';
     let console = {log: x => out += x + '\n'};
-    let babeled = babel(js);
-    eval(babeled);
-    return { js, babeled, out };
+    eval(js);
+    return { js, out };
 };
 
 export async function t(entryFixture) {
@@ -107,7 +105,7 @@ export class TextDumper extends Dumper {
     }
 }
 
-export async function d(compiler, dumper, doBabel) {
+export async function d(compiler, dumper) {
     compiler.moduleLoader = new FixtureLoader();
     for (let dumpPath of dumpables) {
         try {
@@ -118,9 +116,6 @@ export async function d(compiler, dumper, doBabel) {
                 )
             );
             await dumper.dump(dumpPath, result);
-            if (doBabel) {
-                await dumper.dump(dumpPath + '.babeled', babel(result));
-            }
         } catch (e) {
             await dumper.error(dumpPath, e);
         }

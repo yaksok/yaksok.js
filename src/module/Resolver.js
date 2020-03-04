@@ -1,7 +1,7 @@
-import NodeVisitor from 'ast/NodeVisitor';
-import { Def } from 'ast';
-import { ModuleScope } from 'analyzer';
-import { CommonContext } from 'module/context';
+import NodeVisitor from '~/ast/NodeVisitor';
+import { Def } from '~/ast';
+import { ModuleScope } from '~/analyzer';
+import { CommonContext } from '~/module/context';
 
 export default class Resolver extends NodeVisitor {
     constructor() {

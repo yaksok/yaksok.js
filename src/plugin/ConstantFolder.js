@@ -1,6 +1,6 @@
-import Plugin from 'plugin/Plugin';
-import * as ast from 'ast';
-import { AFTER_ANALYZE } from 'compiler';
+import Plugin from '~/plugin/Plugin';
+import * as ast from '~/ast';
+import { AFTER_ANALYZE } from '~/compiler';
 
 export default class ConstantFolder extends Plugin {
     get phase() { return AFTER_ANALYZE; }

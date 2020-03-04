@@ -1,5 +1,3 @@
-import 'babel-polyfill';
-
 import path from 'path';
 
 async function main() {

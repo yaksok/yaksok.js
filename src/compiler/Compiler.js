@@ -1,9 +1,9 @@
-import NodeVisitor from 'ast/NodeVisitor';
-import { Resolver as ModuleResolver } from 'module';
-import { Loader as ModuleLoader } from 'module/loader';
-import { RawContext as ModuleRawContext } from 'module/context';
-import { Analyzer } from 'analyzer';
-import { yaksok as builtinYaksok } from 'builtin';
+import NodeVisitor from '~/ast/NodeVisitor';
+import { Resolver as ModuleResolver } from '~/module';
+import { Loader as ModuleLoader } from '~/module/loader';
+import { RawContext as ModuleRawContext } from '~/module/context';
+import { Analyzer } from '~/analyzer';
+import { yaksok as builtinYaksok } from '~/builtin';
 import {
     BEFORE_RESOLVE,
     AFTER_RESOLVE,
@@ -11,7 +11,7 @@ import {
     AFTER_ANALYZE,
     BEFORE_TRANSLATE,
     AFTER_TRANSLATE
-} from 'compiler';
+} from '~/compiler';
 
 export default class Compiler extends NodeVisitor {
     constructor(config={}) {

@@ -1,9 +1,9 @@
-import TextTranslator from 'translator/TextTranslator';
-import * as ast from 'ast';
-import { Builtin } from 'builtin';
+import TextTranslator from '~/translator/TextTranslator';
+import * as ast from '~/ast';
+import { Builtin } from '~/builtin';
 
 // runtime
-import prelude from 'raw!runtime/js/prelude';
+import prelude from 'raw-loader!~/runtime/js/prelude';
 
 export default class JsTranslator extends TextTranslator {
     async init() {
@@ -52,7 +52,7 @@ export default class JsTranslator extends TextTranslator {
             let runtimes = [];
             for (let key in this.runtime) {
                 if (this.runtime[key]) {
-                    let runtime = require('raw!runtime/js/' + key);
+                    let runtime = require('raw-loader!~/runtime/js/' + key).default;
                     runtimes.push(runtime);
                 }
             }

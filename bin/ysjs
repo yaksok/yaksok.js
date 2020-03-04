@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-require('babel-polyfill');
 
 var yargs = require('yargs');
 var myYargs = yargs

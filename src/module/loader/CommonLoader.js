@@ -1,5 +1,5 @@
-import Loader from 'module/loader/Loader';
-import { CommonContext } from 'module/context';
+import Loader from '~/module/loader/Loader';
+import { CommonContext } from '~/module/context';
 
 export default class CommonLoader extends Loader {
     async load(context) {

@@ -1,4 +1,4 @@
-import NodeVisitor from 'ast/NodeVisitor';
+import NodeVisitor from '~/ast/NodeVisitor';
 
 export default class Plugin extends NodeVisitor {
     constructor(config={}) {

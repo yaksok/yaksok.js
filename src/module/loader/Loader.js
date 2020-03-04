@@ -1,5 +1,5 @@
-import { Parser } from 'parser';
-import { RawContext } from 'module/context';
+import { Parser } from '~/parser';
+import { RawContext } from '~/module/context';
 
 export default class Loader {
     constructor() {

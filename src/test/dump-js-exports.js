@@ -1,5 +1,5 @@
 import { d, TextDumper } from './util';
-import { JsTargetCompiler } from 'compiler';
+import { JsTargetCompiler } from '~/compiler';
 
 export async function run() {
     { // basic

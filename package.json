@@ -1,20 +1,23 @@
 {
   "name": "yaksok",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "yaksok toolkit",
   "main": "dist/yaksok.min.js",
   "scripts": {
-    "build": "run-s build:jison build:js",
-    "build:js": "babel-node ./build --dev",
+    "build-production": "NODE_ENV=production npm run build:yaksok",
+    "build:yaksok": "run-s build:jison build:js:yaksok",
+    "build:test": "run-s build:jison build:js:test",
     "build:jison": "jison src/parser/parser.jison -o src/generated/parser.js",
-    "debug": "babel-node ./build --dev && node debug ./dist/test.js",
-    "clean": "babel-node ./build --clean",
+    "build:js:yaksok": "webpack --config ./build/yaksok.config.ts --require sucrase/register/ts",
+    "build:js:test": "webpack --config ./build/test.config.ts --require sucrase/register/ts",
+    "debug": "run-s build test:debug",
+    "clean": "del './dist/*' './dump/*' './tmp/*'",
     "watch": "npm run build && run-p watch:*",
-    "watch:build": "babel-node ./build --watch --dev",
+    "watch:build": "webpack --config ./build/webpack.config.ts --require sucrase/register/ts --watch",
     "watch:jison": "onchange 'src/parser/parser.jison' -- npm run build:jison",
-    "min": "babel-node ./build --minify",
-    "test": "node ./dist/test.js",
-    "prepublish": "node ./build/in-publish && npm run test && npm run min || node ./build/not-in-publish"
+    "test": "npm run build:test && node ./dist/test.js",
+    "test:debug": "npm run build:test && node inspect ./dist/test.js",
+    "prepublish": "node ./build/in-publish && npm test && npm run build-production || node ./build/not-in-publish"
   },
   "preferGlobal": true,
   "bin": {
@@ -33,9 +36,11 @@
   "engines": {
     "node": ">=12"
   },
+  "browserslist": [
+    "node 12"
+  ],
   "dependencies": {
-    "babel-polyfill": "^6.5.0",
-    "babel-runtime": "^6.6.1",
+    "@babel/runtime": "^7.8.4",
     "fs-extra": "^0.26.4",
     "js-yaml": "^3.5.3",
     "lex-es6": "^1.1.0",
@@ -43,26 +48,23 @@
     "yargs": "^3.31.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.5.1",
-    "babel-core": "^6.5.2",
-    "babel-loader": "^6.2.4",
-    "babel-plugin-transform-class-properties": "^6.5.2",
-    "babel-plugin-transform-decorators-legacy": "^1.3.4",
-    "babel-plugin-transform-export-extensions": "^6.5.0",
-    "babel-plugin-transform-object-rest-spread": "^6.5.0",
-    "babel-plugin-transform-runtime": "^6.5.2",
-    "babel-preset-es2015": "^6.5.0",
-    "babel-preset-es2015-loose": "^7.0.0",
-    "babel-preset-stage-3": "^6.5.0",
-    "del": "^2.0.2",
-    "json-loader": "^0.5.3",
-    "marked": "^0.3.5",
+    "@babel/core": "^7.8.6",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@babel/plugin-proposal-export-default-from": "^7.8.3",
+    "@babel/plugin-proposal-export-namespace-from": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.8.3",
+    "@babel/preset-env": "^7.8.6",
+    "@babel/preset-typescript": "^7.8.3",
+    "@types/webpack": "^4.41.7",
+    "babel-loader": "^8.0.6",
+    "del-cli": "^3.0.0",
     "mocha": "^2.3.4",
     "npm-run-all": "^4.1.5",
     "onchange": "^6.1.0",
-    "raw-loader": "^0.5.1",
-    "source-map-support": "^0.3.2",
-    "webpack": "^1.12.2",
-    "webpack-notifier": "^1.2.1"
+    "raw-loader": "^4.0.0",
+    "sucrase": "^3.12.1",
+    "webpack": "^4.42.0",
+    "webpack-command": "^0.5.0"
   }
 }

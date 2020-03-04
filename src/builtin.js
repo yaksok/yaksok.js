@@ -1,5 +1,5 @@
-import { Parser } from 'parser';
-import * as ast from 'ast';
+import { Parser } from '~/parser';
+import * as ast from '~/ast';
 
 const descriptionParser = new Parser(['START_DESCRIPTION']);
 
