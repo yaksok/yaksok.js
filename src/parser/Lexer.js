@@ -90,6 +90,8 @@ Lexer.addRule(/번역/, function (lexeme) {
 
 Lexer.addRule(/[\t ]*#[^\r\n]*/); // comment
 
+Lexer.addRule(/^[\t ]*\r?(?:\n|$)/); // whitespace-only line
+
 Lexer.addRule(/^[\t ]*/gm, function (lexeme) {
     if (this.parenCount !== 0) {
         this.reject = true;
