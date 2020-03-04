@@ -85,6 +85,6 @@ describe('에러 없이 잘 도나', _=> {
         await t('call-in-list');
     });
     it('블록에서 공백만으로 이루어진 라인 무시' async () => {
-	    await t('block-trailing-space');
+        await t('block-trailing-space');
     });
 });
