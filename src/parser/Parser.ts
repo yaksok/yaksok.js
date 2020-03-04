@@ -1,18 +1,18 @@
 import * as ast from '~/ast';
 import Lexer from './Lexer';
-import { Parser as JisonYaksokParser } from '../generated/parser';
+import { Parser as JisonYaksokParser } from '~/generated/parser';
 
-let yy = {
-    parseString: string => eval(string),
-    parseInteger: string => string | 0,
-    parseFloat: string => +string,
-    ast: ast,
-    stmts: stmt => {
-         let stmts = new ast.Statements();
-         stmts.push(stmt);
+const yy = {
+    parseString: (text: string) => eval(text),
+    parseInteger: (text: string) => (text as any) | 0,
+    parseFloat: (text: string) => +text,
+    ast,
+    stmts: (stmt: ast.Statement) => {
+         const stmts = new ast.Statements();
+         (stmts as any as ast.Statement[] /* FIXME */).push(stmt);
          return stmts;
     },
-    parseCall: expressions => {
+    parseCall: (expressions: any /* FIXME: ast.Expressoins */) => {
         if (expressions.length > 1) return new ast.Call(expressions);
         let expression = expressions.childNodes[0];
         if (expression instanceof ast.Name) {
@@ -20,10 +20,10 @@ let yy = {
         }
         return expression;
     },
-    postprocessDescription: description => {
-        let filteredDescription = new ast.Description();
+    postprocessDescription: (description: ast.Description) => {
+        const filteredDescription = new ast.Description();
         let whitespace = false;
-        for (let item of description) {
+        for (let item of (description as any /* FIXME */)) {
             if (item === null) {
                 whitespace = true;
             } else {
@@ -31,7 +31,7 @@ let yy = {
                     item.needWhiteSpace = whitespace;
                     item.sort();
                 }
-                filteredDescription.push(item);
+                (filteredDescription as any /* FIXME */).push(item);
                 whitespace = false;
             }
         }
@@ -40,12 +40,12 @@ let yy = {
 };
 
 export default class Parser {
+    private jisonParser = new JisonYaksokParser();
     constructor(startTokens=['START_AST']) {
-        this.jisonParser = new JisonYaksokParser();
         this.jisonParser.lexer = new Lexer(startTokens);
         this.jisonParser.yy = yy;
     }
-    parse(code) {
+    parse(code: string) {
         return this.jisonParser.parse(code);
     }
 }
