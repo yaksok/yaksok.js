@@ -6,7 +6,7 @@ describe('AstNode', () => {
     class Foo extends AstNode {
         @child foo: Foo | null;
 
-        constructor(foo: Foo) {
+        constructor(foo: Foo | null) {
             super();
             this.foo = foo;
         }
@@ -15,7 +15,7 @@ describe('AstNode', () => {
     class Bar extends Foo {
         @child bar: Foo | null;
 
-        constructor(foo: Foo, bar: Foo) {
+        constructor(foo: Foo | null, bar: Foo | null) {
             super(foo);
             this.bar = bar;
         }
@@ -27,5 +27,22 @@ describe('AstNode', () => {
 
     specify('all childFields of Bar', () => {
         assert.deepStrictEqual(['bar', 'foo'], Array.from(allChildFields(Bar)));
+    });
+
+    describe('@child', () => {
+        it('should replace given field to a property', () => {
+            const descriptor = Object.getOwnPropertyDescriptor(Foo.prototype, 'foo');
+            assert.notEqual(descriptor, null);
+            assert.strictEqual(descriptor?.configurable, true);
+            assert.strictEqual(descriptor?.enumerable, false);
+        });
+
+        it('should enforce undefined to be null', () => {
+            const a = new Foo(null);
+            const b = new Foo(a);
+            assert.strictEqual(b.foo, a);
+            (b as any).foo = undefined;
+            assert.strictEqual(b.foo, null);
+        });
     });
 });

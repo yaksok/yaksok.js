@@ -44,18 +44,18 @@ export abstract class AstNode {
     }
 }
 
-export function child(target: any, field: string) {
+export function child(target: any, field: string): any {
     addChildFields(target.constructor, field);
     const privateField = '_' + field;
-    Object.defineProperty(target, field, {
+    return {
         configurable: true,
         enumerable: false,
-        get: function () {
+        get: function (this: any) {
             let member = this[privateField];
             return member ? member : null;
         },
-        set: function (value) {
-            if (value !== null) {
+        set: function (this: any, value: any) {
+            if (value != null) {
                 value.parent = this;
             }
             this[privateField] = value;
