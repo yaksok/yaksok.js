@@ -17,6 +17,8 @@
     }
   },
   "exclude": [
+    "dist",
+    "dump",
     "node_modules"
   ]
 }
