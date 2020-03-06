@@ -15,6 +15,7 @@
     "watch": "npm run build && run-p watch:*",
     "watch:build": "webpack --config ./build/webpack.config.ts --require sucrase/register/ts --watch",
     "watch:jison": "onchange 'src/parser/parser.jison' -- npm run build:jison",
+    "pretest": "tsc --noEmit",
     "test": "npm run build:test && node ./dist/test.js",
     "test:debug": "npm run build:test && node inspect ./dist/test.js",
     "prepublish": "node ./build/in-publish && npm test && npm run build-production || node ./build/not-in-publish"
