@@ -25,7 +25,7 @@ export abstract class AstNode {
         this.parent = null;
     }
 
-    replaceChild<T extends AstNode>(before: T, after: T) {
+    replaceChild(before: any, after: any) {
         for (let field of allChildFields(this)) {
             if ((this as any)[field] === before) {
                 after.parent = this;
@@ -60,5 +60,76 @@ export function child(target: any, field: string): any {
             }
             this[privateField] = value;
         }
-    });
+    };
+}
+
+const listField = Symbol('listField');
+
+class AstListMixin<T extends AstNode> extends AstNode {
+    [listField]: (T | null)[];
+
+    get length() {
+        return this[listField].length;
+    }
+
+    push(childNode: T | null) {
+        if (childNode != null) {
+            childNode.parent = this;
+        }
+        this[listField].push(childNode);
+    }
+
+    [Symbol.iterator]() {
+        return this[listField][Symbol.iterator]();
+    }
+
+    replaceChild(before: any, after: any) {
+        let index = this[listField].indexOf(before);
+        if (index === -1) {
+            throw new Error('이 노드의 자식이 아닙니다.');
+        }
+        if (isSameType(after, this)) { // after가 목록인 경우
+            for (let child of after[listField]) {
+                if (child != null) {
+                    child.parent = this;
+                }
+            }
+            this[listField].splice(index, 1, ...after[listField]);
+        } else {
+            after.parent = this;
+            this[listField][index] = after;
+            return after;
+        }
+    }
+
+    removeChild(child: T) {
+        let index = this[listField].indexOf(child);
+        if (index === -1) {
+            throw new Error('이 노드의 자식이 아닙니다.');
+        }
+        this[listField].splice(index, 1);
+    }
+}
+
+function isSameType<T extends object>(obj: any, other: T): obj is T {
+    return obj.constructor === other.constructor;
+}
+
+export function astList<T>(listFieldName: string) {
+    return function decorator(target: any) {
+        Object.defineProperty(target.prototype, listField, {
+            configurable: false,
+            enumerable: false,
+            get() { return this[listFieldName]; }
+        });
+        applyMixins(target, AstListMixin);
+    };
+}
+
+function applyMixins(target: any, mixin: any) {
+    const properties: (string | symbol)[] = Object.getOwnPropertyNames(mixin);
+    properties.push(...Object.getOwnPropertySymbols(mixin));
+    for (const name of properties) {
+        Object.defineProperty(target.prototype, name, Object.getOwnPropertyDescriptor(mixin, name)!);
+    }
 }
