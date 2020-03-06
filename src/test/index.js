@@ -18,7 +18,7 @@ async function main() {
         };
 
         let Mocha = eval('require("mocha")');
-        let reqTest = require.context('.', true, /^\.\/.*test-[^/]+\.js$/i);
+        let reqTest = require.context('.', true, /^\.\/.*test-[^/]+\.(js|ts)$/i);
         Mocha.prototype.loadFiles = function (fn) {
             for (let file of this.files) {
                 this.suite.emit('pre-require', global, file, this);
