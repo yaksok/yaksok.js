@@ -709,4 +709,5 @@ export class Translate extends Def {
     }
 }
 
-export NodeVisitor from './NodeVisitor';
+import NodeVisitor from './NodeVisitor';
+export { NodeVisitor };
