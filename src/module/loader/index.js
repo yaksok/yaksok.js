@@ -1,2 +1,3 @@
-export Loader from './Loader';
-export CommonLoader from './CommonLoader';
+import Loader from './Loader';
+import CommonLoader from './CommonLoader';
+export { CommonLoader, Loader };

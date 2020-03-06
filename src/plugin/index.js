@@ -1,3 +1,8 @@
-export Plugin from './Plugin';
-export ConstantFolder from './ConstantFolder';
-export UnusedDefRemover from './UnusedDefRemover';
+import Plugin from './Plugin';
+import ConstantFolder from './ConstantFolder';
+import UnusedDefRemover from './UnusedDefRemover';
+export {
+    ConstantFolder,
+    Plugin,
+    UnusedDefRemover,
+};

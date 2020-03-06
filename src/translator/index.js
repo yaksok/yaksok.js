@@ -1,3 +1,8 @@
-export Translator from './Translator';
-export TextTranslator from './TextTranslator';
-export JsTranslator from './JsTranslator';
+import Translator from './Translator';
+import TextTranslator from './TextTranslator';
+import JsTranslator from './JsTranslator';
+export {
+    JsTranslator,
+    TextTranslator,
+    Translator,
+};

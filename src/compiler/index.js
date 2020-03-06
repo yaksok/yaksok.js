@@ -5,5 +5,6 @@ export const AFTER_ANALYZE = {};
 export const BEFORE_TRANSLATE = {};
 export const AFTER_TRANSLATE = {};
 
-export Compiler from './Compiler';
-export JsTargetCompiler from './JsTargetCompiler';
+import Compiler from './Compiler';
+import JsTargetCompiler from './JsTargetCompiler';
+export { Compiler, JsTargetCompiler };
