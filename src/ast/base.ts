@@ -25,7 +25,7 @@ export abstract class AstNode {
         this.parent = null;
     }
 
-    replaceChild(before: any, after: any) {
+    replaceChild<T extends AstNode>(before: AstNode, after: T): T {
         for (let field of allChildFields(this)) {
             if ((this as any)[field] === before) {
                 after.parent = this;
@@ -36,7 +36,7 @@ export abstract class AstNode {
         throw new Error('이 노드의 자식이 아닙니다.');
     }
 
-    replace(after: this) {
+    replace<T extends AstNode>(after: T): T {
         if (this.parent === null) {
             throw new Error('부모가 없습니다.');
         }
@@ -65,7 +65,7 @@ export function child(target: any, field: string): any {
 
 const listField = Symbol('listField');
 
-class AstListMixin<T extends AstNode> extends AstNode {
+export abstract class AstListMixin<T extends AstNode = AstNode> {
     [listField]: (T | null)[];
 
     get length() {
@@ -74,7 +74,7 @@ class AstListMixin<T extends AstNode> extends AstNode {
 
     push(childNode: T | null) {
         if (childNode != null) {
-            childNode.parent = this;
+            childNode.parent = this as any;
         }
         this[listField].push(childNode);
     }
@@ -83,21 +83,22 @@ class AstListMixin<T extends AstNode> extends AstNode {
         return this[listField][Symbol.iterator]();
     }
 
-    replaceChild(before: any, after: any) {
-        let index = this[listField].indexOf(before);
+    replaceChild<T extends AstNode>(before: AstNode, after: T): T {
+        let index = this[listField].indexOf(before as any);
         if (index === -1) {
             throw new Error('이 노드의 자식이 아닙니다.');
         }
         if (isSameType(after, this)) { // after가 목록인 경우
             for (let child of after[listField]) {
                 if (child != null) {
-                    child.parent = this;
+                    child.parent = this as any;
                 }
             }
             this[listField].splice(index, 1, ...after[listField]);
+            return undefined as any;  // TODO
         } else {
-            after.parent = this;
-            this[listField][index] = after;
+            after.parent = this as any;
+            this[listField][index] = after as any;
             return after;
         }
     }
