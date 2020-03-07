@@ -45,7 +45,7 @@ export abstract class AstNode {
 }
 
 export function child(target: any, field: string): any {
-    addChildFields(target.constructor, field);
+    addChildFields(target, field);
     const privateField = '_' + field;
     return {
         configurable: true,

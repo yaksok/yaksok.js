@@ -23,11 +23,11 @@ describe('AstNode', () => {
     }
 
     specify('all childFields of Foo', () => {
-        assert.deepStrictEqual(['foo'], Array.from(allChildFields(Foo)));
+        assert.deepStrictEqual(['foo'], Array.from(allChildFields(Foo.prototype)));
     });
 
     specify('all childFields of Bar', () => {
-        assert.deepStrictEqual(['bar', 'foo'], Array.from(allChildFields(Bar)));
+        assert.deepStrictEqual(['bar', 'foo'], Array.from(allChildFields(Bar.prototype)));
     });
 
     describe('@child', () => {
