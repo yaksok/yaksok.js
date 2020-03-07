@@ -5,10 +5,10 @@ const descriptionParser = new Parser(['START_DESCRIPTION']);
 
 export class Builtin extends ast.AstNode {}
 
-@ast.ast('description')
 @ast.def
 export class Yaksok extends Builtin {
-    constructor(description) {
+    @ast.child description: ast.Description;
+    constructor(description: string) {
         super();
         this.description = descriptionParser.parse(description);
     }
