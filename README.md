@@ -2,6 +2,9 @@
 
 한글 프로그래밍 언어 [약속](http://yaksok.org/)을 다루기 위한 자바스크립트 라이브러리입니다.
 
+![test status](https://github.com/yaksok/yaksok.js/workflows/test/badge.svg?branch=master)
+
+
 ## 축하해주세요!
 
 yaksok.js가 [D2CAMPUS-FEST/2015 장려상](https://github.com/D2CAMPUS-FEST/2015#yaksokjs--장려상)을 수상했어요!
