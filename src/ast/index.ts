@@ -258,7 +258,6 @@ export class Primitive extends Expression {
     }
 }
 export class Name extends Primitive {
-    value: any;
     call: boolean;
     constructor(value: any) {
         super(value);
@@ -640,7 +639,6 @@ export abstract class Def extends Statement {
 }
 
 export class Yaksok extends Def {
-    @child description: Description;
     @child block: any;
     constructor(description: Description, block: any) {
         super();
@@ -652,12 +650,11 @@ export class Yaksok extends Def {
         return super.hasSideEffect;
     }
     get repr() {
-        return `약속 ${ this.description.repr }`;
+        return `약속 ${ this.description?.repr }`;
     }
 }
 
 export class Translate extends Def {
-    @child description: Description;
     target: any;
     code: any;
     constructor(description: Description, target: any, code: any) {
@@ -667,7 +664,7 @@ export class Translate extends Def {
         this.code = code; // string
     }
     get repr() {
-        return `번역(${ this.target }) ${ this.description.repr }`;
+        return `번역(${ this.target }) ${ this.description?.repr }`;
     }
 }
 

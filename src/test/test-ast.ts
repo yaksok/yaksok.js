@@ -1,6 +1,7 @@
 import assert from 'assert';
 
 import { AstNode, child, allChildFields } from '~/ast/base';
+import { Name } from '~/ast';
 
 describe('AstNode', () => {
     class Foo extends AstNode {
@@ -44,5 +45,12 @@ describe('AstNode', () => {
             (b as any).foo = undefined;
             assert.strictEqual(b.foo, null);
         });
+    });
+});
+
+describe('Name', () => {
+    specify('constructor', () => {
+        const foo = new Name('아무개');
+        assert.strictEqual(foo.value, '아무개');
     });
 });
