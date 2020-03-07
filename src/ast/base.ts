@@ -122,14 +122,14 @@ export function astList<T>(listFieldName: string) {
             enumerable: false,
             get() { return this[listFieldName]; }
         });
-        applyMixins(target, AstListMixin);
+        applyMixin(target, AstListMixin);
     };
 }
 
-function applyMixins(target: any, mixin: any) {
-    const properties: (string | symbol)[] = Object.getOwnPropertyNames(mixin);
-    properties.push(...Object.getOwnPropertySymbols(mixin));
+function applyMixin(target: any, mixin: any) {
+    const properties: (string | symbol)[] = Object.getOwnPropertyNames(mixin.prototype);
+    properties.push(...Object.getOwnPropertySymbols(mixin.prototype));
     for (const name of properties) {
-        Object.defineProperty(target.prototype, name, Object.getOwnPropertyDescriptor(mixin, name)!);
+        Object.defineProperty(target.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name)!);
     }
 }
