@@ -171,10 +171,10 @@ export class Expression extends AstNode {
 Expression.prototype.type = null;
 
 export class Call extends Expression {
-    @child expressions: Expressions | null;
+    @child expressions: Expressions;
     @child callInfo: CallInfo | null;
 
-    constructor(expressions: Expressions | null) {
+    constructor(expressions: Expressions) {
         super();
         this.expressions = expressions; // analyzer 패스를 거친 뒤로는 무의미
         this.callInfo = null; // analyzer 패스를 거친 뒤부터 접근 가능
@@ -192,10 +192,10 @@ export class Call extends Expression {
 
 export class ModuleCall extends Expression {
     @child target: any;
-    @child expressions: Expressions | null;
+    @child expressions: Expressions;
     @child callInfo: CallInfo | null;
 
-    constructor(target: any, expressions: Expressions | null) {
+    constructor(target: any, expressions: Expressions) {
         super();
         this.target = target;
         this.expressions = expressions; // analyzer 패스를 거친 뒤로는 무의미
@@ -213,10 +213,10 @@ export class ModuleCall extends Expression {
 }
 
 export class CallBind extends Expression {
-    @child expressions: Expressions | null;
+    @child expressions: Expressions;
     @child callInfo: CallInfo | null;
 
-    constructor(expressions: Expressions | null) {
+    constructor(expressions: Expressions) {
         super();
         this.expressions = expressions;
         this.callInfo = null;
@@ -228,10 +228,10 @@ export class CallBind extends Expression {
 
 export class ModuleCallBind extends Expression {
     @child target: any;
-    @child expressions: Expressions | null;
+    @child expressions: Expressions;
     @child callInfo: CallInfo | null;
 
-    constructor(target: any, expressions: Expressions | null) {
+    constructor(target: any, expressions: Expressions) {
         super();
         this.target = target;
         this.expressions = expressions;
@@ -621,12 +621,13 @@ export class DescriptionName extends AstNode {
 // defs
 @def
 export abstract class Def extends Statement {
-    @child description: Description | null = null;
+    @child description: Description;
     scope: any;
     returnType: any;
     used: boolean;
-    constructor() {
+    constructor(description: Description) {
         super();
+        this.description = description;
         this.scope = null;
         this.returnType = null;
         this.used = false; // 어딘가에서 호출된 적이 있는 정의인지 여부.
@@ -641,8 +642,7 @@ export abstract class Def extends Statement {
 export class Yaksok extends Def {
     @child block: any;
     constructor(description: Description, block: any) {
-        super();
-        this.description = description;
+        super(description);
         this.block = block;
     }
     get hasSideEffect() {
@@ -658,8 +658,7 @@ export class Translate extends Def {
     target: any;
     code: any;
     constructor(description: Description, target: any, code: any) {
-        super();
-        this.description = description;
+        super(description);
         this.target = target; // string
         this.code = code; // string
     }
