@@ -9,10 +9,10 @@ const yy = {
     ast,
     stmts: (stmt: ast.Statement) => {
          const stmts = new ast.Statements();
-         (stmts as any as ast.Statement[] /* FIXME */).push(stmt);
+         stmts.push(stmt);
          return stmts;
     },
-    parseCall: (expressions: any /* FIXME: ast.Expressoins */) => {
+    parseCall: (expressions: ast.Expressions) => {
         if (expressions.length > 1) return new ast.Call(expressions);
         let expression = expressions.childNodes[0];
         if (expression instanceof ast.Name) {
@@ -23,7 +23,7 @@ const yy = {
     postprocessDescription: (description: ast.Description) => {
         const filteredDescription = new ast.Description();
         let whitespace = false;
-        for (let item of (description as any /* FIXME */)) {
+        for (let item of description) {
             if (item === null) {
                 whitespace = true;
             } else {
@@ -31,7 +31,7 @@ const yy = {
                     item.needWhiteSpace = whitespace;
                     item.sort();
                 }
-                (filteredDescription as any /* FIXME */).push(item);
+                filteredDescription.push(item);
                 whitespace = false;
             }
         }
