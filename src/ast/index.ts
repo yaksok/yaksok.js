@@ -43,7 +43,7 @@ export class Statements extends AstNodeList<Statement> {
 
 // statement
 export class Statement extends AstNode {
-    eliminateDeadCode() { // return boolean or replacement node
+    eliminateDeadCode(): AstNode | boolean { // return boolean or replacement node
         return false; // prevent elimination
     }
 }
@@ -83,16 +83,16 @@ export abstract class Condition extends Statement {}
 
 export class If extends Condition {
     @child condition: Expression;
-    @child ifBlock: any;
-    @child elseBlock: any;
+    @child ifBlock: Statements;
+    @child elseBlock: Statements | null;
 
-    constructor(condition: Expression, ifBlock: any, elseBlock: any) {
+    constructor(condition: Expression, ifBlock: Statements, elseBlock: Statements | null = null) {
         super();
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
     }
-    eliminateDeadCode() {
+    eliminateDeadCode(): Statements | boolean {
         let bool = this.condition.fold();
         if (bool instanceof Boolean) {
             return (bool.value ? this.ifBlock : this.elseBlock) || true;
@@ -103,16 +103,16 @@ export class If extends Condition {
 
 export class IfNot extends Condition {
     @child condition: Expression;
-    @child ifBlock: any;
-    @child elseBlock: any;
+    @child ifBlock: Statements;
+    @child elseBlock: Statements | null;
 
-    constructor(condition: Expression, ifBlock: any, elseBlock: any) {
+    constructor(condition: Expression, ifBlock: Statements, elseBlock: Statements | null = null) {
         super();
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elseBlock = elseBlock;
     }
-    eliminateDeadCode() {
+    eliminateDeadCode(): Statements | boolean {
         let bool = this.condition.fold();
         if (bool instanceof Boolean) {
             return (bool.value ? this.ifBlock : this.elseBlock) || true;
