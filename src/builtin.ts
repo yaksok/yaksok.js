@@ -5,12 +5,14 @@ const descriptionParser = new Parser(['START_DESCRIPTION']);
 
 export class Builtin extends ast.AstNode {}
 
-@ast.def
 export class Yaksok extends Builtin {
     @ast.child description: ast.Description;
     constructor(description: string) {
         super();
         this.description = descriptionParser.parse(description);
+    }
+    match(call: ast.CallLike) { // return call info or null
+        return this.description.match(call.expressions);
     }
 }
 
