@@ -4,13 +4,6 @@ import { AstNode, AstListMixin, astList, child } from './base';
 
 export { AstNode, child };
 
-// decorators
-export function def(target: any) {
-    target.prototype.match = function match(call: any) { // return call info or null
-        return this.description.match(call.expressions);
-    };
-}
-
 // ast
 @astList('childNodes')
 export abstract class AstNodeList<T extends AstNode = AstNode> extends AstNode {
@@ -170,7 +163,16 @@ export class Expression extends AstNode {
 }
 Expression.prototype.type = null;
 
-export class Call extends Expression {
+export interface CallLike extends Expression {
+    expressions: Expressions;
+    callInfo: CallInfo | null;
+}
+
+export interface ModuleCallLike extends CallLike {
+    target: any;
+}
+
+export class Call extends Expression implements CallLike {
     @child expressions: Expressions;
     @child callInfo: CallInfo | null;
 
@@ -190,7 +192,7 @@ export class Call extends Expression {
     }
 }
 
-export class ModuleCall extends Expression {
+export class ModuleCall extends Expression implements ModuleCallLike {
     @child target: any;
     @child expressions: Expressions;
     @child callInfo: CallInfo | null;
@@ -212,7 +214,7 @@ export class ModuleCall extends Expression {
     }
 }
 
-export class CallBind extends Expression {
+export class CallBind extends Expression implements CallLike {
     @child expressions: Expressions;
     @child callInfo: CallInfo | null;
 
@@ -226,7 +228,7 @@ export class CallBind extends Expression {
     }
 }
 
-export class ModuleCallBind extends Expression {
+export class ModuleCallBind extends Expression implements ModuleCallLike {
     @child target: any;
     @child expressions: Expressions;
     @child callInfo: CallInfo | null;
@@ -540,7 +542,7 @@ export interface CallInfo extends AstListMixin {}
 
 // description
 export class Description extends AstNodeList<Expression> {
-    match(expressions: Expressions) {
+    match(expressions: Expressions): CallInfo | null {
         if (expressions.length > this.length) return null;
         let callInfo = new CallInfo(this.parent);
         // FIXME: babel 6.5 대에서
@@ -619,7 +621,6 @@ export class DescriptionName extends AstNode {
 }
 
 // defs
-@def
 export abstract class Def extends Statement {
     @child description: Description;
     scope: any;
@@ -636,6 +637,9 @@ export abstract class Def extends Statement {
     get hasSideEffect() { return true; }
     get repr() {
         return `정의 ${ this.description?.repr }`;
+    }
+    match(call: CallLike) { // return call info or null
+        return this.description.match(call.expressions);
     }
 }
 

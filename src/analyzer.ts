@@ -2,16 +2,21 @@ import NodeVisitor from '~/ast/NodeVisitor';
 
 import * as ast from '~/ast';
 import { Name } from '~/ast';
-import { yaksok as builtinYaksok } from '~/builtin';
+import { Yaksok as BuiltinYaksok, yaksok as builtinYaksok } from '~/builtin';
+import { Compiler } from './compiler';
 
 export class Analyzer extends NodeVisitor {
-    async prepare(moduleHash) {
+    currentScope!: Scope;
+    currentAstRoot!: ast.YaksokRoot;
+    compiler!: Compiler;
+
+    async prepare(moduleHash?: any) {
         this.currentScope = new Scope();
         this.currentAstRoot = await this.compiler.getAstRoot(moduleHash);
         this.currentAstRoot.statements.scope = this.currentScope;
         return this.currentAstRoot;
     }
-    async analyze(astRoot) {
+    async analyze(astRoot: ast.YaksokRoot) {
         await this.init();
         // analyze modules
         for (let moduleHash of this.compiler.moduleOrder) {
@@ -21,7 +26,7 @@ export class Analyzer extends NodeVisitor {
         await this.visit(await this.prepare());
         return astRoot;
     }
-    async visitName(node) {
+    async visitName(node: ast.Name) {
         if (!node.call) return super.visitName(node);
         let callExpressions = new ast.Expressions();
         callExpressions.push(node.clone());
@@ -34,7 +39,7 @@ export class Analyzer extends NodeVisitor {
             return super.visitName(node);
         }
     }
-    async visitCall(node) {
+    async visitCallLike(node: ast.CallLike) {
         let callInfo = this.currentScope.getCallInfo(node, this.compiler.builtinDefs);
         node.callInfo = callInfo;
         for (let arg of callInfo.args) {
@@ -45,7 +50,7 @@ export class Analyzer extends NodeVisitor {
             }
         }
     }
-    async visitModuleCall(node) {
+    async visitModuleCallLike(node: ast.ModuleCallLike) {
         let moduleHash = this.currentAstRoot.modules[node.target.value];
         let moduleAstRoot = await this.compiler.getAstRoot(moduleHash);
         let { moduleScope } = moduleAstRoot;
@@ -59,9 +64,11 @@ export class Analyzer extends NodeVisitor {
             }
         }
     }
-    async visitCallBind(node) { return await this.visitCall(node); }
-    async visitModuleCallBind(node) { return await this.visitModuleCall(node); }
-    async visitOutside(node) {
+    visitCall(node: ast.Call) { return this.visitCallLike(node); }
+    visitModuleCall(node: ast.ModuleCall) { return this.visitModuleCallLike(node); }
+    visitCallBind(node: ast.CallBind) { return this.visitCallLike(node); }
+    visitModuleCallBind(node: ast.ModuleCallBind) { return this.visitModuleCallLike(node); }
+    async visitOutside(node: ast.Outside) {
         let scope = this.currentScope;
         let { name } = node;
         if (scope.hasVariable(name, false)) {
@@ -70,7 +77,7 @@ export class Analyzer extends NodeVisitor {
             throw new Error('해당하는 바깥 변수를 찾지 못했습니다');
         }
     }
-    async visitAssign(node) {
+    async visitAssign(node: ast.Assign) {
         await this.visit(node.rvalue);
         if (node.lvalue instanceof Name) {
             let name = node.lvalue;
@@ -86,7 +93,7 @@ export class Analyzer extends NodeVisitor {
             await this.visit(node.lvalue);
         }
     }
-    async visitYaksok(node) {
+    async visitYaksok(node: ast.Yaksok) {
         let scope = this.currentScope;
         scope.addDef(node);
         let currentScope = scope.newChildScope();
@@ -96,17 +103,17 @@ export class Analyzer extends NodeVisitor {
         await this.visit(node.block);
         this.currentScope = scope;
     }
-    async visitTranslate(node) {
+    async visitTranslate(node: ast.Translate) {
         if (this.compiler.translateTargets.indexOf(node.target) === -1) return;
         this.currentScope.addDef(node);
     }
 }
 
 export class Scope {
-    variables = [];
-    defs = [];
-    parent = null;
-    updateVariable(name) { // for static type analysis
+    variables: ast.Name[] = [];
+    defs: ast.Def[] = [];
+    parent: Scope | null = null;
+    updateVariable(name: ast.Name) { // for static type analysis
         let localIndex = this.variables.findIndex(item => item.value === name.value);
         if (localIndex === -1) {
             throw new Error('cannot update variable')
@@ -114,10 +121,10 @@ export class Scope {
             this.variables[localIndex] = name;
         }
     }
-    addVariable(name) {
+    addVariable(name: ast.Name) {
         this.variables.push(name);
     }
-    hasVariable(name, local=true) {
+    hasVariable(name: ast.Name, local=true): boolean {
         let hasLocal = this.variables.some(item => item.value === name.value);
         if (local) {
             return hasLocal;
@@ -127,7 +134,7 @@ export class Scope {
         }
         return false;
     }
-    getVariableType(name, local=true) {
+    getVariableType(name: ast.Name, local=true): any {
         let localVariable = this.variables.find(item => item.value === name.value);
         if (!localVariable) return null;
         let localType = localVariable.type;
@@ -139,9 +146,9 @@ export class Scope {
         }
         return null;
     }
-    addDef(def) { this.defs.push(def); }
-    getCallInfo(call, builtinDefs={}) {
-        let matchCallInfo = null;
+    addDef(def: ast.Def) { this.defs.push(def); }
+    getCallInfo(call: ast.CallLike, builtinDefs: { [key: string]: BuiltinYaksok } = {}): ast.CallInfo {
+        let matchCallInfo: ast.CallInfo | null = null;
         let matchDefs = [];
         for (let def of this.defs) {
             let callInfo = def.match(call);
@@ -150,7 +157,7 @@ export class Scope {
                 matchDefs.push(def);
             }
         }
-        if (matchDefs.length === 1) {
+        if (matchDefs.length === 1 && matchCallInfo != null) {
             matchCallInfo.def.used = true;
             return matchCallInfo;
         } else if (matchDefs.length > 1) {
