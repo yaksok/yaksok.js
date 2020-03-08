@@ -4,9 +4,10 @@ import { ModuleScope } from '~/analyzer';
 import { Context, CommonContext } from '~/module/context';
 import { Loader } from '~/module/loader';
 import * as ast from '~/ast';
+import { Compiler } from '../compiler';
 
 export default class Resolver extends NodeVisitor {
-    compiler!: any;
+    compiler: Compiler | null = null;
     loader: Loader | null;
     submoduleNames: string[] = [];
 
@@ -19,6 +20,9 @@ export default class Resolver extends NodeVisitor {
         this.submoduleNames = [];
     }
     async resolve(context: Context) {
+        if (this.compiler == null) {
+            throw new Error('compiler가 초기화되지 않았습니다');
+        }
         let moduleHash = context.hash();
         { // pragma once
             if (this.compiler.astMap[moduleHash])
