@@ -13,5 +13,5 @@ export type PluginPhase =
     | typeof AFTER_TRANSLATE
     ;
 
-export { default as Compiler } from './Compiler';
+export { default as Compiler, CompilerConfig } from './Compiler';
 export { default as JsTargetCompiler } from './JsTargetCompiler';

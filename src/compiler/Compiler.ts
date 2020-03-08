@@ -15,6 +15,7 @@ import {
 } from '~/compiler';
 import { Translator } from '~/translator';
 import { YaksokRoot } from '~/ast';
+import { Plugin } from '~/plugin';
 
 export interface CompilerConfig {
     exports?: { [key: string]: string };
@@ -137,21 +138,21 @@ export default class Compiler extends NodeVisitor {
         let ast = entryAstRoot;
         for (let plugin of this.plugins.get(phase)) {
             plugin.compiler = this;
-            ast = await plugin.run(ast, this.config) || ast;
+            ast = await plugin.run(ast!, this.config) || ast;
         }
         return ast;
     }
 }
 
 class CompilerPlugins {
-    private map!: Map<PluginPhase, any[]>;
+    private map!: Map<PluginPhase, Plugin[]>;
 
     constructor() { this.clear(); }
     clear() { this.map = new Map(); }
-    get(phase: PluginPhase = AFTER_ANALYZE): any[] {
+    get(phase: PluginPhase = AFTER_ANALYZE): Plugin[] {
         return this.map.get(phase)?.slice() ?? [];
     }
-    add(plugin: any, phase?: PluginPhase) {
+    add(plugin: Plugin, phase?: PluginPhase) {
         if (Array.isArray(plugin)) {
             for (let _plugin of plugin) {
                 this.add(_plugin, phase);
