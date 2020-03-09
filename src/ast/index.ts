@@ -541,7 +541,7 @@ export class CallInfo extends AstNode {
 export interface CallInfo extends AstListMixin {}
 
 // description
-export class Description extends AstNodeList<Expression> {
+export class Description extends AstNodeList<DescriptionItem> {
     match(expressions: Expressions): CallInfo | null {
         if (expressions.length > this.length) return null;
         let callInfo = new CallInfo(this.parent);
@@ -582,17 +582,23 @@ export class Description extends AstNodeList<Expression> {
         }
         return callInfo;
     }
-    get parameters() {
-        return this.childNodes.filter(item => item instanceof DescriptionParameter);
+    get parameters(): DescriptionParameter[] {
+        function predicate(item: DescriptionItem): item is DescriptionParameter {
+            return item instanceof DescriptionParameter;
+        }
+        return this.childNodes.filter(predicate);
     }
     get repr() { return this.childNodes.map(expression => expression.repr).join(''); }
 }
-export class DescriptionParameter extends AstNode {
+export abstract class DescriptionItem extends AstNode {
+    abstract get repr(): string;
+}
+export class DescriptionParameter extends DescriptionItem {
     value: any;
     constructor(value: any) { super(); this.value = value; }
     get repr() { return `(${ this.value })`; }
 }
-export class DescriptionName extends AstNode {
+export class DescriptionName extends DescriptionItem {
     names: string[];
     constructor() {
         super();
