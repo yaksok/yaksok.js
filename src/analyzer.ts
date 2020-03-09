@@ -54,6 +54,9 @@ export class Analyzer extends NodeVisitor {
         let moduleHash = this.currentAstRoot.modules[node.target.value];
         let moduleAstRoot = await this.compiler.getAstRoot(moduleHash);
         let { moduleScope } = moduleAstRoot;
+        if (moduleScope == null) {
+            throw new Error('moduleScope가 아직 resolve되지 않았습니다');
+        }
         let callInfo = moduleScope.getCallInfo(node);
         node.callInfo = callInfo;
         for (let arg of callInfo.args) {

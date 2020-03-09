@@ -1,6 +1,7 @@
 // NOTE: 이 파일에서 String, Number, Boolean은 javascript builtin object가 아닙니다.
 
 import { AstNode, AstListMixin, astList, child } from './base';
+import { ModuleScope } from '~/analyzer';
 
 export { AstNode, child };
 
@@ -18,8 +19,8 @@ export interface AstNodeList<T> extends AstListMixin<T> {}
 
 export class YaksokRoot extends AstNode {
     hash: any;
-    modules: any;
-    moduleScope: any;
+    modules: { [name: string]: string };
+    moduleScope: ModuleScope | null;
     @child statements: Statements;
 
     constructor(statements: Statements) {

@@ -1,4 +1,4 @@
-import { YaksokRoot } from '~/ast';
+import { Call, YaksokRoot } from '~/ast';
 import Compiler from '~/compiler/Compiler';
 import { Parser } from '~/parser';
 import { JsTranslator } from '~/translator';
@@ -6,7 +6,7 @@ import { JsTranslator } from '~/translator';
 const callParser = new Parser(['START_CALL']);
 
 export default class JsTargetCompiler extends Compiler {
-    exports: { [key: string]: any } | null;
+    exports: { [key: string]: Call } | null;
 
     constructor(...args: ConstructorParameters<typeof Compiler>) {
         super(...args);
