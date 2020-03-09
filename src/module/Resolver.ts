@@ -1,9 +1,15 @@
 import NodeVisitor from '~/ast/NodeVisitor';
 import { Def } from '~/ast';
 import { ModuleScope } from '~/analyzer';
-import { CommonContext } from '~/module/context';
+import { Context, CommonContext } from '~/module/context';
+import { Loader } from '~/module/loader';
+import * as ast from '~/ast';
 
 export default class Resolver extends NodeVisitor {
+    compiler!: any;
+    loader: Loader | null;
+    submoduleNames: string[] = [];
+
     constructor() {
         super();
         this.loader = null; // see compiler.Compiler init method
@@ -12,13 +18,16 @@ export default class Resolver extends NodeVisitor {
         await super.init();
         this.submoduleNames = [];
     }
-    async resolve(context) {
+    async resolve(context: Context) {
         let moduleHash = context.hash();
         { // pragma once
             if (this.compiler.astMap[moduleHash])
                 return this.compiler.astMap[moduleHash];
         }
         await this.init();
+        if (this.loader == null) {
+            throw new Error('Resolver가 올바르게 초기화되지 않았습니다');
+        }
         let astRoot = await this.loader.get(context);
         this.compiler.astMap[moduleHash] = astRoot;
         astRoot.hash = moduleHash;
@@ -37,9 +46,8 @@ export default class Resolver extends NodeVisitor {
                 let submoduleResolver = new Resolver();
                 submoduleResolver.compiler = this.compiler;
                 submoduleResolver.loader = this.loader;
-                let submoduleContext = new CommonContext();
+                let submoduleContext = new CommonContext(submoduleName);
                 submoduleContext.from = context;
-                submoduleContext.name = submoduleName;
                 let submoduleHash = submoduleContext.hash();
                 let submoduleAstRoot = await submoduleResolver.resolve(submoduleContext);
                 this.compiler.astMap[submoduleHash] = submoduleAstRoot;
@@ -56,17 +64,21 @@ export default class Resolver extends NodeVisitor {
     // module resolve 패스에서는
     // module call expression에 대해서만 부수효과를 발생시키기 때문에
     // 유효하지 않은 expression을 순회하더라도 큰 문제가 없기 때문이다.
-    async visitCall(node) {
+    async visitCallLike(node: ast.CallLike) {
         for (let expression of node.expressions) {
+            if (expression == null) continue;
             await this.visit(expression);
         }
     }
-    async visitModuleCall(node) {
+    async visitModuleCallLike(node: ast.ModuleCallLike) {
         this.submoduleNames.push(node.target.value);
         for (let expression of node.expressions) {
+            if (expression == null) continue;
             await this.visit(expression);
         }
     }
-    async visitCallBind(node) { return await this.visitCall(node); }
-    async visitModuleCallBind(node) { return await this.visitModuleCall(node); }
+    async visitCall(node: ast.Call) { return await this.visitCallLike(node); }
+    async visitModuleCall(node: ast.ModuleCall) { return await this.visitModuleCallLike(node); }
+    async visitCallBind(node: ast.CallBind) { return await this.visitCallLike(node); }
+    async visitModuleCallBind(node: ast.ModuleCallBind) { return await this.visitModuleCallLike(node); }
 };

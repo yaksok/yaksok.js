@@ -58,6 +58,7 @@
     "@babel/preset-env": "^7.8.6",
     "@babel/preset-typescript": "^7.8.3",
     "@types/mocha": "^2.2.48",
+    "@types/uuid": "^7.0.0",
     "@types/webpack": "^4.41.7",
     "babel-loader": "^8.0.6",
     "del-cli": "^3.0.0",

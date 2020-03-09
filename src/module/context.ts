@@ -2,10 +2,13 @@ import path from 'path';
 import uuid from 'uuid';
 
 export class Context {
+    from: Context | null;
+    private __hash__?: string;
+
     constructor() {
         this.from = null;
     }
-    hash() {
+    hash(): string {
         if (this.__hash__)
             return this.__hash__;
         this.__hash__ = uuid.v4();
@@ -15,27 +18,32 @@ export class Context {
 };
 
 export class RawContext extends Context {
-    constructor(sourceCode) {
+    sourceCode: string;
+
+    constructor(sourceCode: string) {
         super();
         this.sourceCode = sourceCode + '';
     }
 };
 
 export class CommonContext extends Context {
-    constructor(name, dir='.') {
+    name: string;
+    private _dir: string;
+
+    constructor(name: string, dir = '.') {
         super();
         this.name = name;
         this._dir = dir;
     }
-    get dir() {
+    get dir(): string {
         if (this.from instanceof CommonContext) {
             return path.join(this.from.dir, this._dir);
         } else {
             return this._dir;
         }
     }
-    hash() { return `common:${ this.name }`; }
-    static getContextFromPath(filePath) {
+    hash(): string { return `common:${ this.name }`; }
+    static getContextFromPath(filePath: string): CommonContext {
         let basename;
         if (filePath.endsWith('.약속')) basename = path.basename(filePath, '.약속');
         else if (filePath.endsWith('.yak')) basename = path.basename(filePath, '.yak');
@@ -44,12 +52,12 @@ export class CommonContext extends Context {
         else basename = path.basename(filePath);
         return new CommonContext(basename, path.dirname(filePath));
     }
-    static async getScriptPathFromContext(commonContext) {
+    static async getScriptPathFromContext(commonContext: CommonContext): Promise<string> {
         return await CommonContext.getScriptPath(
             path.join(commonContext.dir, commonContext.name)
         );
     }
-    static async getScriptPath(scriptPath) {
+    static async getScriptPath(scriptPath: string) {
         let p1 = scriptPath + '.약속';
         let p2 = scriptPath + '.yak';
         let p3 = scriptPath + '.ㅇㅅ';
@@ -63,17 +71,17 @@ export class CommonContext extends Context {
     }
 };
 
-function stat(path) {
+function stat(path: string): Promise<any> {
     const fs = eval('require("fs-extra")');
     return new Promise((resolve, reject) => {
-        fs.stat(path, (err, stats) => {
+        fs.stat(path, (err: any, stats: any) => {
             if (err) reject(err);
             else resolve(stats);
         });
     });
 }
 
-async function isFile(path) {
+async function isFile(path: string): Promise<boolean> {
     try {
         return (await stat(path)).isFile();
     } catch (e) {
