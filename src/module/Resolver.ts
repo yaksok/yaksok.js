@@ -19,7 +19,7 @@ export default class Resolver extends NodeVisitor {
         await super.init();
         this.submoduleNames = [];
     }
-    async resolve(context: Context) {
+    async resolve(context: Context): Promise<ast.YaksokRoot> {
         if (this.compiler == null) {
             throw new Error('compiler가 초기화되지 않았습니다');
         }

@@ -119,7 +119,7 @@ export default class Compiler extends NodeVisitor {
             return result;
         }
     }
-    resolvePass(entryContext: ModuleContext): Promise<any> {
+    resolvePass(entryContext: ModuleContext): Promise<YaksokRoot> {
         return this.moduleResolver.resolve(entryContext);
     }
     analyzePass(entryAstRoot: YaksokRoot): Promise<YaksokRoot> {
