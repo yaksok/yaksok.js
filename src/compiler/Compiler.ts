@@ -32,8 +32,8 @@ export default class Compiler extends NodeVisitor {
     astMap: { [key: string]: YaksokRoot } = {};
 
     // key: module context(except entry context) hash, value: dependency context hash set
-    moduleDependencyMap: { [key: string]: any } = {};
-    moduleOrder: any = null;
+    moduleDependencyMap: { [key: string]: Set<string> } = {};
+    moduleOrder: string[] | null = null;
 
     constructor(protected config: CompilerConfig = {}) {
         super();
@@ -97,8 +97,9 @@ export default class Compiler extends NodeVisitor {
             ast = await this.pluginPass(ast, AFTER_RESOLVE);
         }
         { // calculate module order
+            const entryContextHash = this.entryContext.hash();
             this.moduleOrder = Object.keys(this.moduleDependencyMap).filter(
-                hash => hash !== this.entryContext!.hash()
+                hash => hash !== entryContextHash
             ).sort((a, b) => {
                 const {[a]: aSet, [b]: bSet} = this.moduleDependencyMap;
                 if (aSet.has(b)) return 1;

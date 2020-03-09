@@ -19,7 +19,7 @@ export class Analyzer extends NodeVisitor {
     async analyze(astRoot: ast.YaksokRoot) {
         await this.init();
         // analyze modules
-        for (let moduleHash of this.compiler.moduleOrder) {
+        for (let moduleHash of this.compiler.moduleOrder || []) {
             await this.visit(await this.prepare(moduleHash));
         }
         // analyze entry point
