@@ -1,7 +1,9 @@
+import { Compiler } from '~/compiler';
 import { Parser } from '~/parser';
 import { Context, RawContext } from '~/module/context';
 
 export default class Loader {
+    compiler: Compiler | null = null;
     parser: Parser;
 
     constructor() {
