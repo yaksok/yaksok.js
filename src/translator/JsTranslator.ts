@@ -1,11 +1,17 @@
 import TextTranslator from '~/translator/TextTranslator';
 import * as ast from '~/ast';
 import { Builtin } from '~/builtin';
+import { JsTargetCompiler } from '~/compiler';
 
 // runtime
 import prelude from 'raw-loader!~/runtime/js/prelude';
 
 export default class JsTranslator extends TextTranslator {
+    runtime: { [key: string]: boolean } = {};
+    useModule = false;
+    functionNameIndex = 0;
+    functionNameMap: Map<any, string> = new Map();
+
     async init() {
         await super.init();
         this.runtime = {};
@@ -13,42 +19,46 @@ export default class JsTranslator extends TextTranslator {
         this.functionNameIndex = 0;
         this.functionNameMap = new Map(); // key: ast yaksok node, value: function name string
     }
-    getFunctionNameFromDef(def) {
+    getFunctionNameFromDef(def: ast.Def | Builtin): string {
+        const builtinDefs = this.compiler?.builtinDefs ?? {};
         if (def instanceof Builtin) {
             switch (def) {
-            case this.compiler.builtinDefs.보여주기: {
+            case builtinDefs.보여주기: {
                 this.runtime['log'] = true;
                 return 'yaksokLog';
             }
-            case this.compiler.builtinDefs.호출하기:
-            case this.compiler.builtinDefs.호출하기2:{
+            case builtinDefs.호출하기:
+            case builtinDefs.호출하기2:{
                 this.runtime['call'] = true;
                 return 'yaksokCall';
             }
             default: throw new Error('unimplemented builtin');
             }
         }
-        if (this.functionNameMap.has(def)) {
-            return this.functionNameMap.get(def);
+        let functionName = this.functionNameMap.get(def);
+        if (functionName == null) {
+            functionName = `ys_${ this.functionNameIndex++ }_${ yaksokDescriptionToJsIdentifier(def.description) }`;
+            this.functionNameMap.set(def, functionName);
         }
-        let functionName = `ys_${ this.functionNameIndex++ }_${ yaksokDescriptionToJsIdentifier(def.description) }`;
-        this.functionNameMap.set(def, functionName);
         return functionName;
     }
-    getFunctionExprFromCall(call) {
+    getFunctionExprFromCall(call: ast.CallLike | ast.ModuleCallLike) {
+        if (call.callInfo == null) {
+            throw new Error('call이 분석 단계를 통과하지 않았습니다');
+        }
         let functionName = this.getFunctionNameFromDef(call.callInfo.def);
         if (call instanceof ast.ModuleCall || call instanceof ast.ModuleCallBind)
             return `ys_m_${ call.target.value }.${ functionName }`;
         return functionName;
     }
-    prologue() {}
-    epilogue() {}
-    async translate(astRoot) {
+    async prologue() {}
+    async epilogue() {}
+    async translate(astRoot: ast.YaksokRoot) {
         await this.init();
         this.write('(function () {\n');
         this.write(prelude);
         await this.prologue();
-        this.lazyWrite(_=> {
+        this.lazyWrite(() => {
             let runtimes = [];
             for (let key in this.runtime) {
                 if (this.runtime[key]) {
@@ -58,7 +68,7 @@ export default class JsTranslator extends TextTranslator {
             }
             return runtimes.join('');
         });
-        if (this.compiler.moduleOrder.length > 0) {
+        if (this.compiler?.moduleOrder != null && this.compiler.moduleOrder.length > 0) {
             this.useModule = true;
             this.writeIndent();
             this.write('let yaksokModules = {\n');
@@ -85,7 +95,7 @@ export default class JsTranslator extends TextTranslator {
         } else {
             await this.visitYaksokRoot(astRoot);
         }
-        let { exports } = this.compiler;
+        let exports = this.compiler instanceof JsTargetCompiler ? this.compiler?.exports : null;
         if (exports) {
             for (let [key, call] of Object.entries(exports)) {
                 this.writeIndent();
@@ -98,7 +108,7 @@ export default class JsTranslator extends TextTranslator {
         this.write('})();');
         return this.result.join('');
     }
-    async visitYaksokRoot(node) {
+    async visitYaksokRoot(node: ast.YaksokRoot) {
         if (this.useModule) {
             this.write('(function () {\n');
             for (let submoduleName in node.modules) {
@@ -114,7 +124,7 @@ export default class JsTranslator extends TextTranslator {
             ++this.indent;
             this.writeIndent();
             this.write(`var ys_m = yaksokModules[${ JSON.stringify(node.hash) }];\n`);
-            for (let def of node.moduleScope.defs) {
+            for (let def of node.moduleScope?.defs ?? []) {
                 let functionName = this.getFunctionNameFromDef(def);
                 this.writeIndent();
                 this.write(`ys_m.${ functionName } = ${ functionName };\n`);
@@ -126,12 +136,12 @@ export default class JsTranslator extends TextTranslator {
             this.write('})();\n');
         }
     }
-    async visitPlainStatement(node) {
+    async visitPlainStatement(node: ast.PlainStatement) {
         this.writeIndent();
         await this.visit(node.expression);
         this.write(';\n');
     }
-    async visitAssign(node) {
+    async visitAssign(node: ast.Assign) {
         this.writeIndent();
         if (node.lvalue instanceof ast.Name) {
             let name = node.lvalue;
@@ -148,13 +158,16 @@ export default class JsTranslator extends TextTranslator {
         }
         this.write(';\n');
     }
-    async visitOutside(node) {
+    async visitOutside(node: ast.Outside) {
         this.writeIndent();
         this.write('// nonlocal ');
         await this.visit(node.name);
         this.write('\n');
     }
-    async visitCall(node) {
+    async visitCall(node: ast.Call) {
+        if (node.callInfo == null) {
+            throw new Error('call이 분석 단계를 통과하지 않았습니다');
+        }
         let { def, args } = node.callInfo;
         let expressions = node.expressions.childNodes;
         let functionExpr = this.getFunctionExprFromCall(node);
@@ -167,10 +180,13 @@ export default class JsTranslator extends TextTranslator {
         }
         this.write(')');
     }
-    async visitModuleCall(node) {
+    async visitModuleCall(node: ast.ModuleCall) {
         return await this.visitCall(node);
     }
-    async visitCallBind(node) {
+    async visitCallBind(node: ast.CallBind) {
+        if (node.callInfo == null) {
+            throw new Error('call이 분석 단계를 통과하지 않았습니다');
+        }
         let { def, args } = node.callInfo;
         let expressions = node.expressions.childNodes;
         let functionExpr = this.getFunctionExprFromCall(node);
@@ -205,10 +221,10 @@ export default class JsTranslator extends TextTranslator {
         }
         this.write(')');
     }
-    async visitModuleCallBind(node) {
+    async visitModuleCallBind(node: ast.ModuleCallBind) {
         return await this.visitCallBind(node);
     }
-    async visitIf(node) {
+    async visitIf(node: ast.If) {
         this.writeIndent();
         this.write('if ');
         this.write('('); await this.visit(node.condition); this.write(') ');
@@ -229,7 +245,7 @@ export default class JsTranslator extends TextTranslator {
             this.write('\n');
         }
     }
-    async visitIfNot(node) {
+    async visitIfNot(node: ast.IfNot) {
         this.writeIndent();
         this.write('if ');
         this.write('(!('); await this.visit(node.condition); this.write(')) ');
@@ -250,7 +266,7 @@ export default class JsTranslator extends TextTranslator {
             this.write('\n');
         }
     }
-    async visitLoop(node) {
+    async visitLoop(node: ast.Loop) {
         this.writeIndent();
         this.write('while (true) {\n')
         ++this.indent;
@@ -259,7 +275,7 @@ export default class JsTranslator extends TextTranslator {
         this.writeIndent();
         this.write('}\n');
     }
-    async visitIterate(node) {
+    async visitIterate(node: ast.Iterate) {
         this.writeIndent();
         this.write('for (let '); await this.visit(node.iteratee);
         this.write(' of '); await this.visit(node.iterator); this.write(') {\n');
@@ -269,17 +285,17 @@ export default class JsTranslator extends TextTranslator {
         this.writeIndent();
         this.write('}\n');
     }
-    async visitLoopEnd(node) {
+    async visitLoopEnd(node: ast.LoopEnd) {
         this.writeIndent();
         this.write('break;\n');
     }
-    async visitName(node) { this.write(node.value); }
-    async visitString(node) { this.write(JSON.stringify(node.value)); }
-    async visitInteger(node) { this.write(node.value); }
-    async visitFloat(node) { this.write(node.value); }
-    async visitBoolean(node) { this.write(node.value); }
-    async visitVoid(node) { this.write('void 0'); }
-    async visitRange(node) {
+    async visitName(node: ast.Name) { this.write(node.value); }
+    async visitString(node: ast.String) { this.write(JSON.stringify(node.value)); }
+    async visitInteger(node: ast.Integer) { this.write(node.value); }
+    async visitFloat(node: ast.Float) { this.write(node.value); }
+    async visitBoolean(node: ast.Boolean) { this.write(node.value); }
+    async visitVoid(_node: ast.Void) { this.write('void 0'); }
+    async visitRange(node: ast.Range) {
         this.runtime['range'] = true;
         this.write('yaksokRange(');
         await this.visit(node.start);
@@ -287,57 +303,59 @@ export default class JsTranslator extends TextTranslator {
         await this.visit(node.stop);
         this.write(')');
     }
-    async visitList(node) {
+    async visitList(node: ast.List) {
         this.runtime['list'] = true;
         this.write('yaksokList([void 0');
         for (let item of node) {
+            if (item == null) continue;
             this.write(', ');
             await this.visit(item);
         }
         this.write('])');
     }
-    async visitDict(node) {
+    async visitDict(node: ast.Dict) {
         this.write('{');
         let first = true;
         for (let item of node) {
+            if (item == null) continue;
             if (!first) this.write(', ');
             first = false;
             await this.visitDictKeyValue(item);
         }
         this.write('}');
     }
-    async visitDictKeyValue(node) {
+    async visitDictKeyValue(node: ast.DictKeyValue) {
         await this.visitName(node.key);
         this.write(': ');
         await this.visitExpression(node.value);
     }
-    async visitUnaryPlus(node) { await uop.call(this, node, '+'); }
-    async visitUnaryMinus(node) { await uop.call(this, node, '-'); }
-    async visitAccess(node) {
+    async visitUnaryPlus(node: ast.UnaryPlus) { await uop.call(this, node, '+'); }
+    async visitUnaryMinus(node: ast.UnaryMinus) { await uop.call(this, node, '-'); }
+    async visitAccess(node: ast.Access) {
         await this.visit(node.lhs);
         this.write('[');
         await this.visit(node.rhs);
         this.write(']');
     }
-    async visitDotAccess(node) {
+    async visitDotAccess(node: ast.DotAccess) {
         await this.visit(node.lhs);
         this.write('.');
         await this.visit(node.rhs);
     }
-    async visitOr(node) { await op.call(this, node, '||'); }
-    async visitAnd(node) { await op.call(this, node, '&&'); }
-    async visitEqual(node) { await op.call(this, node, '==='); }
-    async visitNotEqual(node) { await op.call(this, node, '!=='); }
-    async visitGreaterThan(node) { await op.call(this, node, '>'); }
-    async visitLessThan(node) { await op.call(this, node, '<'); }
-    async visitGreaterThanEqual(node) { await op.call(this, node, '>='); }
-    async visitLessThanEqual(node) { await op.call(this, node, '<='); }
-    async visitPlus(node) { await op.call(this, node, '+'); }
-    async visitMinus(node) { await op.call(this, node, '-'); }
-    async visitMultiply(node) { await op.call(this, node, '*'); }
-    async visitDivide(node) { await op.call(this, node, '/'); }
-    async visitModular(node) { await op.call(this, node, '%'); }
-    async visitYaksok(node) {
+    async visitOr(node: ast.Or) { await op.call(this, node, '||'); }
+    async visitAnd(node: ast.And) { await op.call(this, node, '&&'); }
+    async visitEqual(node: ast.Equal) { await op.call(this, node, '==='); }
+    async visitNotEqual(node: ast.NotEqual) { await op.call(this, node, '!=='); }
+    async visitGreaterThan(node: ast.GreaterThan) { await op.call(this, node, '>'); }
+    async visitLessThan(node: ast.LessThan) { await op.call(this, node, '<'); }
+    async visitGreaterThanEqual(node: ast.GreaterThanEqual) { await op.call(this, node, '>='); }
+    async visitLessThanEqual(node: ast.LessThanEqual) { await op.call(this, node, '<='); }
+    async visitPlus(node: ast.Plus) { await op.call(this, node, '+'); }
+    async visitMinus(node: ast.Minus) { await op.call(this, node, '-'); }
+    async visitMultiply(node: ast.Multiply) { await op.call(this, node, '*'); }
+    async visitDivide(node: ast.Divide) { await op.call(this, node, '/'); }
+    async visitModular(node: ast.Modular) { await op.call(this, node, '%'); }
+    async visitYaksok(node: ast.Yaksok) {
         let functionName = this.getFunctionNameFromDef(node);
         let parameters = node.description.parameters.map(parameter => parameter.value);
         this.writeIndent();
@@ -351,12 +369,12 @@ export default class JsTranslator extends TextTranslator {
         this.writeIndent();
         this.write('}\n');
     }
-    async visitYaksokEnd(node) {
+    async visitYaksokEnd(node: ast.YaksokEnd) {
         this.writeIndent();
         this.write('return 결과;\n');
     }
-    async visitTranslate(node) {
-        if (this.compiler.translateTargets.indexOf(node.target) === -1) return;
+    async visitTranslate(node: ast.Translate) {
+        if (this.compiler?.translateTargets.indexOf(node.target) === -1) return;
         let functionName = this.getFunctionNameFromDef(node);
         let parameters = node.description.parameters.map(parameter => parameter.value);
         this.writeIndent();
@@ -365,14 +383,14 @@ export default class JsTranslator extends TextTranslator {
     }
 }
 
-async function uop(node, op) {
+async function uop(this: JsTranslator, node: ast.UnaryOperator, op: string) {
     this.write('(');
     this.write(`${ op } `);
     await this.visit(node.rhs);
     this.write(')');
 }
 
-async function op(node, op) {
+async function op(this: JsTranslator, node: ast.BinaryOperator, op: string) {
     this.write('(');
     await this.visit(node.lhs);
     this.write(` ${ op } `);
@@ -380,13 +398,13 @@ async function op(node, op) {
     this.write(')');
 }
 
-function yaksokNameToJsIdentifier(name) {
+function yaksokNameToJsIdentifier(name: ast.DescriptionName) {
     let nameString = name.names[0];
     if (name.needWhiteSpace) return '_' + nameString;
     return nameString;
 }
 
-function yaksokDescriptionToJsIdentifier(description) {
+function yaksokDescriptionToJsIdentifier(description: ast.Description) {
     return description.childNodes.map(item => {
         if (item instanceof ast.DescriptionName) return yaksokNameToJsIdentifier(item);
         if (item instanceof ast.DescriptionParameter) return `_${ item.value }`;
