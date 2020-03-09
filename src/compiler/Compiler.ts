@@ -27,7 +27,7 @@ export default class Compiler extends NodeVisitor {
     moduleResolver = new ModuleResolver();
     analyzer = new Analyzer();
     translator: Translator | null = null;
-    builtinDefs: { [key: string]: BuiltinYaksok } = {...builtinYaksok};
+    builtinDefs: { [key: string]: BuiltinYaksok } = { ...builtinYaksok };
     entryContext: ModuleContext | null = null;
     astMap: { [key: string]: YaksokRoot } = {};
 
@@ -126,7 +126,7 @@ export default class Compiler extends NodeVisitor {
         return this.analyzer.analyze(entryAstRoot);
     }
     translatePass(entryAstRoot: YaksokRoot): Promise<string> {
-        if (this.translator == null ) {
+        if (this.translator == null) {
             throw new Error('translator가 초기화되지 않았습니다');
         }
         return this.translator.translate(entryAstRoot);
