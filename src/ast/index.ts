@@ -1,6 +1,7 @@
 // NOTE: 이 파일에서 String, Number, Boolean은 javascript builtin object가 아닙니다.
 
 import { AstNode, AstListMixin, astList, child } from './base';
+import { ModuleScope } from '~/analyzer';
 
 export { AstNode, child };
 
@@ -18,8 +19,8 @@ export interface AstNodeList<T> extends AstListMixin<T> {}
 
 export class YaksokRoot extends AstNode {
     hash: any;
-    modules: any;
-    moduleScope: any;
+    modules: { [name: string]: string };
+    moduleScope: ModuleScope | null;
     @child statements: Statements;
 
     constructor(statements: Statements) {
@@ -541,7 +542,7 @@ export class CallInfo extends AstNode {
 export interface CallInfo extends AstListMixin {}
 
 // description
-export class Description extends AstNodeList<Expression> {
+export class Description extends AstNodeList<DescriptionItem> {
     match(expressions: Expressions): CallInfo | null {
         if (expressions.length > this.length) return null;
         let callInfo = new CallInfo(this.parent);
@@ -582,17 +583,23 @@ export class Description extends AstNodeList<Expression> {
         }
         return callInfo;
     }
-    get parameters() {
-        return this.childNodes.filter(item => item instanceof DescriptionParameter);
+    get parameters(): DescriptionParameter[] {
+        function predicate(item: DescriptionItem): item is DescriptionParameter {
+            return item instanceof DescriptionParameter;
+        }
+        return this.childNodes.filter(predicate);
     }
     get repr() { return this.childNodes.map(expression => expression.repr).join(''); }
 }
-export class DescriptionParameter extends AstNode {
+export abstract class DescriptionItem extends AstNode {
+    abstract get repr(): string;
+}
+export class DescriptionParameter extends DescriptionItem {
     value: any;
     constructor(value: any) { super(); this.value = value; }
     get repr() { return `(${ this.value })`; }
 }
-export class DescriptionName extends AstNode {
+export class DescriptionName extends DescriptionItem {
     names: string[];
     constructor() {
         super();
