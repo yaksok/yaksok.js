@@ -18,7 +18,7 @@ export abstract class AstNodeList<T extends AstNode = AstNode> extends AstNode {
 export interface AstNodeList<T> extends AstListMixin<T> {}
 
 export class YaksokRoot extends AstNode {
-    hash: any;
+    hash: unknown;
     modules: { [name: string]: string };
     moduleScope: ModuleScope | null;
     @child statements: Statements;
@@ -34,7 +34,7 @@ export class YaksokRoot extends AstNode {
 }
 // block is statements
 export class Statements extends AstNodeList<Statement> {
-    scope: any;
+    scope: unknown;
 
     constructor() {
         super();
@@ -59,11 +59,11 @@ export class PlainStatement extends Statement {
 }
 
 export class Assign extends Statement {
-    @child lvalue: any;
-    @child rvalue: any;
+    @child lvalue: AstNode;
+    @child rvalue: Expression;
     isDeclaration: boolean;
 
-    constructor(lvalue: any, rvalue: any) {
+    constructor(lvalue: AstNode, rvalue: Expression) {
         super();
         this.lvalue = lvalue;
         this.rvalue = rvalue;
@@ -72,9 +72,9 @@ export class Assign extends Statement {
 }
 
 export class Outside extends Statement {
-    @child name: any;
+    @child name: Name;
 
-    constructor(name: any) {
+    constructor(name: Name) {
         super();
         this.name = name;
     }
@@ -123,20 +123,20 @@ export class IfNot extends Condition {
 }
 
 export class Loop extends Statement {
-    @child block: any;
+    @child block: Statements;
 
-    constructor(block: any) {
+    constructor(block: Statements) {
         super();
         this.block = block;
     }
 }
 
 export class Iterate extends Statement {
-    @child iterator: any;
-    @child iteratee: any;
-    @child block: any;
+    @child iterator: AstNode;
+    @child iteratee: AstNode;
+    @child block: Statements;
 
-    constructor(iterator: any, iteratee: any, block: any) {
+    constructor(iterator: AstNode, iteratee: AstNode, block: Statements) {
         super();
         this.iterator = iterator;
         this.iteratee = iteratee;
@@ -170,7 +170,7 @@ export interface CallLike extends Expression {
 }
 
 export interface ModuleCallLike extends CallLike {
-    target: any;
+    target: Name;
 }
 
 export class Call extends Expression implements CallLike {
@@ -194,11 +194,11 @@ export class Call extends Expression implements CallLike {
 }
 
 export class ModuleCall extends Expression implements ModuleCallLike {
-    @child target: any;
+    @child target: Name;
     @child expressions: Expressions;
     @child callInfo: CallInfo | null;
 
-    constructor(target: any, expressions: Expressions) {
+    constructor(target: Name, expressions: Expressions) {
         super();
         this.target = target;
         this.expressions = expressions; // analyzer 패스를 거친 뒤로는 무의미
@@ -292,9 +292,9 @@ export class Void extends Primitive {
 
 // etc
 export class Range extends Expression {
-    @child start: any;
-    @child stop: any;
-    constructor(start: any, stop: any) {
+    @child start: Expression;
+    @child stop: Expression;
+    constructor(start: Expression, stop: Expression) {
         super();
         this.start = start;
         this.stop = stop;
@@ -325,9 +325,9 @@ Dict.prototype.type = Dict;
 export interface Dict extends AstListMixin<DictKeyValue> {}
 
 export class DictKeyValue extends AstNode {
-    @child key: any;
-    @child value: any;
-    constructor(key: any, value: any) {
+    @child key: Name;
+    @child value: Expression;
+    constructor(key: Name, value: Expression) {
         super();
         this.key = key;
         this.value = value;
@@ -531,19 +531,22 @@ export class Modular extends BinaryOperator {
 
 @astList('args')
 export class CallInfo extends AstNode {
-    def: any;
+    def: AstNode;
     args: Expression[];
-    constructor(def: any) {
+    constructor(def: AstNode) {
         super();
         this.def = def;
         this.args = [];
     }
 }
-export interface CallInfo extends AstListMixin {}
+export interface CallInfo extends AstListMixin<Expression> {}
 
 // description
 export class Description extends AstNodeList<DescriptionItem> {
     match(expressions: Expressions): CallInfo | null {
+        if (!(this.parent != null)) {
+            throw new Error('Description의 부모는 Def여야 합니다');
+        }
         if (expressions.length > this.length) return null;
         let callInfo = new CallInfo(this.parent);
         // FIXME: babel 6.5 대에서
@@ -595,8 +598,8 @@ export abstract class DescriptionItem extends AstNode {
     abstract get repr(): string;
 }
 export class DescriptionParameter extends DescriptionItem {
-    value: any;
-    constructor(value: any) { super(); this.value = value; }
+    value: Expression;
+    constructor(value: Expression) { super(); this.value = value; }
     get repr() { return `(${ this.value })`; }
 }
 export class DescriptionName extends DescriptionItem {
@@ -651,8 +654,8 @@ export abstract class Def extends Statement {
 }
 
 export class Yaksok extends Def {
-    @child block: any;
-    constructor(description: Description, block: any) {
+    @child block: Statements;
+    constructor(description: Description, block: Statements) {
         super(description);
         this.block = block;
     }
@@ -666,12 +669,12 @@ export class Yaksok extends Def {
 }
 
 export class Translate extends Def {
-    target: any;
-    code: any;
-    constructor(description: Description, target: any, code: any) {
+    target: string;
+    code: string;
+    constructor(description: Description, target: string, code: string) {
         super(description);
-        this.target = target; // string
-        this.code = code; // string
+        this.target = target;
+        this.code = code;
     }
     get repr() {
         return `번역(${ this.target }) ${ this.description?.repr }`;

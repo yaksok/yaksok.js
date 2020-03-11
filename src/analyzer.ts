@@ -10,7 +10,7 @@ export class Analyzer extends NodeVisitor {
     currentAstRoot!: ast.YaksokRoot;
     compiler!: Compiler;
 
-    async prepare(moduleHash?: any) {
+    async prepare(moduleHash?: string) {
         this.currentScope = new Scope();
         this.currentAstRoot = await this.compiler.getAstRoot(moduleHash);
         this.currentAstRoot.statements.scope = this.currentScope;
@@ -161,7 +161,9 @@ export class Scope {
             }
         }
         if (matchDefs.length === 1 && matchCallInfo != null) {
-            matchCallInfo.def.used = true;
+            if (matchCallInfo.def instanceof ast.Def) {
+                matchCallInfo.def.used = true;
+            }
             return matchCallInfo;
         } else if (matchDefs.length > 1) {
             throw new Error(
@@ -176,7 +178,9 @@ export class Scope {
             let def = builtinDefs[key];
             let callInfo = def.match(call);
             if (callInfo) {
-                callInfo.def.used = true;
+                if (callInfo.def instanceof ast.Def) {
+                    callInfo.def.used = true;
+                }
                 return callInfo;
             }
         }

@@ -10,7 +10,7 @@ export default class JsTranslator extends TextTranslator {
     runtime: { [key: string]: boolean } = {};
     useModule = false;
     functionNameIndex = 0;
-    functionNameMap: Map<any, string> = new Map();
+    functionNameMap: Map<ast.Def, string> = new Map();
 
     async init() {
         await super.init();
