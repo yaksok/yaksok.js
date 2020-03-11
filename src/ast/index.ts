@@ -531,19 +531,22 @@ export class Modular extends BinaryOperator {
 
 @astList('args')
 export class CallInfo extends AstNode {
-    def: any;
+    def: AstNode;
     args: Expression[];
-    constructor(def: any) {
+    constructor(def: AstNode) {
         super();
         this.def = def;
         this.args = [];
     }
 }
-export interface CallInfo extends AstListMixin {}
+export interface CallInfo extends AstListMixin<Expression> {}
 
 // description
 export class Description extends AstNodeList<DescriptionItem> {
     match(expressions: Expressions): CallInfo | null {
+        if (!(this.parent != null)) {
+            throw new Error('Description의 부모는 Def여야 합니다');
+        }
         if (expressions.length > this.length) return null;
         let callInfo = new CallInfo(this.parent);
         // FIXME: babel 6.5 대에서
@@ -595,8 +598,8 @@ export abstract class DescriptionItem extends AstNode {
     abstract get repr(): string;
 }
 export class DescriptionParameter extends DescriptionItem {
-    value: any;
-    constructor(value: any) { super(); this.value = value; }
+    value: Expression;
+    constructor(value: Expression) { super(); this.value = value; }
     get repr() { return `(${ this.value })`; }
 }
 export class DescriptionName extends DescriptionItem {
@@ -651,8 +654,8 @@ export abstract class Def extends Statement {
 }
 
 export class Yaksok extends Def {
-    @child block: any;
-    constructor(description: Description, block: any) {
+    @child block: Statements;
+    constructor(description: Description, block: Statements) {
         super(description);
         this.block = block;
     }
@@ -666,12 +669,12 @@ export class Yaksok extends Def {
 }
 
 export class Translate extends Def {
-    target: any;
-    code: any;
-    constructor(description: Description, target: any, code: any) {
+    target: string;
+    code: string;
+    constructor(description: Description, target: string, code: string) {
         super(description);
-        this.target = target; // string
-        this.code = code; // string
+        this.target = target;
+        this.code = code;
     }
     get repr() {
         return `번역(${ this.target }) ${ this.description?.repr }`;
