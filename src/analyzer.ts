@@ -10,7 +10,7 @@ export class Analyzer extends NodeVisitor {
     currentAstRoot!: ast.YaksokRoot;
     compiler!: Compiler;
 
-    async prepare(moduleHash?: any) {
+    async prepare(moduleHash?: string) {
         this.currentScope = new Scope();
         this.currentAstRoot = await this.compiler.getAstRoot(moduleHash);
         this.currentAstRoot.statements.scope = this.currentScope;
