@@ -345,9 +345,12 @@ export default class JsTranslator extends TextTranslator {
             await this.visit(node.rhs);
             break;
         default:
+            if (!(node.kind in reprOp)) {
+                throw new Error('invalid operator: ' + ast.OperatorKind[node.kind]);
+            }
             this.write('(');
             await this.visit(node.lhs);
-            this.write(` ${ reprOp(node.kind) } `);
+            this.write(` ${ reprOp[node.kind] } `);
             await this.visit(node.rhs);
             this.write(')');
         }
@@ -387,38 +390,21 @@ async function uop(this: JsTranslator, node: ast.UnaryOperator, op: string) {
     this.write(')');
 }
 
-function reprOp(op: ast.OperatorKind): string {
-    switch (op) {
-    case ast.OperatorKind.Or:
-        return '||';
-    case ast.OperatorKind.And:
-        return '&&';
-    case ast.OperatorKind.Equal:
-        return '===';
-    case ast.OperatorKind.NotEqual:
-        return '!==';
-    case ast.OperatorKind.GreaterThan:
-        return '>';
-    case ast.OperatorKind.LessThan:
-        return '<';
-    case ast.OperatorKind.GreaterThanEqual:
-        return '>=';
-    case ast.OperatorKind.LessThanEqual:
-        return '<=';
-    case ast.OperatorKind.Plus:
-        return '+';
-    case ast.OperatorKind.Minus:
-        return '-';
-    case ast.OperatorKind.Multiply:
-        return '*';
-    case ast.OperatorKind.Divide:
-        return '/';
-    case ast.OperatorKind.Modular:
-        return '%';
-    default:
-        throw new Error('invalid operator: ' + ast.OperatorKind[op]);
-    }
-}
+const reprOp = {
+    [ast.OperatorKind.Or]: '||',
+    [ast.OperatorKind.And]: '&&',
+    [ast.OperatorKind.Equal]: '===',
+    [ast.OperatorKind.NotEqual]: '!==',
+    [ast.OperatorKind.GreaterThan]: '>',
+    [ast.OperatorKind.LessThan]: '<',
+    [ast.OperatorKind.GreaterThanEqual]: '>=',
+    [ast.OperatorKind.LessThanEqual]: '<=',
+    [ast.OperatorKind.Plus]: '+',
+    [ast.OperatorKind.Minus]: '-',
+    [ast.OperatorKind.Multiply]: '*',
+    [ast.OperatorKind.Divide]: '/',
+    [ast.OperatorKind.Modular]: '%',
+};
 
 function yaksokNameToJsIdentifier(name: ast.DescriptionName) {
     let nameString = name.names[0];
