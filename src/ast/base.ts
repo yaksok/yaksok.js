@@ -134,3 +134,14 @@ function applyMixin(target: any, mixin: any) {
         Object.defineProperty(target.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name)!);
     }
 }
+
+@astList('childNodes')
+export abstract class AstNodeList<T extends AstNode = AstNode> extends AstNode {
+    childNodes: T[];
+
+    constructor() {
+        super();
+        this.childNodes = [];
+    }
+}
+export interface AstNodeList<T> extends AstListMixin<T> {}
