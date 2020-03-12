@@ -4,6 +4,7 @@ import * as ast from '~/ast';
 import { Name } from '~/ast';
 import { Yaksok as BuiltinYaksok, yaksok as builtinYaksok } from '~/builtin';
 import { Compiler } from './compiler';
+import { Type } from '~/type';
 
 export class Analyzer extends NodeVisitor {
     currentScope!: Scope;
@@ -137,9 +138,9 @@ export class Scope {
         }
         return false;
     }
-    getVariableType(name: ast.Name, local=true): any {
+    getVariableType(name: ast.Name, local=true): Type {
         let localVariable = this.variables.find(item => item.value === name.value);
-        if (!localVariable) return null;
+        if (!localVariable) return Type.Any;
         let localType = localVariable.type;
         if (local) {
             return localType;
@@ -147,7 +148,7 @@ export class Scope {
             if (localType) return localType;
             if (this.parent) return this.parent.getVariableType(name);
         }
-        return null;
+        return Type.Any;
     }
     addDef(def: ast.Def) { this.defs.push(def); }
     getCallInfo(call: ast.CallLike, builtinDefs: { [key: string]: BuiltinYaksok } = {}): ast.CallInfo {
