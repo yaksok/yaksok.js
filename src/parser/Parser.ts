@@ -7,6 +7,7 @@ const yy = {
     parseInteger: (text: string) => (text as any) | 0,
     parseFloat: (text: string) => +text,
     ast,
+    op: ast.OperatorKind,
     stmts: (stmt: ast.Statement) => {
          const stmts = new ast.Statements();
          stmts.push(stmt);

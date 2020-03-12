@@ -331,30 +331,27 @@ export default class JsTranslator extends TextTranslator {
     }
     async visitUnaryPlus(node: ast.UnaryPlus) { await uop.call(this, node, '+'); }
     async visitUnaryMinus(node: ast.UnaryMinus) { await uop.call(this, node, '-'); }
-    async visitAccess(node: ast.Access) {
-        await this.visit(node.lhs);
-        this.write('[');
-        await this.visit(node.rhs);
-        this.write(']');
+    async visitBinaryOperator(node: ast.BinaryOperator) {
+        switch (node.kind) {
+        case ast.OperatorKind.Access:
+            await this.visit(node.lhs);
+            this.write('[');
+            await this.visit(node.rhs);
+            this.write(']');
+            break;
+        case ast.OperatorKind.DotAccess:
+            await this.visit(node.lhs);
+            this.write('.');
+            await this.visit(node.rhs);
+            break;
+        default:
+            this.write('(');
+            await this.visit(node.lhs);
+            this.write(` ${ reprOp(node.kind) } `);
+            await this.visit(node.rhs);
+            this.write(')');
+        }
     }
-    async visitDotAccess(node: ast.DotAccess) {
-        await this.visit(node.lhs);
-        this.write('.');
-        await this.visit(node.rhs);
-    }
-    async visitOr(node: ast.Or) { await op.call(this, node, '||'); }
-    async visitAnd(node: ast.And) { await op.call(this, node, '&&'); }
-    async visitEqual(node: ast.Equal) { await op.call(this, node, '==='); }
-    async visitNotEqual(node: ast.NotEqual) { await op.call(this, node, '!=='); }
-    async visitGreaterThan(node: ast.GreaterThan) { await op.call(this, node, '>'); }
-    async visitLessThan(node: ast.LessThan) { await op.call(this, node, '<'); }
-    async visitGreaterThanEqual(node: ast.GreaterThanEqual) { await op.call(this, node, '>='); }
-    async visitLessThanEqual(node: ast.LessThanEqual) { await op.call(this, node, '<='); }
-    async visitPlus(node: ast.Plus) { await op.call(this, node, '+'); }
-    async visitMinus(node: ast.Minus) { await op.call(this, node, '-'); }
-    async visitMultiply(node: ast.Multiply) { await op.call(this, node, '*'); }
-    async visitDivide(node: ast.Divide) { await op.call(this, node, '/'); }
-    async visitModular(node: ast.Modular) { await op.call(this, node, '%'); }
     async visitYaksok(node: ast.Yaksok) {
         let functionName = this.getFunctionNameFromDef(node);
         let parameters = node.description.parameters.map(parameter => parameter.value);
@@ -390,12 +387,37 @@ async function uop(this: JsTranslator, node: ast.UnaryOperator, op: string) {
     this.write(')');
 }
 
-async function op(this: JsTranslator, node: ast.BinaryOperator, op: string) {
-    this.write('(');
-    await this.visit(node.lhs);
-    this.write(` ${ op } `);
-    await this.visit(node.rhs);
-    this.write(')');
+function reprOp(op: ast.OperatorKind): string {
+    switch (op) {
+    case ast.OperatorKind.Or:
+        return '||';
+    case ast.OperatorKind.And:
+        return '&&';
+    case ast.OperatorKind.Equal:
+        return '===';
+    case ast.OperatorKind.NotEqual:
+        return '!==';
+    case ast.OperatorKind.GreaterThan:
+        return '>';
+    case ast.OperatorKind.LessThan:
+        return '<';
+    case ast.OperatorKind.GreaterThanEqual:
+        return '>=';
+    case ast.OperatorKind.LessThanEqual:
+        return '<=';
+    case ast.OperatorKind.Plus:
+        return '+';
+    case ast.OperatorKind.Minus:
+        return '-';
+    case ast.OperatorKind.Multiply:
+        return '*';
+    case ast.OperatorKind.Divide:
+        return '/';
+    case ast.OperatorKind.Modular:
+        return '%';
+    default:
+        throw new Error('invalid operator: ' + ast.OperatorKind[op]);
+    }
 }
 
 function yaksokNameToJsIdentifier(name: ast.DescriptionName) {

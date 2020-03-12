@@ -119,38 +119,9 @@ export default class NodeVisitor {
     async visitUnaryPlus(node: ast.UnaryPlus) { await visitUnaryOperator.call(this, node); }
     async visitUnaryMinus(node: ast.UnaryMinus) { await visitUnaryOperator.call(this, node); }
     async visitBinaryOperator(node: ast.BinaryOperator) {
-        if (node instanceof ast.Access) return await this.visitAccess(node);
-        if (node instanceof ast.DotAccess) return await this.visitDotAccess(node);
-        if (node instanceof ast.Or) return await this.visitOr(node);
-        if (node instanceof ast.And) return await this.visitAnd(node);
-        if (node instanceof ast.Equal) return await this.visitEqual(node);
-        if (node instanceof ast.NotEqual) return await this.visitNotEqual(node);
-        if (node instanceof ast.GreaterThan) return await this.visitGreaterThan(node);
-        if (node instanceof ast.LessThan) return await this.visitLessThan(node);
-        if (node instanceof ast.GreaterThanEqual) return await this.visitGreaterThanEqual(node);
-        if (node instanceof ast.LessThanEqual) return await this.visitLessThanEqual(node);
-        if (node instanceof ast.Plus) return await this.visitPlus(node);
-        if (node instanceof ast.Minus) return await this.visitMinus(node);
-        if (node instanceof ast.Multiply) return await this.visitMultiply(node);
-        if (node instanceof ast.Divide) return await this.visitDivide(node);
-        if (node instanceof ast.Modular) return await this.visitModular(node);
-        throw new Error('unknown node type');
+        await this.visit(node.lhs);
+        await this.visit(node.rhs);
     }
-    async visitAccess(node: ast.Access) { await visitOperator.call(this, node); }
-    async visitDotAccess(node: ast.DotAccess) { await visitOperator.call(this, node); }
-    async visitOr(node: ast.Or) { await visitOperator.call(this, node); }
-    async visitAnd(node: ast.And) { await visitOperator.call(this, node); }
-    async visitEqual(node: ast.Equal) { await visitOperator.call(this, node); }
-    async visitNotEqual(node: ast.NotEqual) { await visitOperator.call(this, node); }
-    async visitGreaterThan(node: ast.GreaterThan) { await visitOperator.call(this, node); }
-    async visitLessThan(node: ast.LessThan) { await visitOperator.call(this, node); }
-    async visitGreaterThanEqual(node: ast.GreaterThanEqual) { await visitOperator.call(this, node); }
-    async visitLessThanEqual(node: ast.LessThanEqual) { await visitOperator.call(this, node); }
-    async visitPlus(node: ast.Plus) { await visitOperator.call(this, node); }
-    async visitMinus(node: ast.Minus) { await visitOperator.call(this, node); }
-    async visitMultiply(node: ast.Multiply) { await visitOperator.call(this, node); }
-    async visitDivide(node: ast.Divide) { await visitOperator.call(this, node); }
-    async visitModular(node: ast.Modular) { await visitOperator.call(this, node); }
     async visitDescription(node: ast.Description) {}
     async visitDescriptionParameter(node: ast.DescriptionParameter) {}
     async visitDescriptionName(node: ast.DescriptionName) {}
@@ -166,10 +137,5 @@ export default class NodeVisitor {
 }
 
 async function visitUnaryOperator(this: NodeVisitor, node: ast.UnaryOperator) {
-    await this.visit(node.rhs);
-}
-
-async function visitOperator(this: NodeVisitor, node: ast.BinaryOperator) {
-    await this.visit(node.lhs);
     await this.visit(node.rhs);
 }
