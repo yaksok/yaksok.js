@@ -173,35 +173,35 @@ expression
     ;
 
 or_expression
-    : or_expression OR and_expression   { $$ = new yy.ast.Or($1, $3) }
+    : or_expression OR and_expression   { $$ = new yy.ast.BinaryOperator(yy.op.Or, $1, $3) }
     | and_expression                    { $$ = $1 }
     ;
 
 and_expression
-    : and_expression AND logical_expression     { $$ = new yy.ast.And($1, $3) }
+    : and_expression AND logical_expression     { $$ = new yy.ast.BinaryOperator(yy.op.And, $1, $3) }
     | logical_expression                        { $$ = $1 }
     ;
 
 logical_expression
-    : additive_expression EQ additive_expression    { $$ = new yy.ast.Equal($1, $3) }
-    | additive_expression NE additive_expression    { $$ = new yy.ast.NotEqual($1, $3) }
-    | additive_expression GT additive_expression    { $$ = new yy.ast.GreaterThan($1, $3) }
-    | additive_expression LT additive_expression    { $$ = new yy.ast.LessThan($1, $3) }
-    | additive_expression GTEQ additive_expression  { $$ = new yy.ast.GreaterThanEqual($1, $3) }
-    | additive_expression LTEQ additive_expression  { $$ = new yy.ast.LessThanEqual($1, $3) }
+    : additive_expression EQ additive_expression    { $$ = new yy.ast.BinaryOperator(yy.op.Equal, $1, $3) }
+    | additive_expression NE additive_expression    { $$ = new yy.ast.BinaryOperator(yy.op.NotEqual, $1, $3) }
+    | additive_expression GT additive_expression    { $$ = new yy.ast.BinaryOperator(yy.op.GreaterThan, $1, $3) }
+    | additive_expression LT additive_expression    { $$ = new yy.ast.BinaryOperator(yy.op.LessThan, $1, $3) }
+    | additive_expression GTEQ additive_expression  { $$ = new yy.ast.BinaryOperator(yy.op.GreaterThanEqual, $1, $3) }
+    | additive_expression LTEQ additive_expression  { $$ = new yy.ast.BinaryOperator(yy.op.LessThanEqual, $1, $3) }
     | additive_expression                           { $$ = $1 }
     ;
 
 additive_expression
-    : additive_expression PLUS multiplicative_expression    { $$ = new yy.ast.Plus($1, $3) }
-    | additive_expression MINUS multiplicative_expression   { $$ = new yy.ast.Minus($1, $3) }
+    : additive_expression PLUS multiplicative_expression    { $$ = new yy.ast.BinaryOperator(yy.op.Plus, $1, $3) }
+    | additive_expression MINUS multiplicative_expression   { $$ = new yy.ast.BinaryOperator(yy.op.Minus, $1, $3) }
     | multiplicative_expression                             { $$ = $1 }
     ;
 
 multiplicative_expression
-    : multiplicative_expression MULT prefix_expression      { $$ = new yy.ast.Multiply($1, $3) }
-    | multiplicative_expression DIV prefix_expression       { $$ = new yy.ast.Divide($1, $3) }
-    | multiplicative_expression MOD prefix_expression       { $$ = new yy.ast.Modular($1, $3) }
+    : multiplicative_expression MULT prefix_expression      { $$ = new yy.ast.BinaryOperator(yy.op.Multiply, $1, $3) }
+    | multiplicative_expression DIV prefix_expression       { $$ = new yy.ast.BinaryOperator(yy.op.Divide, $1, $3) }
+    | multiplicative_expression MOD prefix_expression       { $$ = new yy.ast.BinaryOperator(yy.op.Modular, $1, $3) }
     | prefix_expression                                     { $$ = $1 }
     ;
 
@@ -230,8 +230,8 @@ lvalue
     ;
 
 access_expression
-    : primary_expression LSQUARE expression RSQUARE     { $$ = new yy.ast.Access($1, $3) }
-    | primary_expression DOT name                       { $$ = new yy.ast.DotAccess($1, $3) }
+    : primary_expression LSQUARE expression RSQUARE     { $$ = new yy.ast.BinaryOperator(yy.op.Access, $1, $3) }
+    | primary_expression DOT name                       { $$ = new yy.ast.BinaryOperator(yy.op.DotAccess, $1, $3) }
     ;
 
 name

@@ -201,6 +201,114 @@ export class DictKeyValue extends AstNode {
     }
 }
 
+export enum OperatorKind {
+    Access,
+    DotAccess,
+    Or,
+    And,
+    Equal,
+    NotEqual,
+    GreaterThan,
+    LessThan,
+    GreaterThanEqual,
+    LessThanEqual,
+    Plus,
+    Minus,
+    Multiply,
+    Divide,
+    Modular,
+}
+
+function defaultType(op: OperatorKind): Type {
+    switch (op) {
+    case OperatorKind.Or:
+    case OperatorKind.And:
+    case OperatorKind.Equal:
+    case OperatorKind.NotEqual:
+    case OperatorKind.GreaterThan:
+    case OperatorKind.LessThan:
+    case OperatorKind.GreaterThanEqual:
+    case OperatorKind.LessThanEqual:
+        return Type.Boolean;
+    case OperatorKind.Divide:
+        return Type.Float;
+    default:
+        return Type.Any;
+    }
+}
+
+function fold(op: OperatorKind, lhs: Expression, rhs: Expression): Primitive | undefined {
+    switch (op) {
+    case OperatorKind.Equal:
+        if (lhs instanceof Primitive && rhs instanceof Primitive) {
+            return new Boolean(lhs.value === rhs.value);
+        }
+        break;
+    case OperatorKind.NotEqual:
+        if (lhs instanceof Primitive && rhs instanceof Primitive) {
+            return new Boolean(lhs.value !== rhs.value);
+        }
+        break;
+    case OperatorKind.GreaterThan:
+        if (lhs instanceof Number && rhs instanceof Number) {
+            return new Boolean(lhs.value > rhs.value);
+        }
+        break;
+    case OperatorKind.LessThan:
+        if (lhs instanceof Number && rhs instanceof Number) {
+            return new Boolean(lhs.value < rhs.value);
+        }
+        break;
+    case OperatorKind.GreaterThanEqual:
+        if (lhs instanceof Number && rhs instanceof Number) {
+            return new Boolean(lhs.value >= rhs.value);
+        }
+        break;
+    case OperatorKind.LessThanEqual:
+        if (lhs instanceof Number && rhs instanceof Number) {
+            return new Boolean(lhs.value <= rhs.value);
+        }
+        break;
+    case OperatorKind.Plus:
+        if (lhs instanceof String && rhs instanceof String) {
+            return new String(lhs.value + rhs.value);
+        } else if (lhs instanceof Integer && rhs instanceof Integer) {
+            return new Integer(lhs.value + rhs.value);
+        } else if (lhs instanceof Number && rhs instanceof Number) {
+            return new Float(lhs.value + rhs.value);
+        }
+        break;
+    case OperatorKind.Minus:
+        if (lhs instanceof Integer && rhs instanceof Integer) {
+            return new Integer(lhs.value - rhs.value);
+        } else if (lhs instanceof Number && rhs instanceof Number) {
+            return new Float(lhs.value - rhs.value);
+        }
+        break;
+    case OperatorKind.Multiply:
+        if (lhs instanceof Integer && rhs instanceof Integer) {
+            return new Integer(lhs.value * rhs.value);
+        } else if (lhs instanceof Number && rhs instanceof Number) {
+            return new Float(lhs.value * rhs.value);
+        }
+        break;
+    case OperatorKind.Divide:
+        if (lhs instanceof Number && rhs instanceof Number) {
+            return new Float(lhs.value / rhs.value);
+        }
+        break;
+    case OperatorKind.Modular:
+        if (lhs instanceof Integer && rhs instanceof Integer) {
+            return new Integer(lhs.value % rhs.value);
+        } else if (lhs instanceof Number && rhs instanceof Number) {
+            return new Float(lhs.value % rhs.value);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 // unary operator
 export abstract class UnaryOperator extends Expression {
     @child rhs: Expression;
@@ -237,158 +345,23 @@ export class UnaryMinus extends UnaryOperator {
 }
 
 // binary opeartor
-export abstract class BinaryOperator extends Expression {
+export class BinaryOperator extends Expression {
     @child lhs: Expression;
     @child rhs: Expression;
-    constructor(lhs: Expression, rhs: Expression) {
+    constructor(public kind: OperatorKind, lhs: Expression, rhs: Expression) {
         super();
         this.lhs = lhs;
         this.rhs = rhs;
+        this.type = defaultType(kind);
     }
     get isConstant() { return this.lhs.isConstant && this.rhs.isConstant; }
-}
-export class Access extends BinaryOperator {}
-export class DotAccess extends BinaryOperator {}
-// logical
-export class Or extends BinaryOperator { type = Type.Boolean; }
-export class And extends BinaryOperator { type = Type.Boolean; }
-export class Equal extends BinaryOperator {
-    type = Type.Boolean;
     fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Primitive && rhs instanceof Primitive) {
-                return this.replace(new Boolean(lhs.value === rhs.value));
-            }
+        if (!this.isConstant) {
+            return this;
         }
-        return this;
-    }
-}
-export class NotEqual extends BinaryOperator {
-    type = Type.Boolean;
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Primitive && rhs instanceof Primitive) {
-                return this.replace(new Boolean(lhs.value !== rhs.value));
-            }
-        }
-        return this;
-    }
-}
-export class GreaterThan extends BinaryOperator {
-    type = Type.Boolean;
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Boolean(lhs.value > rhs.value));
-        }
-        return this;
-    }
-}
-export class LessThan extends BinaryOperator {
-    type = Type.Boolean;
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Boolean(lhs.value < rhs.value));
-        }
-        return this;
-    }
-}
-export class GreaterThanEqual extends BinaryOperator {
-    type = Type.Boolean;
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Boolean(lhs.value >= rhs.value));
-        }
-        return this;
-    }
-}
-export class LessThanEqual extends BinaryOperator {
-    type = Type.Boolean;
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Boolean(lhs.value <= rhs.value));
-        }
-        return this;
-    }
-}
-// arithmetical
-export class Plus extends BinaryOperator {
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof String && rhs instanceof String)
-                return this.replace(new String(lhs.value + rhs.value));
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Integer(lhs.value + rhs.value));
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Float(lhs.value + rhs.value));
-        }
-        return this;
-    }
-}
-export class Minus extends BinaryOperator {
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Integer(lhs.value - rhs.value));
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Float(lhs.value - rhs.value));
-        }
-        return this;
-    }
-}
-export class Multiply extends BinaryOperator {
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Integer(lhs.value * rhs.value));
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Float(lhs.value * rhs.value));
-        }
-        return this;
-    }
-}
-export class Divide extends BinaryOperator {
-    type = Type.Float;
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Float(lhs.value / rhs.value));
-        }
-        return this;
-    }
-}
-export class Modular extends BinaryOperator {
-    fold() {
-        if (this.isConstant) {
-            let lhs = this.lhs.fold();
-            let rhs = this.rhs.fold();
-            if (lhs instanceof Integer && rhs instanceof Integer)
-                return this.replace(new Integer(lhs.value % rhs.value));
-            if (lhs instanceof Number && rhs instanceof Number)
-                return this.replace(new Float(lhs.value % rhs.value));
+        const folded = fold(this.kind, this.lhs.fold(), this.rhs.fold());
+        if (folded != null) {
+            return this.replace(folded);
         }
         return this;
     }
