@@ -1,5 +1,6 @@
 // NOTE: 이 파일에서 String, Number, Boolean은 javascript builtin object가 아닙니다.
 import { AstListMixin, AstNode, AstNodeList, astList, child } from './base';
+import { Type } from '~/type';
 
 // expression
 export class Expressions extends AstNodeList<Expression> {
@@ -8,14 +9,13 @@ export class Expressions extends AstNodeList<Expression> {
     }
 }
 export class Expression extends AstNode {
-    type: any;
+    type = Type.Any;
     get isConstant() { return false; }
     fold(): Expression { return this; }
     get repr(): string {
         throw new Error('unimplemented');
     }
 }
-Expression.prototype.type = null;
 
 @astList('args')
 export class CallInfo extends AstNode {
@@ -138,25 +138,28 @@ export class Name extends Primitive {
     }
 }
 export class String extends Primitive {
+    type = Type.String;
     get repr() {
         return `"${ this.value }"`;
     }
-} String.prototype.type = String;
+}
 
 export abstract class Number extends Primitive {}
 
-export class Integer extends Number {} Integer.prototype.type = Integer;
-export class Float extends Number {} Float.prototype.type = Float;
+export class Integer extends Number { type = Type.Integer; }
+export class Float extends Number { type = Type.Float; }
 
-export class Boolean extends Primitive {} Boolean.prototype.type = Boolean;
+export class Boolean extends Primitive { type = Type.Boolean; }
 export class Void extends Primitive {
+    type = Type.Void;
     get repr() {
         return '()';
     }
-} Void.prototype.type = Void;
+}
 
 // etc
 export class Range extends Expression {
+    type = Type.Range;
     @child start: Expression;
     @child stop: Expression;
     constructor(start: Expression, stop: Expression) {
@@ -165,28 +168,27 @@ export class Range extends Expression {
         this.stop = stop;
     }
 }
-Range.prototype.type = Range;
 
 @astList('items')
 export class List extends Expression {
+    type = Type.List;
     items: Expression[];
     constructor() {
         super();
         this.items = [];
     }
 }
-List.prototype.type = List;
 export interface List extends AstListMixin<Expression> {}
 
 @astList('items')
 export class Dict extends Expression {
+    type = Type.Dict;
     items: DictKeyValue[];
     constructor() {
         super();
         this.items = [];
     }
 }
-Dict.prototype.type = Dict;
 export interface Dict extends AstListMixin<DictKeyValue> {}
 
 export class DictKeyValue extends AstNode {
@@ -248,11 +250,10 @@ export abstract class BinaryOperator extends Expression {
 export class Access extends BinaryOperator {}
 export class DotAccess extends BinaryOperator {}
 // logical
-export class Or extends BinaryOperator {}
-Or.prototype.type = Boolean;
-export class And extends BinaryOperator {}
-And.prototype.type = Boolean;
+export class Or extends BinaryOperator { type = Type.Boolean; }
+export class And extends BinaryOperator { type = Type.Boolean; }
 export class Equal extends BinaryOperator {
+    type = Type.Boolean;
     fold() {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
@@ -264,8 +265,8 @@ export class Equal extends BinaryOperator {
         return this;
     }
 }
-Equal.prototype.type = Boolean;
 export class NotEqual extends BinaryOperator {
+    type = Type.Boolean;
     fold() {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
@@ -277,8 +278,8 @@ export class NotEqual extends BinaryOperator {
         return this;
     }
 }
-NotEqual.prototype.type = Boolean;
 export class GreaterThan extends BinaryOperator {
+    type = Type.Boolean;
     fold() {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
@@ -289,8 +290,8 @@ export class GreaterThan extends BinaryOperator {
         return this;
     }
 }
-GreaterThan.prototype.type = Boolean;
 export class LessThan extends BinaryOperator {
+    type = Type.Boolean;
     fold() {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
@@ -301,8 +302,8 @@ export class LessThan extends BinaryOperator {
         return this;
     }
 }
-LessThan.prototype.type = Boolean;
 export class GreaterThanEqual extends BinaryOperator {
+    type = Type.Boolean;
     fold() {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
@@ -313,8 +314,8 @@ export class GreaterThanEqual extends BinaryOperator {
         return this;
     }
 }
-GreaterThanEqual.prototype.type = Boolean;
 export class LessThanEqual extends BinaryOperator {
+    type = Type.Boolean;
     fold() {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
@@ -325,7 +326,6 @@ export class LessThanEqual extends BinaryOperator {
         return this;
     }
 }
-LessThanEqual.prototype.type = Boolean;
 // arithmetical
 export class Plus extends BinaryOperator {
     fold() {
@@ -369,6 +369,7 @@ export class Multiply extends BinaryOperator {
     }
 }
 export class Divide extends BinaryOperator {
+    type = Type.Float;
     fold() {
         if (this.isConstant) {
             let lhs = this.lhs.fold();
@@ -379,7 +380,6 @@ export class Divide extends BinaryOperator {
         return this;
     }
 }
-Divide.prototype.type = Float;
 export class Modular extends BinaryOperator {
     fold() {
         if (this.isConstant) {
