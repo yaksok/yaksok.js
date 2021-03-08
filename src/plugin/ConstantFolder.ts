@@ -10,7 +10,7 @@ export default class ConstantFolder extends Plugin {
     constructor(private config: ConstantFolderConfig = {}) {
         super();
     }
-    get phase() { return AFTER_ANALYZE; }
+    readonly phase = AFTER_ANALYZE;
     async visitExpression(node: ast.Expression) {
         node.fold();
     }

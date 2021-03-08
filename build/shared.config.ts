@@ -32,6 +32,7 @@ const config: webpack.Configuration = {
         filename: '[name].js',
         libraryTarget: 'umd',
         library: 'yaksok',
+        globalObject: 'this',
     },
     resolve: {
         alias: {
